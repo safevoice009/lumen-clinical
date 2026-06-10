@@ -5,6 +5,19 @@
 
 ---
 
+## 🔴 LIVE STATUS — ALL SYSTEMS DEPLOYED
+
+| System | Status | URL |
+|---|---|---|
+| 🟢 GitHub | Live | https://github.com/safevoice009/lumen-clinical |
+| 🟢 Vercel Prod | Live | https://lumen-clinical.vercel.app |
+| 🟢 Vercel Deploy | Live | https://lumen-clinical-fvse565e6-apexs-projects-3d0f841e.vercel.app |
+| ⚡ Gemini API | Rate-limited until daily reset | Free tier — resets at midnight UTC |
+
+**Vercel auto-deploys on every GitHub push to main.**
+
+---
+
 ## 🎯 WHAT THIS PROJECT IS
 
 **Lumen** is an **open-source Clinical LLM Safety Evaluation Framework** — the equivalent of a "security scanner for medical AI." 
