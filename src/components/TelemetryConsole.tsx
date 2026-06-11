@@ -1,83 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TelemetryLog } from '../types/clinical';
-import { Terminal, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
+import { ChevronUp, Trash2 } from 'lucide-react';
 
 interface TelemetryConsoleProps {
   logs: TelemetryLog[];
   onClear: () => void;
 }
 
+function formatTs(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClear }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const totalTokens = logs.length * 342;
-  const mockCost = (totalTokens * 0.000015).toFixed(4);
+  const [open, setOpen] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs, open]);
+
+  const errorCount   = logs.filter(l => l.level === 'error').length;
+  const warnCount    = logs.filter(l => l.level === 'warn').length;
+  const successCount = logs.filter(l => l.level === 'success').length;
 
   return (
     <div className="telemetry-shell">
       <div
         className="telemetry-drawer"
-        style={{ height: isOpen ? 320 : 48 }}
+        style={{ height: open ? '260px' : '42px' }}
       >
-        {/* Header Toggle */}
-        <button
-          className="telemetry-header"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-            <div className="telemetry-dots">
-              <span className="dot-r" />
-              <span className="dot-y" />
-              <span className="dot-g" />
-            </div>
-            <div className="telemetry-title">
-              <Terminal size={13} style={{ color: 'rgba(255,255,255,0.4)' }} />
-              Developer Telemetry · {logs.length} events
-            </div>
+        {/* Header / Toggle */}
+        <div className="telemetry-header" onClick={() => setOpen(o => !o)}>
+          {/* macOS dots */}
+          <div className="tbar-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.3)' }}>
-            {isOpen
-              ? <ChevronDown size={16} />
-              : <ChevronUp size={16} />
-            }
-          </div>
-        </button>
 
-        {/* Body */}
-        {isOpen && (
+          <div className="tbar-title">
+            <span className="dot" />
+            telemetry — lumen safety sandbox
+          </div>
+
+          <div className="tbar-actions" onClick={e => e.stopPropagation()}>
+            <div className="tbar-stats">
+              <span><strong>{logs.length}</strong> logs</span>
+              {errorCount > 0 && <span style={{ color: 'var(--fg-danger)' }}><strong>{errorCount}</strong> err</span>}
+              {warnCount > 0 && <span style={{ color: 'var(--fg-warn)' }}><strong>{warnCount}</strong> warn</span>}
+              {successCount > 0 && <span style={{ color: 'var(--fg-safe)' }}><strong>{successCount}</strong> ok</span>}
+            </div>
+            <button className="tbar-clear" onClick={onClear} title="Clear logs">
+              <Trash2 size={11} /> Clear
+            </button>
+          </div>
+
+          <ChevronUp
+            size={14}
+            className={`tbar-chevron ${open ? 'open' : ''}`}
+            style={{ marginLeft: 8, color: 'var(--fg-subtle)' }}
+          />
+        </div>
+
+        {/* Log entries */}
+        {open && (
           <div className="telemetry-body">
-            <div className="telemetry-toolbar">
-              <div className="telemetry-stats">
-                <span>Logs: <strong>{logs.length}</strong></span>
-                <span>Volume: <strong>{totalTokens} tokens</strong></span>
-                <span>Overhead: <span className="cost">${mockCost}</span></span>
-              </div>
-              <button className="telemetry-clear" onClick={onClear}>
-                <Trash2 size={12} />
-                Clear
-              </button>
-            </div>
-
-            <div className="telemetry-logs">
-              {logs.length === 0 ? (
-                <div className="log-empty">
-                  <span style={{ color: 'rgba(255,255,255,0.2)' }}>➜</span>
-                  <span>Console initialized. Awaiting pipeline telemetry...</span>
+            <div className="log-entries">
+              {logs.length === 0 && (
+                <div className="log-entry" style={{ color: 'var(--fg-subtle)', fontStyle: 'italic' }}>
+                  — no telemetry events yet —
                 </div>
-              ) : (
-                logs.map((log) => {
-                  const lvl = log.level;
-                  return (
-                    <div key={log.id} className="log-line">
-                      <span className="log-time">[{log.timestamp.split('T')[1]?.slice(0, 8)}]</span>
-                      <span className={`log-comp ${lvl}`}>{log.component}</span>
-                      <span className="log-msg">{log.message}</span>
-                      {log.durationMs !== undefined && (
-                        <span className="log-dur">({log.durationMs}ms)</span>
-                      )}
-                    </div>
-                  );
-                })
               )}
+              {logs.map((log) => (
+                <div key={log.id} className="log-entry">
+                  <span className="log-ts">{formatTs(log.timestamp)}</span>
+                  <span className={`log-comp ${log.level}`}>{log.component}</span>
+                  <span className="log-msg">{log.message}</span>
+                </div>
+              ))}
+              <div ref={endRef} />
             </div>
           </div>
         )}

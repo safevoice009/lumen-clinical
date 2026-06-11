@@ -1,82 +1,94 @@
 import React from 'react';
 import { SimulationMessage } from '../types/clinical';
-import { Stethoscope, User, Brain } from 'lucide-react';
+import { Brain, User } from 'lucide-react';
 
 interface AgentChatProps {
   messages: SimulationMessage[];
 }
 
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
 export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
+  const endRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   return (
-    <div className="agent-chat panel-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '460px' }}>
-      {/* Header */}
+    <div className="panel">
       <div className="panel-header">
-        <div>
-          <span className="panel-label">Autonomous Interaction</span>
+        <div className="panel-title-group">
+          <span className="panel-label">Step 2 · Autonomous Interaction</span>
           <span className="panel-title">Agentic Dialogue</span>
         </div>
-        <div className="live-badge">
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-safe)', display: 'inline-block', animation: 'pulse-glow 1.5s ease infinite', boxShadow: '0 0 6px var(--color-safe)' }} />
-          Live Sim
-        </div>
+        <span className="panel-badge panel-badge-live">
+          <span className="dot" /> Live Sim
+        </span>
       </div>
 
-      {/* Messages */}
-      <div className="chat-messages">
+      <div className="panel-body">
         {messages.length === 0 ? (
-          <div className="chat-empty">
-            <div className="chat-empty-icon">🩺</div>
-            <p className="chat-empty-text">Simulation not started.<br />Select a patient and click Step.</p>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <Brain size={20} />
+            </div>
+            <p className="empty-title">Simulation not started</p>
+            <p className="empty-sub">Click "Step →" or "Auto Play"<br />to begin the clinical dialogue</p>
           </div>
         ) : (
-          messages.map((msg, index) => {
-            const isDoc = msg.sender === 'doctor';
-            return (
-              <div
-                key={msg.id}
-                className={`chat-msg ${isDoc ? 'chat-msg-doctor' : 'chat-msg-patient'}`}
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                {/* Avatar */}
-                <div className={`chat-avatar ${isDoc ? 'chat-avatar-doctor' : 'chat-avatar-patient'}`}>
-                  {isDoc
-                    ? <Stethoscope size={14} style={{ color: 'var(--brand-400)' }} />
-                    : <User size={14} style={{ color: 'var(--text-muted)' }} />
-                  }
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="chat-msg-meta">
-                    <span className="chat-msg-name">{msg.senderName}</span>
-                    <span className="chat-msg-time">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+          <div className="chat-messages">
+            {messages.map((msg) => {
+              const isDoctor = msg.sender === 'doctor';
+              return (
+                <div
+                  key={msg.id}
+                  className={`chat-msg ${!isDoctor ? 'chat-msg-reverse' : ''}`}
+                >
+                  {/* Avatar */}
+                  <div className={`chat-avatar ${isDoctor ? 'avatar-doctor' : 'avatar-patient'}`}>
+                    {isDoctor ? <Brain size={13} /> : <User size={13} />}
                   </div>
-                  <p className="chat-msg-text">{msg.message}</p>
 
-                  {/* Thought Chain */}
-                  {msg.thoughtChain && (
-                    <div className="chat-thought">
-                      <span className="chat-thought-label">
-                        <Brain size={8} style={{ display: 'inline', marginRight: 4 }} />
-                        Agent Reasoning
+                  {/* Bubble */}
+                  <div className={`chat-bubble ${isDoctor ? 'bubble-doctor' : 'bubble-patient'}`}>
+                    <div className="bubble-meta">
+                      <span className="bubble-name">
+                        {isDoctor ? 'Clinical AI Doctor' : msg.senderName}
                       </span>
-                      {msg.thoughtChain}
+                      <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                     </div>
-                  )}
+                    <p className="bubble-text">{msg.message}</p>
+
+                    {msg.thoughtChain && (
+                      <div className="reasoning-block">
+                        <span className="reasoning-label">🧠 AI Reasoning</span>
+                        <span className="reasoning-text">{msg.thoughtChain}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+            <div ref={endRef} />
+          </div>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="panel-footer" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand-500)', display: 'inline-block', animation: 'pulse-glow 2s ease infinite' }} />
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
-          Transcript verified in runtime audit log
-        </span>
-      </div>
+      {messages.length > 0 && (
+        <div className="panel-footer">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--fg-subtle)', textTransform: 'uppercase', letterSpacing: '0.10em', fontWeight: 700 }}>
+              {messages.length} message{messages.length !== 1 ? 's' : ''}
+            </span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--fg-subtle)', textTransform: 'uppercase', letterSpacing: '0.10em', fontWeight: 700 }}>
+              {messages.filter(m => m.sender === 'doctor').length} Dr · {messages.filter(m => m.sender === 'patient').length} Pt
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
