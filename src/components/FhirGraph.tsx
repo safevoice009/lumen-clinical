@@ -29,7 +29,7 @@ export const FhirGraph: React.FC<FhirGraphProps> = ({ bundle, toolCalls, patient
   const W = 480, H = 280;
 
   return (
-    <div className="panel fhir-panel">
+    <div className="panel fhir-panel panel-audit">
       <div className="panel-header">
         <div className="panel-title-group">
           <span className="panel-label">Step 5 · Interoperability Bridge</span>

@@ -235,45 +235,48 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
             </div>
           </div>
 
-          {/* 3-Column Grid */}
+          {/* 2-Column Grid Dashboard */}
           <div className="workspace-grid">
-            {/* Col 1: Agent Dialogue */}
+            {/* Left Column: Agent Dialogue */}
             <AgentChat messages={messages} />
 
-            {/* Col 2: Lab Tools */}
-            <LabViewer toolCalls={toolCalls} onExecuteTool={handleExecuteTool} />
+            {/* Right Column: Tools & Safety Stack */}
+            <div className="workspace-right-col" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Lab Tools */}
+              <LabViewer toolCalls={toolCalls} onExecuteTool={handleExecuteTool} />
 
-            {/* Col 3: Safety + FHIR */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="right-panel-tabs">
-                <button
-                  className={`rpanel-tab ${rightTab === 'audit' ? 'active' : ''}`}
-                  onClick={() => setRightTab('audit')}
-                >
-                  Safety Audit
-                </button>
-                <button
-                  className={`rpanel-tab ${rightTab === 'fhir' ? 'active' : ''}`}
-                  onClick={() => setRightTab('fhir')}
-                >
-                  FHIR R4
-                </button>
+              {/* Safety & FHIR R4 Tabbed Area */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="right-panel-tabs">
+                  <button
+                    className={`rpanel-tab ${rightTab === 'audit' ? 'active' : ''}`}
+                    onClick={() => setRightTab('audit')}
+                  >
+                    Safety Audit
+                  </button>
+                  <button
+                    className={`rpanel-tab ${rightTab === 'fhir' ? 'active' : ''}`}
+                    onClick={() => setRightTab('fhir')}
+                  >
+                    FHIR R4
+                  </button>
+                </div>
+
+                {rightTab === 'audit' ? (
+                  <PriorAuthAuditor
+                    guidelines={safetyChecklist}
+                    onGenerateReport={handleGenerateReport}
+                    simulationStep={stepIndex}
+                    totalSteps={totalSteps}
+                  />
+                ) : (
+                  <FhirGraph
+                    bundle={fhirBundle}
+                    toolCalls={toolCalls}
+                    patientName={selectedPatient.name}
+                  />
+                )}
               </div>
-
-              {rightTab === 'audit' ? (
-                <PriorAuthAuditor
-                  guidelines={safetyChecklist}
-                  onGenerateReport={handleGenerateReport}
-                  simulationStep={stepIndex}
-                  totalSteps={totalSteps}
-                />
-              ) : (
-                <FhirGraph
-                  bundle={fhirBundle}
-                  toolCalls={toolCalls}
-                  patientName={selectedPatient.name}
-                />
-              )}
             </div>
           </div>
         </>

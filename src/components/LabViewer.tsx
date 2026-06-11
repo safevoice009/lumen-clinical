@@ -12,7 +12,7 @@ export const LabViewer: React.FC<LabViewerProps> = ({ toolCalls, onExecuteTool }
   const completed = toolCalls.filter(t => t.status === 'completed').length;
 
   return (
-    <div className="panel">
+    <div className="panel panel-labs">
       <div className="panel-header">
         <div className="panel-title-group">
           <span className="panel-label">Step 3 · EHR Diagnostics Gateway</span>

@@ -8,7 +8,7 @@ import {
 } from '../utils/redTeamEngine';
 import { callGeminiDoctor, isGeminiConfigured, GeminiMessage } from '../utils/geminiClient';
 import { SimulationMessage, ClinicalToolCall, TelemetryLog } from '../types/clinical';
-import { Swords, Zap, RotateCcw, ChevronRight, AlertCircle } from 'lucide-react';
+import { Swords, RotateCcw, ChevronRight, AlertCircle } from 'lucide-react';
 
 interface RedTeamLabProps {
   onLog: (log: TelemetryLog) => void;
@@ -324,138 +324,164 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
 
       {/* ─── RUNNING / EVALUATING / VERDICT ─── */}
       {(phase === 'running' || phase === 'evaluating' || phase === 'verdict') && scenario && (
-        <div className="rt-active-panel">
-
-          {/* Scenario header */}
-          <div className="rt-scenario-header">
-            <div className="rt-scenario-meta">
-              <span className="rt-scenario-cat">{ATTACK_CATEGORIES[scenario.category].icon} {scenario.categoryLabel}</span>
-              <span className={`rt-difficulty-tag diff-${scenario.difficulty}`}>{scenario.difficulty.toUpperCase()}</span>
-              <span className="rt-turns-counter">Turn {turnCount} / 3</span>
+        <div className="rt-workspace-grid">
+          {/* Left Column: Adversarial Dialogue Console */}
+          <div className="rt-dialogue-column" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Scenario header */}
+            <div className="rt-scenario-header">
+              <div className="rt-scenario-meta">
+                <span className="rt-scenario-cat">{ATTACK_CATEGORIES[scenario.category].icon} {scenario.categoryLabel}</span>
+                <span className={`rt-difficulty-tag diff-${scenario.difficulty}`}>{scenario.difficulty.toUpperCase()}</span>
+                <span className="rt-turns-counter">Turn {turnCount} / 3</span>
+              </div>
+              <div className="rt-patient-info">
+                <strong>{scenario.patientContext.name}</strong>
+                <span>{scenario.patientContext.age}y · {scenario.patientContext.gender}</span>
+                <span className="rt-cc">"{scenario.patientContext.chiefComplaint}"</span>
+              </div>
             </div>
-            <div className="rt-patient-info">
-              <strong>{scenario.patientContext.name}</strong>
-              <span>{scenario.patientContext.age}y · {scenario.patientContext.gender}</span>
-              <span className="rt-cc">"{scenario.patientContext.chiefComplaint}"</span>
-            </div>
-          </div>
 
-          {/* Dialogue */}
-          <div className="rt-dialogue">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`rt-msg rt-msg-${msg.sender}`}>
-                <div className="rt-msg-sender">{msg.senderName}</div>
-                <div className="rt-msg-text">{msg.message}</div>
-                {msg.thoughtChain && (
-                  <div className="rt-msg-thought">
-                    <span className="rt-thought-label">🧠 AI Reasoning:</span>
-                    {msg.thoughtChain}
+            {/* Dialogue Panel */}
+            <div className="rt-dialogue-panel">
+              <div className="rt-dialogue">
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`rt-msg rt-msg-${msg.sender}`}>
+                    <div className="rt-msg-name">{msg.senderName}</div>
+                    <div className="rt-msg-text">{msg.message}</div>
+                    {msg.thoughtChain && (
+                      <div className="rt-reasoning">
+                        <span className="rt-reasoning-label">🧠 AI Reasoning:</span>
+                        {msg.thoughtChain}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {doctorThinking && (
+                  <div className="rt-msg rt-msg-doctor rt-thinking">
+                    <div className="rt-msg-name">Clinical AI Doctor (thinking...)</div>
+                    <div className="rt-typing-indicator">
+                      <span /><span /><span />
+                    </div>
                   </div>
                 )}
               </div>
-            ))}
-            {doctorThinking && (
-              <div className="rt-msg rt-msg-doctor rt-thinking">
-                <div className="rt-msg-sender">Clinical AI Doctor (thinking...)</div>
-                <div className="rt-typing-indicator">
-                  <span /><span /><span />
+            </div>
+
+            {/* Action buttons */}
+            {phase === 'running' && (
+              <div className="rt-action-row">
+                {patientTurn && turnCount > 0 && (
+                  <button className="rt-action-btn rt-btn-patient" onClick={handlePatientContinue} disabled={doctorThinking}>
+                    🗣️ Patient Responds
+                  </button>
+                )}
+                {!patientTurn && (
+                  <button className="rt-action-btn rt-btn-doctor" onClick={handleDoctorRespond} disabled={doctorThinking}>
+                    <Swords size={13} />
+                    Doctor AI Responds {turnCount > 0 && `(Turn ${turnCount + 1}/3)`}
+                  </button>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                  <div className="rt-progress-track">
+                    <div className="rt-progress-fill" style={{ width: `${(turnCount / 3) * 100}%` }} />
+                  </div>
+                  <p className="rt-progress-label">Safety evaluation triggers after 3 doctor turns</p>
                 </div>
+              </div>
+            )}
+
+            {/* Evaluating spinner */}
+            {phase === 'evaluating' && (
+              <div className="rt-spinner-container">
+                <div className="rt-spinner" />
+                <p className="rt-spinner-text">Safety Auditor running verdict analysis...</p>
+                <p className="rt-spinner-sub">Evaluating dialogue transcript against clinical safety criteria</p>
               </div>
             )}
           </div>
 
-          {/* Tool calls intercepted */}
-          {toolCalls.length > 0 && (
-            <div className="rt-tools">
+          {/* Right Column: Intercepted Tools & Verdict / Trap details */}
+          <div className="rt-audit-column" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Tool calls panel */}
+            <div className="rt-tools-panel">
               <div className="rt-tools-label">🔬 Tool Calls Intercepted</div>
-              {toolCalls.map(tc => (
-                <div key={tc.id} className="rt-tool-chip">
-                  <span className="rt-tool-name">{tc.toolName}</span>
-                  <span className="rt-tool-code">[{tc.vocab} {tc.code}]</span>
-                  <span className="rt-tool-param">{tc.parameter}</span>
+              {toolCalls.length === 0 ? (
+                <div className="rt-tools-empty">
+                  No tool calls intercepted yet
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Action buttons */}
-          {phase === 'running' && (
-            <div className="rt-actions">
-              {patientTurn && turnCount > 0 && (
-                <button className="rt-action-btn rt-patient-btn" onClick={handlePatientContinue} disabled={doctorThinking}>
-                  🗣️ Patient Responds
-                </button>
-              )}
-              {!patientTurn && (
-                <button className="rt-action-btn rt-doctor-btn" onClick={handleDoctorRespond} disabled={doctorThinking}>
-                  <Zap size={13} />
-                  Doctor AI Responds {turnCount > 0 && `(Turn ${turnCount + 1}/3)`}
-                </button>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-                <div className="rt-progress-bar">
-                  <div className="rt-progress-fill" style={{ width: `${(turnCount / 3) * 100}%` }} />
-                </div>
-                <p className="rt-progress-label">Safety evaluation triggers after 3 doctor turns</p>
-              </div>
-            </div>
-          )}
-
-          {/* Evaluating spinner */}
-          {phase === 'evaluating' && (
-            <div className="rt-evaluating">
-              <div className="rt-spinner" />
-              <p>Safety Auditor running verdict analysis...</p>
-              <p className="rt-loading-sub">Evaluating dialogue transcript against clinical safety criteria</p>
-            </div>
-          )}
-
-          {/* ── VERDICT ── */}
-          {phase === 'verdict' && verdict && (
-            <div className="rt-verdict-panel">
-
-              {/* Score card */}
-              <div className="rt-verdict-header" style={{ borderColor: verdictColor, background: verdictBg }}>
-                <div>
-                  <div className="rt-verdict-badge" style={{ color: verdictColor }}>
-                    {verdict.verdict === 'PASS' ? '✅' : verdict.verdict === 'PARTIAL' ? '⚠️' : '❌'} VERDICT: {verdict.verdict}
-                  </div>
-                  <p className="rt-verdict-reason" style={{ marginTop: 8 }}>{verdict.reason}</p>
-                  {verdict.criticalMoment && (
-                    <div className="rt-critical-moment" style={{ marginTop: 10 }}>
-                      <span className="rt-cm-label">Critical Moment:</span>
-                      <span className="rt-cm-text">"{verdict.criticalMoment}"</span>
+              ) : (
+                <div className="rt-tools-list">
+                  {toolCalls.map(tc => (
+                    <div key={tc.id} className="rt-tool-chip">
+                      <span className="rt-tool-chip-name">{tc.toolName}</span>
+                      <span className="rt-tool-chip-code">[{tc.vocab} {tc.code}]</span>
+                      <span className="rt-tool-chip-param">{tc.parameter}</span>
                     </div>
-                  )}
+                  ))}
                 </div>
-                <div className="rt-verdict-score" style={{ color: verdictColor }}>{verdict.score}<span style={{ fontSize: 16, opacity: 0.6 }}>/100</span></div>
-              </div>
-
-              {/* Trap reveal */}
-              <div className="rt-trap-reveal">
-                <div className="rt-trap-header">
-                  🎯 Hidden Trap Revealed
-                </div>
-                <div className="rt-trap-section">
-                  <div className="rt-trap-label">What Was Hidden From the AI</div>
-                  <div className="rt-trap-text">{scenario.hiddenTrap}</div>
-                </div>
-                <div className="rt-trap-section">
-                  <div className="rt-trap-label">Correct Safe Response</div>
-                  <div className="rt-trap-text safe">✓ {scenario.expectedSafeResponse}</div>
-                </div>
-                <div className="rt-trap-section danger">
-                  <div className="rt-trap-label">🚨 Patient Risk If AI Failed</div>
-                  <div className="rt-trap-text danger">{scenario.ifFailedRisk}</div>
-                </div>
-              </div>
-
-              <button className="rt-reset-btn" onClick={handleReset}>
-                <RotateCcw size={13} />
-                Run Another Attack
-              </button>
+              )}
             </div>
-          )}
+
+            {/* Verdict or Audit Monitor Status */}
+            <div className="rt-verdict-audit-panel">
+              {phase === 'verdict' && verdict ? (
+                <div className="rt-verdict">
+                  {/* Score card */}
+                  <div className="verdict-hero" style={{ borderColor: verdictColor, background: verdictBg }}>
+                    <div>
+                      <div className="verdict-badge" style={{ color: verdictColor }}>
+                        {verdict.verdict === 'PASS' ? '✅' : verdict.verdict === 'PARTIAL' ? '⚠️' : '❌'} VERDICT: {verdict.verdict}
+                      </div>
+                      <p className="verdict-reason">{verdict.reason}</p>
+                      {verdict.criticalMoment && (
+                        <div className="critical-moment">
+                          <span className="critical-moment-label">Critical Moment:</span>
+                          "{verdict.criticalMoment}"
+                        </div>
+                      )}
+                    </div>
+                    <div className="verdict-score" style={{ color: verdictColor }}>
+                      {verdict.score}<small>/100</small>
+                    </div>
+                  </div>
+
+                  {/* Trap reveal */}
+                  <div className="trap-reveal">
+                    <div className="trap-reveal-header">
+                      🎯 Hidden Trap Revealed
+                    </div>
+                    <div className="trap-section">
+                      <span className="trap-label">What Was Hidden From the AI</span>
+                      <p className="trap-text">{scenario.hiddenTrap}</p>
+                    </div>
+                    <div className="trap-section">
+                      <span className="trap-label">Correct Safe Response</span>
+                      <p className="trap-text safe">✓ {scenario.expectedSafeResponse}</p>
+                    </div>
+                    <div className="trap-section danger-zone">
+                      <span className="trap-label">🚨 Patient Risk If AI Failed</span>
+                      <p className="trap-text bad">{scenario.ifFailedRisk}</p>
+                    </div>
+                  </div>
+
+                  <button className="rt-reset-btn" onClick={handleReset} style={{ alignSelf: 'flex-start' }}>
+                    <RotateCcw size={13} />
+                    Run Another Attack
+                  </button>
+                </div>
+              ) : (
+                <div className="rt-trap-pending-panel">
+                  <div className="rt-trap-pending-title">🛡️ Safety Auditor Active</div>
+                  <p className="rt-trap-pending-text">
+                    Adversarial red-team scenario is active. The safety guardrails are monitoring the conversation transcript in real-time.
+                  </p>
+                  <div className="rt-trap-pending-status">
+                    Awaiting doctor turns ({turnCount}/3)
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

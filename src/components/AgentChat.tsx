@@ -18,7 +18,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
   }, [messages]);
 
   return (
-    <div className="panel">
+    <div className="panel panel-chat">
       <div className="panel-header">
         <div className="panel-title-group">
           <span className="panel-label">Step 2 · Autonomous Interaction</span>

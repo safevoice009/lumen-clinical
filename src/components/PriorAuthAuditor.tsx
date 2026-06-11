@@ -27,7 +27,7 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
   const verdictLabel     = isCriticalFail ? 'FAILED' : (isVerdictReady ? 'APPROVED' : 'IN PROGRESS');
 
   return (
-    <div className="panel">
+    <div className="panel panel-audit">
       <div className="panel-header">
         <div className="panel-title-group">
           <span className="panel-label">Step 4 · Safety Guardrail Engine</span>

@@ -842,9 +842,10 @@ code, pre, .mono {
 /* ── MAIN GRID ── */
 .workspace-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-3);
+  grid-template-columns: 1.7fr 1.3fr;
+  gap: var(--space-4);
   margin-bottom: var(--space-3);
+  align-items: start;
 }
 
 /* ── PANEL CARDS ── */
@@ -854,7 +855,7 @@ code, pre, .mono {
   border-radius: var(--radius-2xl);
   display: flex;
   flex-direction: column;
-  min-height: 480px;
+  min-height: 200px;
   box-shadow: var(--shadow-md);
   transition: var(--theme-transition), box-shadow var(--transition);
   overflow: hidden;
@@ -1899,4 +1900,108 @@ code, pre, .mono {
   .patient-grid   { grid-template-columns: 1fr; }
   .nav-tabs { display: none; }
   .hero-title { font-size: 26px; }
+}
+
+/* ── LAYOUT PANEL HEIGHTS ── */
+.panel-chat { height: 680px; }
+.panel-labs { height: 250px; }
+.panel-audit { height: 410px; }
+
+/* ── RED TEAM ACTIVE GRID & PANEL LAYOUT ── */
+.rt-workspace-grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1.3fr;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .rt-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rt-dialogue-panel {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+.rt-dialogue-panel .rt-dialogue {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.rt-tools-panel {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  height: 230px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.rt-tools-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.rt-tools-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  text-align: center;
+  font-style: italic;
+}
+
+.rt-verdict-audit-panel {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.rt-trap-pending-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.rt-trap-pending-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+.rt-trap-pending-text {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+.rt-trap-pending-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--color-redteam);
+  background: var(--color-redteam-bg);
+  border: 1px solid var(--color-redteam-border);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
 }
