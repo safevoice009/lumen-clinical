@@ -1,19 +1,39 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full antialiased">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lumen | Clinical Consensus & Prior Auth Interceptor</title>
-    <meta name="description" content="Autonomous EHR clinical reasoning engine. Run multi-agent consensus audits, map SNOMED/RxNorm medical codes, compile HL7 FHIR bundles, and evaluate insurance compliance." />
-    
-    <!-- Google Fonts Preloads -->
+
+    <!-- SEO & Hackathon Judges -->
+    <title>Lumen — Clinical LLM Safety Evaluator & Red-Team Sandbox</title>
+    <meta name="description" content="Open-source adversarial red-team sandbox for clinical AI. Test medical LLMs against dangerous edge-cases before deployment. Built by a clinician. FHIR R4 · Gemini 2.0 · LOINC · RxNorm." />
+    <meta name="keywords" content="clinical AI safety, LLM red-teaming, medical AI evaluation, FHIR R4, healthcare hackathon, Gemini, pre-deployment testing" />
+    <meta name="author" content="Dr. Sucharith Reddy" />
+
+    <!-- Open Graph (for LinkedIn / Twitter sharing) -->
+    <meta property="og:title" content="Lumen — Clinical LLM Safety Evaluator" />
+    <meta property="og:description" content="Adversarial red-team sandbox for medical AI. Built by a clinician. Test LLMs against dangerous clinical traps before they reach patients." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://lumen-clinical.vercel.app" />
+
+    <!-- Favicon: stethoscope -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>" />
+
+    <!-- Fonts: Inter + JetBrains Mono — loads online, graceful fallback offline -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
   </head>
-  <body class="min-h-full bg-slatebg-50 text-slatebg-900 font-sans selection:bg-clinical-200 selection:text-clinical-900 overflow-x-hidden">
-    <div id="root" class="min-h-screen flex flex-col"></div>
+  <body>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
