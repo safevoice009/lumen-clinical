@@ -1,6 +1,6 @@
 import React from 'react';
 import { SimulationMessage } from '../types/clinical';
-import { Stethoscope, User, HelpCircle, Eye } from 'lucide-react';
+import { Stethoscope, User, Brain } from 'lucide-react';
 
 interface AgentChatProps {
   messages: SimulationMessage[];
@@ -8,25 +8,25 @@ interface AgentChatProps {
 
 export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
   return (
-    <div className="flex flex-col h-full bg-white border border-[#eae6df] rounded-[32px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="agent-chat panel-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '460px' }}>
       {/* Header */}
-      <div className="px-6 py-5 border-b border-[#eae6df] flex items-center justify-between bg-slatebg-50/50">
+      <div className="panel-header">
         <div>
-          <span className="text-[9px] font-mono uppercase tracking-widest text-slatebg-900/60 font-bold block">Autonomous Interaction</span>
-          <h3 className="font-serif text-lg font-extrabold text-slatebg-900">Agentic Intake Dialogue</h3>
+          <span className="panel-label">Autonomous Interaction</span>
+          <span className="panel-title">Agentic Dialogue</span>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-150 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-[9px] font-mono uppercase tracking-wider text-emerald-700 font-extrabold">Live Sim</span>
+        <div className="live-badge">
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-safe)', display: 'inline-block', animation: 'pulse-glow 1.5s ease infinite', boxShadow: '0 0 6px var(--color-safe)' }} />
+          Live Sim
         </div>
       </div>
 
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+      {/* Messages */}
+      <div className="chat-messages">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-stone-400 space-y-2">
-            <HelpCircle className="w-8 h-8 animate-pulse text-stone-300" />
-            <p className="text-xs font-mono">Simulation not started. Click Play/Step to launch diagnostic agents dialogue.</p>
+          <div className="chat-empty">
+            <div className="chat-empty-icon">🩺</div>
+            <p className="chat-empty-text">Simulation not started.<br />Select a patient and click Step.</p>
           </div>
         ) : (
           messages.map((msg, index) => {
@@ -34,40 +34,33 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
             return (
               <div
                 key={msg.id}
-                className={`flex gap-4 p-5 rounded-3xl border animate-fade-in ${
-                  isDoc
-                    ? 'bg-clinical-50 border-clinical-100 text-clinical-900 ml-4'
-                    : 'bg-stone-50 border-[#eae6df] text-stone-900 mr-4'
-                }`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`chat-msg ${isDoc ? 'chat-msg-doctor' : 'chat-msg-patient'}`}
+                style={{ animationDelay: `${index * 60}ms` }}
               >
                 {/* Avatar */}
-                <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm border border-[#eae6df] shrink-0">
-                  {isDoc ? (
-                    <Stethoscope className="w-4 h-4 text-clinical-600" />
-                  ) : (
-                    <User className="w-4 h-4 text-stone-500" />
-                  )}
+                <div className={`chat-avatar ${isDoc ? 'chat-avatar-doctor' : 'chat-avatar-patient'}`}>
+                  {isDoc
+                    ? <Stethoscope size={14} style={{ color: 'var(--brand-400)' }} />
+                    : <User size={14} style={{ color: 'var(--text-muted)' }} />
+                  }
                 </div>
 
-                {/* Message Content */}
-                <div className="space-y-2 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-serif text-xs font-extrabold text-slatebg-900">{msg.senderName}</span>
-                    <span className="text-[9px] font-mono text-stone-450">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="chat-msg-meta">
+                    <span className="chat-msg-name">{msg.senderName}</span>
+                    <span className="chat-msg-time">{new Date(msg.timestamp).toLocaleTimeString()}</span>
                   </div>
-                  <p className="text-xs text-stone-750 leading-relaxed font-sans select-text">{msg.message}</p>
+                  <p className="chat-msg-text">{msg.message}</p>
 
-                  {/* Thought Chain Dropdown */}
+                  {/* Thought Chain */}
                   {msg.thoughtChain && (
-                    <div className="border-t border-black/5 pt-2 mt-2">
-                      <div className="flex items-center gap-1.5 text-[8px] font-mono uppercase tracking-wider text-stone-400 font-extrabold mb-1">
-                        <Eye className="w-3.5 h-3.5 text-stone-400" />
-                        <span>Agent Reasoning Thought Logs</span>
-                      </div>
-                      <p className="text-[10px] font-mono text-stone-550 leading-tight italic bg-white/40 p-2 rounded-lg">
-                        {msg.thoughtChain}
-                      </p>
+                    <div className="chat-thought">
+                      <span className="chat-thought-label">
+                        <Brain size={8} style={{ display: 'inline', marginRight: 4 }} />
+                        Agent Reasoning
+                      </span>
+                      {msg.thoughtChain}
                     </div>
                   )}
                 </div>
@@ -77,11 +70,11 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
         )}
       </div>
 
-      {/* Footer / Context Notice */}
-      <div className="bg-[#fcfbf9] border-t border-[#eae6df] px-6 py-4 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-clinical-500 animate-pulse"></div>
-        <span className="text-[9px] font-mono text-stone-500 uppercase tracking-wider font-semibold">
-          Audit status: Agentic simulation logs verified in runtime database.
+      {/* Footer */}
+      <div className="panel-footer" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand-500)', display: 'inline-block', animation: 'pulse-glow 2s ease infinite' }} />
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
+          Transcript verified in runtime audit log
         </span>
       </div>
     </div>

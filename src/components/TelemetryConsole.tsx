@@ -9,80 +9,70 @@ interface TelemetryConsoleProps {
 
 export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClear }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Calculate mock token stats
   const totalTokens = logs.length * 342;
   const mockCost = (totalTokens * 0.000015).toFixed(4);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
-      <div className={`w-full max-w-6xl bg-slatebg-900 border border-stone-800 rounded-t-[32px] overflow-hidden shadow-[0_-15px_40px_rgba(0,0,0,0.18)] transition-all duration-500 ease-in-out pointer-events-auto ${
-        isOpen ? 'h-80' : 'h-16'
-      }`}>
-        {/* Toggle Drawer Header */}
+    <div className="telemetry-shell">
+      <div
+        className="telemetry-drawer"
+        style={{ height: isOpen ? 320 : 48 }}
+      >
+        {/* Header Toggle */}
         <button
+          className="telemetry-header"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-8 py-5 hover:bg-stone-800/40 transition-colors cursor-pointer text-left focus:outline-none"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5 shrink-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+            <div className="telemetry-dots">
+              <span className="dot-r" />
+              <span className="dot-y" />
+              <span className="dot-g" />
             </div>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-stone-200 to-emerald-400 font-extrabold flex items-center gap-2 pl-4 border-l border-stone-850 tracking-tight font-mono text-xs uppercase">
-              <Terminal className="w-4 h-4 text-stone-400" />
-              Developer Telemetry Logs
-            </span>
+            <div className="telemetry-title">
+              <Terminal size={13} style={{ color: 'rgba(255,255,255,0.4)' }} />
+              Developer Telemetry · {logs.length} events
+            </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            {isOpen ? <ChevronDown className="w-5 h-5 text-stone-400" /> : <ChevronUp className="w-5 h-5 text-stone-400" />}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.3)' }}>
+            {isOpen
+              ? <ChevronDown size={16} />
+              : <ChevronUp size={16} />
+            }
           </div>
         </button>
 
-        {/* Logs Console Box */}
+        {/* Body */}
         {isOpen && (
-          <div className="flex flex-col h-[calc(100%-64px)] font-mono text-[10px] text-stone-300">
-            {/* Top Toolbar */}
-            <div className="flex justify-between items-center px-8 py-2.5 bg-black/40 border-b border-stone-850">
-              <div className="flex items-center gap-4 text-stone-400">
-                <span>Total Logs: <strong className="text-stone-200">{logs.length}</strong></span>
-                <span>Calculated Volume: <strong className="text-stone-200">{totalTokens} Tokens</strong></span>
-                <span>Audit Overhead: <strong className="text-amber-400">${mockCost}</strong></span>
+          <div className="telemetry-body">
+            <div className="telemetry-toolbar">
+              <div className="telemetry-stats">
+                <span>Logs: <strong>{logs.length}</strong></span>
+                <span>Volume: <strong>{totalTokens} tokens</strong></span>
+                <span>Overhead: <span className="cost">${mockCost}</span></span>
               </div>
-              <button
-                onClick={onClear}
-                className="flex items-center gap-1 hover:text-rose-400 text-stone-400 transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Clear Trace
+              <button className="telemetry-clear" onClick={onClear}>
+                <Trash2 size={12} />
+                Clear
               </button>
             </div>
 
-            {/* Logs Output list */}
-            <div className="flex-1 overflow-y-auto px-8 py-4 space-y-2 select-text bg-[#0c0a09]/95">
+            <div className="telemetry-logs">
               {logs.length === 0 ? (
-                <div className="flex items-center gap-2 text-stone-500">
-                  <span className="text-stone-600">➜</span>
-                  <span>Console initialized. Awaiting pipeline telemetry logs...</span>
+                <div className="log-empty">
+                  <span style={{ color: 'rgba(255,255,255,0.2)' }}>➜</span>
+                  <span>Console initialized. Awaiting pipeline telemetry...</span>
                 </div>
               ) : (
                 logs.map((log) => {
-                  let colorClass = "text-sky-400";
-                  if (log.level === "success") colorClass = "text-emerald-400";
-                  if (log.level === "warn") colorClass = "text-amber-400";
-                  if (log.level === "error") colorClass = "text-rose-400";
-
+                  const lvl = log.level;
                   return (
-                    <div key={log.id} className="flex items-start gap-3 hover:bg-stone-800/20 py-0.5 rounded leading-relaxed">
-                      <span className="text-stone-550 shrink-0">[{log.timestamp.split("T")[1].slice(0, 8)}]</span>
-                      <span className={`font-bold shrink-0 w-24 uppercase ${colorClass}`}>
-                        {log.component}
-                      </span>
-                      <span className="text-stone-200 flex-1">{log.message}</span>
+                    <div key={log.id} className="log-line">
+                      <span className="log-time">[{log.timestamp.split('T')[1]?.slice(0, 8)}]</span>
+                      <span className={`log-comp ${lvl}`}>{log.component}</span>
+                      <span className="log-msg">{log.message}</span>
                       {log.durationMs !== undefined && (
-                        <span className="text-stone-500 shrink-0 ml-2">({log.durationMs}ms)</span>
+                        <span className="log-dur">({log.durationMs}ms)</span>
                       )}
                     </div>
                   );

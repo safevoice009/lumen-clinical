@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FHIRBundle, ClinicalToolCall } from '../types/clinical';
-import { Database, Network, Code2, ClipboardCheck } from 'lucide-react';
+import { Network, Code2, ClipboardCheck, CheckCheck } from 'lucide-react';
 
 interface FhirGraphProps {
   bundle: FHIRBundle | null;
@@ -19,146 +19,119 @@ export const FhirGraph: React.FC<FhirGraphProps> = ({ bundle, toolCalls, patient
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Dimensions of SVG canvas
   const width = 500;
-  const height = 320;
-  const centerNode = { x: width / 2, y: height / 2 + 10, label: patientName };
-
-  // Filter completed tools to represent as nodes in graph
+  const height = 300;
+  const centerNode = { x: width / 2, y: height / 2, label: patientName };
   const completedTools = toolCalls.filter(t => t.status === 'completed');
 
+  const nodeColors: Record<string, { stroke: string; fill: string; text: string }> = {
+    'OrderLabTest':      { stroke: '#06b6d4', fill: 'rgba(6,182,212,0.12)',    text: '#22d3ee' },
+    'OrderImaging':      { stroke: '#f59e0b', fill: 'rgba(245,158,11,0.12)',   text: '#fbbf24' },
+    'PrescribeMedication':{ stroke: '#818cf8', fill: 'rgba(129,140,248,0.12)', text: '#a5b4fc' },
+  };
+
   return (
-    <div className="flex flex-col h-full bg-white border border-[#eae6df] rounded-[32px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="fhir-graph-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '460px' }}>
       {/* Header */}
-      <div className="px-6 py-5 border-b border-[#eae6df] flex items-center justify-between bg-slatebg-50/50">
+      <div className="panel-header">
         <div>
-          <span className="text-[9px] font-mono uppercase tracking-widest text-slatebg-900/60 font-bold block">Interoperability Bridge</span>
-          <h3 className="font-serif text-lg font-extrabold text-slatebg-900">HL7 FHIR Schema Output</h3>
+          <span className="panel-label">Interoperability Bridge</span>
+          <span className="panel-title">HL7 FHIR R4 Output</span>
         </div>
-        
-        {/* Toggle View Mode */}
-        <div className="flex bg-[#f4f2eb] border border-[#eae6df] p-1 rounded-xl">
-          <button
-            onClick={() => setViewMode('graph')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-lg transition-all ${
-              viewMode === 'graph'
-                ? 'bg-white text-clinical-600 shadow-sm border border-[#eae6df]'
-                : 'text-stone-500 hover:text-slatebg-900'
-            }`}
-          >
-            <Network className="w-3.5 h-3.5" />
-            Graph Map
-          </button>
-          <button
-            onClick={() => setViewMode('json')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-lg transition-all ${
-              viewMode === 'json'
-                ? 'bg-white text-clinical-600 shadow-sm border border-[#eae6df]'
-                : 'text-stone-500 hover:text-slatebg-900'
-            }`}
-          >
-            <Code2 className="w-3.5 h-3.5" />
-            FHIR JSON
-          </button>
+        {/* View Toggle */}
+        <div style={{ display: 'flex', gap: 4, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 4 }}>
+          {(['graph', 'json'] as const).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 8,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10, fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                border: viewMode === mode ? '1px solid var(--border-brand)' : '1px solid transparent',
+                background: viewMode === mode ? 'rgba(6,182,212,0.10)' : 'transparent',
+                color: viewMode === mode ? 'var(--brand-400)' : 'var(--text-muted)',
+                cursor: 'pointer', transition: 'var(--transition)',
+              }}
+            >
+              {mode === 'graph' ? <Network size={12} /> : <Code2 size={12} />}
+              {mode === 'graph' ? 'Graph' : 'FHIR JSON'}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto relative bg-[#faf9f6]">
+      <div style={{ flex: 1, overflow: 'auto', background: 'rgba(0,0,0,0.15)', position: 'relative' }}>
         {viewMode === 'graph' ? (
-          <div className="flex flex-col items-center justify-center p-6 h-full min-h-[300px]">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, height: '100%', minHeight: 280 }}>
             {completedTools.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center text-stone-400 space-y-2">
-                <Database className="w-8 h-8 animate-pulse text-stone-300" />
-                <p className="text-xs font-mono">No compiled FHIR resources yet. Execute lab tools to populate graph.</p>
+              <div className="chat-empty">
+                <div className="chat-empty-icon">🔗</div>
+                <p className="chat-empty-text">No FHIR resources compiled yet.<br />Execute lab tools to populate graph.</p>
               </div>
             ) : (
-              <div className="w-full relative select-none animate-fade-in">
-                <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
-                  {/* Lines connecting Patient to lab nodes */}
+              <div style={{ width: '100%', position: 'relative' }} className="animate-fade-in">
+                <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto' }}>
+                  <defs>
+                    <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgba(6,182,212,0.3)" />
+                      <stop offset="100%" stopColor="rgba(6,182,212,0.05)" />
+                    </radialGradient>
+                  </defs>
+
+                  {/* Connection lines */}
                   {completedTools.map((tool, i) => {
                     const angle = (i * 2 * Math.PI) / completedTools.length - Math.PI / 2;
-                    const r = 110;
+                    const r = 115;
                     const nx = centerNode.x + r * Math.cos(angle);
                     const ny = centerNode.y + r * Math.sin(angle);
-
-                    const strokeColor =
-                      tool.toolName === 'OrderLabTest' ? '#14b8a6' : // Teal
-                      tool.toolName === 'OrderImaging' ? '#f59e0b' : // Amber
-                      '#6366f1'; // Indigo (Prescriptions)
-
+                    const c = nodeColors[tool.toolName] || nodeColors['OrderLabTest'];
                     return (
-                      <g key={tool.id}>
+                      <g key={`line-${tool.id}`}>
                         <line
-                          x1={centerNode.x}
-                          y1={centerNode.y}
-                          x2={nx}
-                          y2={ny}
-                          stroke={strokeColor}
-                          strokeWidth="1.5"
-                          strokeDasharray="4,4"
-                          className="opacity-70"
+                          x1={centerNode.x} y1={centerNode.y}
+                          x2={nx} y2={ny}
+                          stroke={c.stroke} strokeWidth="1"
+                          strokeDasharray="4,4" opacity={0.5}
                         />
-                        <circle cx={nx} cy={ny} r="4" fill={strokeColor} />
+                        <circle cx={nx} cy={ny} r={5} fill={c.stroke} opacity={0.9} />
                       </g>
                     );
                   })}
 
-                  {/* Patient Node */}
-                  <g className="cursor-pointer group">
-                    <circle
-                      cx={centerNode.x}
-                      cy={centerNode.y}
-                      r="32"
-                      className="fill-clinical-50 stroke-clinical-500 stroke-2 group-hover:fill-clinical-100 transition-colors"
-                    />
-                    <text
-                      x={centerNode.x}
-                      y={centerNode.y + 3}
-                      textAnchor="middle"
-                      className="font-serif text-[10px] font-extrabold fill-clinical-900"
-                    >
-                      Patient
-                    </text>
-                    <text
-                      x={centerNode.x}
-                      y={centerNode.y + 44}
-                      textAnchor="middle"
-                      className="font-mono text-[9px] font-bold fill-stone-500 uppercase tracking-widest"
-                    >
-                      {centerNode.label}
-                    </text>
-                  </g>
+                  {/* Center patient node */}
+                  <circle cx={centerNode.x} cy={centerNode.y} r={34} fill="url(#centerGrad)" stroke="rgba(6,182,212,0.4)" strokeWidth="1.5" />
+                  <text x={centerNode.x} y={centerNode.y + 4} textAnchor="middle" style={{ fill: 'var(--brand-400)', fontSize: 10, fontWeight: 800, fontFamily: 'Inter, sans-serif' }}>
+                    Patient
+                  </text>
+                  <text x={centerNode.x} y={centerNode.y + 46} textAnchor="middle" style={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    {centerNode.label.split(' ')[0]}
+                  </text>
 
-                  {/* Leaf Nodes */}
+                  {/* Tool nodes */}
                   {completedTools.map((tool, i) => {
                     const angle = (i * 2 * Math.PI) / completedTools.length - Math.PI / 2;
-                    const r = 110;
+                    const r = 115;
                     const nx = centerNode.x + r * Math.cos(angle);
                     const ny = centerNode.y + r * Math.sin(angle);
-
-                    const colors =
-                      tool.toolName === 'OrderLabTest'
-                        ? { fill: 'bg-teal-50', border: 'border-teal-400', text: 'text-teal-700' }
-                        : tool.toolName === 'OrderImaging'
-                        ? { fill: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-700' }
-                        : { fill: 'bg-indigo-50', border: 'border-indigo-400', text: 'text-indigo-700' };
-
+                    const c = nodeColors[tool.toolName] || nodeColors['OrderLabTest'];
                     return (
-                      <g key={tool.id} className="cursor-pointer">
-                        <foreignObject
-                          x={nx - 55}
-                          y={ny - 22}
-                          width="110"
-                          height="44"
-                          className="overflow-visible"
-                        >
-                          <div className={`flex flex-col items-center justify-center p-1.5 rounded-xl border text-center select-none shadow-sm ${colors.fill} ${colors.border}`}>
-                            <span className="text-[6px] font-mono uppercase tracking-wider opacity-60 font-bold">
+                      <g key={`node-${tool.id}`}>
+                        <foreignObject x={nx - 56} y={ny - 24} width={112} height={48} style={{ overflow: 'visible' }}>
+                          <div style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            justifyContent: 'center', padding: '5px 8px',
+                            background: c.fill, border: `1px solid ${c.stroke}`,
+                            borderRadius: 10, textAlign: 'center',
+                          }}>
+                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: c.text, fontWeight: 800, opacity: 0.8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               {tool.vocab}:{tool.code}
                             </span>
-                            <span className={`text-[8px] font-sans font-bold leading-tight truncate w-full ${colors.text}`}>
-                              {tool.parameter}
+                            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, marginTop: 2 }}>
+                              {tool.parameter.length > 16 ? tool.parameter.slice(0, 16) + '…' : tool.parameter}
                             </span>
                           </div>
                         </foreignObject>
@@ -167,38 +140,53 @@ export const FhirGraph: React.FC<FhirGraphProps> = ({ bundle, toolCalls, patient
                   })}
                 </svg>
 
-                {/* Graph Legend */}
-                <div className="flex justify-center gap-4 mt-2 border-t border-[#eae6df] pt-3.5 text-[9px] font-mono text-stone-500 font-bold uppercase tracking-wider">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-tealmed-500 border border-tealmed-400"></span>
-                    <span>Observation (Labs)</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-400"></span>
-                    <span>Procedure (Imaging)</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 border border-indigo-400"></span>
-                    <span>Medication Order</span>
-                  </div>
+                {/* Legend */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
+                  {[
+                    { color: '#06b6d4', label: 'Lab (LOINC)' },
+                    { color: '#f59e0b', label: 'Imaging (CPT)' },
+                    { color: '#818cf8', label: 'Medication (RxNorm)' },
+                  ].map(item => (
+                    <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, display: 'inline-block', boxShadow: `0 0 6px ${item.color}` }} />
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--text-muted)', fontWeight: 700 }}>{item.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="relative h-full flex flex-col">
+          <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <button
               onClick={handleCopy}
               disabled={!bundle}
-              className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 py-1.5 px-3 rounded-xl font-mono text-[9px] font-bold tracking-wider uppercase transition-all hover:scale-[1.03] active:scale-[0.98] ${
-                bundle ? 'bg-stone-900 hover:bg-stone-855 text-white' : 'bg-stone-400 text-stone-250 cursor-not-allowed'
-              }`}
+              style={{
+                position: 'absolute', top: 14, right: 14, zIndex: 20,
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 8,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10, fontWeight: 700,
+                border: '1px solid var(--border-default)',
+                background: bundle ? 'var(--bg-card)' : 'transparent',
+                color: bundle ? 'var(--text-secondary)' : 'var(--text-muted)',
+                cursor: bundle ? 'pointer' : 'not-allowed',
+                transition: 'var(--transition)',
+              }}
             >
-              <ClipboardCheck className="w-3.5 h-3.5" />
-              {copied ? 'Copied Bundle' : 'Copy FHIR JSON'}
+              {copied ? <CheckCheck size={12} style={{ color: 'var(--color-safe)' }} /> : <ClipboardCheck size={12} />}
+              {copied ? 'Copied!' : 'Copy JSON'}
             </button>
-            <pre className="flex-1 p-6 text-[10px] font-mono leading-relaxed text-[#3a3a30] select-text bg-[#fcfbf9] overflow-auto">
-              {bundle ? JSON.stringify(bundle, null, 2) : '// Complete simulation steps to view compiled transaction bundle.'}
+            <pre style={{
+              flex: 1, padding: '20px 22px', paddingTop: 50,
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+              color: 'var(--text-secondary)', lineHeight: 1.7,
+              overflowY: 'auto', background: 'transparent',
+              userSelect: 'text',
+            }}>
+              {bundle
+                ? JSON.stringify(bundle, null, 2)
+                : '// Run the simulation and execute lab tools\n// to compile a FHIR R4 transaction bundle.'}
             </pre>
           </div>
         )}
