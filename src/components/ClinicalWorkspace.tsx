@@ -20,8 +20,10 @@ interface ClinicalWorkspaceProps {
 }
 
 type WorkspaceMode = 'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook';
+type PillarCategory = 'sandbox' | 'scribe' | 'standards';
 
 export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ onLog }) => {
+  const [pillar, setPillar] = useState<PillarCategory>('sandbox');
   const [mode, setMode] = useState<WorkspaceMode>('simulation');
   const [selectedPatient, setSelectedPatient] = useState<PatientEnvelope>(mockPatients[0]);
   const [forceViolation, setForceViolation] = useState(false);
@@ -138,54 +140,85 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
     log('success', 'AGENT_ENGINE', `Audit report exported for ${selectedPatient.name}.`);
   };
 
+  const handlePillarChange = (newPillar: PillarCategory) => {
+    setPillar(newPillar);
+    if (newPillar === 'sandbox') {
+      setMode('simulation');
+    } else if (newPillar === 'scribe') {
+      setMode('copilot');
+    } else if (newPillar === 'standards') {
+      setMode('leaderboard');
+    }
+  };
+
   const totalSteps = selectedPatient.id === 'pat_003' && forceViolation ? 3 : 5;
   const progressPct = Math.min((stepIndex / totalSteps) * 100, 100);
   const isComplete = stepIndex >= totalSteps;
 
   return (
     <div>
-      {/* ─── Mode Tabs ─── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+      {/* ─── Pillar Category Switcher (Tier 1) ─── */}
+      <div className="pillar-switcher" style={{ marginBottom: 12 }}>
+        <button className={`pillar-btn ${pillar === 'sandbox' ? 'active' : ''}`} onClick={() => handlePillarChange('sandbox')}>
+          🛡️ Sandbox Evaluator
+        </button>
+        <button className={`pillar-btn ${pillar === 'scribe' ? 'active' : ''}`} onClick={() => handlePillarChange('scribe')}>
+          🩺 Clinician Workspace
+        </button>
+        <button className={`pillar-btn ${pillar === 'standards' ? 'active' : ''}`} onClick={() => handlePillarChange('standards')}>
+          📊 Standards &amp; Ops
+        </button>
+      </div>
+
+      {/* ─── Sub-Tab Navigation (Tier 2) ─── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div className="nav-tabs">
-          <button className={`nav-tab ${mode === 'simulation' ? 'active-sim' : ''}`} onClick={() => setMode('simulation')}>
-            <ClipboardList size={13} />
-            Clinical Simulation
-          </button>
-          <button className={`nav-tab ${mode === 'redteam' ? 'active-rt' : ''}`} onClick={() => setMode('redteam')}>
-            <Swords size={13} />
-            Red-Team Lab
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'leaderboard' ? 'active-lb' : ''}`} onClick={() => setMode('leaderboard')}>
-            <Trophy size={13} />
-            Safety Leaderboard
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'copilot' ? 'active-cp' : ''}`} onClick={() => setMode('copilot')}>
-            <Sparkles size={13} />
-            Clinical Copilot
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'compare' ? 'active-sim' : ''}`} onClick={() => setMode('compare')}>
-            <Scale size={13} />
-            Clinical Compare
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'research' ? 'active-cp' : ''}`} onClick={() => setMode('research')}>
-            <BookOpenCheck size={13} />
-            Deep Research
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'workbench' ? 'active-rt' : ''}`} onClick={() => setMode('workbench')}>
-            <FileEdit size={13} />
-            Doc Workbench
-            <span className="badge">New</span>
-          </button>
-          <button className={`nav-tab ${mode === 'cookbook' ? 'active-lb' : ''}`} onClick={() => setMode('cookbook')}>
-            <BookOpen size={13} />
-            AI Cookbook
-            <span className="badge">New</span>
-          </button>
+          {pillar === 'sandbox' && (
+            <>
+              <button className={`nav-tab ${mode === 'simulation' ? 'active-sim' : ''}`} onClick={() => setMode('simulation')}>
+                <ClipboardList size={13} />
+                Clinical Simulation
+              </button>
+              <button className={`nav-tab ${mode === 'redteam' ? 'active-rt' : ''}`} onClick={() => setMode('redteam')}>
+                <Swords size={13} />
+                Red-Team Lab
+              </button>
+              <button className={`nav-tab ${mode === 'compare' ? 'active-sim' : ''}`} onClick={() => setMode('compare')}>
+                <Scale size={13} />
+                Clinical Compare
+              </button>
+            </>
+          )}
+
+          {pillar === 'scribe' && (
+            <>
+              <button className={`nav-tab ${mode === 'copilot' ? 'active-cp' : ''}`} onClick={() => setMode('copilot')}>
+                <Sparkles size={13} />
+                Clinical Copilot
+              </button>
+              <button className={`nav-tab ${mode === 'workbench' ? 'active-rt' : ''}`} onClick={() => setMode('workbench')}>
+                <FileEdit size={13} />
+                Doc Workbench
+              </button>
+              <button className={`nav-tab ${mode === 'research' ? 'active-cp' : ''}`} onClick={() => setMode('research')}>
+                <BookOpenCheck size={13} />
+                Deep Research
+              </button>
+            </>
+          )}
+
+          {pillar === 'standards' && (
+            <>
+              <button className={`nav-tab ${mode === 'leaderboard' ? 'active-lb' : ''}`} onClick={() => setMode('leaderboard')}>
+                <Trophy size={13} />
+                Safety Leaderboard
+              </button>
+              <button className={`nav-tab ${mode === 'cookbook' ? 'active-lb' : ''}`} onClick={() => setMode('cookbook')}>
+                <BookOpen size={13} />
+                AI Cookbook
+              </button>
+            </>
+          )}
         </div>
       </div>
 
