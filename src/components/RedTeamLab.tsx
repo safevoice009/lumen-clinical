@@ -333,37 +333,68 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
 
             {/* Attack Categories */}
             <div>
-              <label className="rt-label">Attack Category</label>
-              <div className="rt-category-grid">
-                {(Object.keys(ATTACK_CATEGORIES) as AttackCategory[]).map(cat => (
-                  <button
-                    key={cat}
-                    className={`rt-category-btn ${selectedCategory === cat ? 'active' : ''}`}
-                    onClick={() => setSelectedCategory(cat)}
-                  >
-                    <span className="rt-cat-icon">{ATTACK_CATEGORIES[cat].icon}</span>
-                    <span className="rt-cat-label">{ATTACK_CATEGORIES[cat].label}</span>
-                    <span className="rt-cat-desc">{ATTACK_CATEGORIES[cat].description}</span>
-                  </button>
-                ))}
+              <label className="rt-section-label">Attack Category</label>
+              <div className="category-grid">
+                {(Object.keys(ATTACK_CATEGORIES) as AttackCategory[]).map(cat => {
+                  const isActive = selectedCategory === cat;
+                  let badgeText = 'NOHARM';
+                  let badgeClass = 'noharm';
+                  if (cat === 'contraindication_bypass') {
+                    badgeText = 'Stanford NOHARM';
+                    badgeClass = 'noharm';
+                  } else if (cat === 'safety_screen_skip') {
+                    badgeText = 'Stanford MedHELM';
+                    badgeClass = 'helm';
+                  } else if (cat === 'dosing_hallucination') {
+                    badgeText = 'Med-HALT';
+                    badgeClass = 'halt';
+                  } else if (cat === 'emergency_misdirection') {
+                    badgeText = 'CHAI';
+                    badgeClass = 'chai';
+                  } else if (cat === 'step_therapy_bypass') {
+                    badgeText = 'HL7 FHIR';
+                    badgeClass = 'fhir';
+                  }
+
+                  return (
+                    <button
+                      key={cat}
+                      className={`category-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => setSelectedCategory(cat)}
+                      type="button"
+                    >
+                      <div className="category-card-header">
+                        <span className={`standard-badge ${badgeClass}`}>{badgeText}</span>
+                        <span className="category-status-tag">
+                          {isActive ? '● Active Target' : 'Select Target'}
+                        </span>
+                      </div>
+                      <h4 className="category-title">
+                        <span className="cat-icon">{ATTACK_CATEGORIES[cat].icon}</span>
+                        <span className="cat-name">{ATTACK_CATEGORIES[cat].label}</span>
+                      </h4>
+                      <p className="cat-desc">{ATTACK_CATEGORIES[cat].description}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Difficulty */}
             <div>
-              <label className="rt-label">Difficulty</label>
-              <div className="rt-difficulty-group">
+              <label className="rt-section-label">Difficulty</label>
+              <div className="difficulty-list">
                 {(['low', 'medium', 'high'] as const).map(d => (
                   <button
                     key={d}
-                    className={`rt-difficulty-btn ${selectedDifficulty === d ? 'active' : ''} diff-${d}`}
+                    className={`difficulty-btn ${selectedDifficulty === d ? 'active' : ''} diff-${d}`}
                     onClick={() => setSelectedDifficulty(d)}
                   >
                     {d === 'low' ? '🟢 Low — Obvious trap' : d === 'medium' ? '🟡 Medium — Subtle trap' : '🔴 High — Expert-level trap'}
                   </button>
                 ))}
               </div>
-              <div className="rt-diff-explain">
+              <div className="diff-hint">
                 {selectedDifficulty === 'low' && '⚡ Basic clinical knowledge should catch this.'}
                 {selectedDifficulty === 'medium' && '⚡ Requires domain expertise to detect.'}
                 {selectedDifficulty === 'high' && '⚡ Designed to fool even well-trained models.'}
@@ -372,7 +403,7 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
           </div>
 
           {/* Launch Button */}
-          <button className="rt-launch-btn" onClick={handleGenerateScenario}>
+          <button className="rt-launch" onClick={handleGenerateScenario}>
             <Swords size={16} />
             Generate Adversarial Scenario
             <ChevronRight size={14} />
