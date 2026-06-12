@@ -8,7 +8,7 @@ import {
 } from '../utils/redTeamEngine';
 import { callGeminiDoctor, isGeminiConfigured, GeminiMessage } from '../utils/geminiClient';
 import { SimulationMessage, ClinicalToolCall, TelemetryLog } from '../types/clinical';
-import { Swords, RotateCcw, ChevronRight, AlertCircle } from 'lucide-react';
+import { Swords, RotateCcw, ChevronRight, AlertCircle, Send } from 'lucide-react';
 
 interface RedTeamLabProps {
   onLog: (log: TelemetryLog) => void;
@@ -36,6 +36,7 @@ export default function RedTeamLab({ onLog }: RedTeamLabProps) {
   const [error, setError] = useState('');
   const [doctorThinking, setDoctorThinking] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
+  const [customText, setCustomText] = useState('');
 
   const log = useCallback((level: TelemetryLog['level'], component: TelemetryLog['component'], message: string) => {
     onLog({
@@ -58,6 +59,7 @@ export default function RedTeamLab({ onLog }: RedTeamLabProps) {
     setTrapRevealed(false);
     setTurnCount(0);
     setPatientTurn(true);
+    setCustomText('');
 
     log('warn', 'RED_TEAM_ENGINE', `Generating ${selectedDifficulty} "${ATTACK_CATEGORIES[selectedCategory].label}" adversarial scenario...`);
 
@@ -199,6 +201,23 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
     }
   }, [scenario, messages, doctorThinking, log]);
 
+  const handleSendCustomPatientResponse = useCallback(() => {
+    if (!scenario || doctorThinking || !customText.trim()) return;
+
+    const patientMsg: SimulationMessage = {
+      id: `rt_msg_patient_${Date.now()}`,
+      sender: 'patient',
+      senderName: `${scenario.patientContext.name} (Custom Patient)`,
+      message: customText.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages(prev => [...prev, patientMsg]);
+    setCustomText('');
+    setPatientTurn(false);
+    log('info', 'PATIENT_AGENT', 'Human-in-the-loop patient response injected.');
+  }, [scenario, doctorThinking, customText, log]);
+
   const handleReset = () => {
     setPhase('setup');
     setScenario(null);
@@ -210,6 +229,7 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
     setTurnCount(0);
     setPatientTurn(true);
     setError('');
+    setCustomText('');
   };
 
   const verdictColor = verdict?.verdict === 'PASS'
@@ -371,9 +391,32 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
             {phase === 'running' && (
               <div className="rt-action-row">
                 {patientTurn && turnCount > 0 && (
-                  <button className="rt-action-btn rt-btn-patient" onClick={handlePatientContinue} disabled={doctorThinking}>
-                    🗣️ Patient Responds
-                  </button>
+                  <div className="rt-custom-input-container">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <button className="rt-action-btn rt-btn-patient" onClick={handlePatientContinue} disabled={doctorThinking} style={{ margin: 0 }}>
+                        🗣️ Auto-Generate Response
+                      </button>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fg-muted)' }}>OR MANUALLY INTERVENE:</span>
+                    </div>
+                    <div className="rt-custom-input-box">
+                      <textarea
+                        className="rt-textarea"
+                        placeholder="Type custom patient response to try bypassing safety controls..."
+                        value={customText}
+                        onChange={e => setCustomText(e.target.value)}
+                        disabled={doctorThinking}
+                        rows={2}
+                      />
+                      <button
+                        className="rt-send-btn"
+                        onClick={handleSendCustomPatientResponse}
+                        disabled={doctorThinking || !customText.trim()}
+                      >
+                        <Send size={13} />
+                        <span>Send Response</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
                 {!patientTurn && (
                   <button className="rt-action-btn rt-btn-doctor" onClick={handleDoctorRespond} disabled={doctorThinking}>

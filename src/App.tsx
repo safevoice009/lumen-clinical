@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ClinicalWorkspace } from './components/ClinicalWorkspace';
 import { TelemetryConsole } from './components/TelemetryConsole';
+import { ModelSettingsModal } from './components/ModelSettingsModal';
 import { TelemetryLog } from './types/clinical';
-import { Sun, Moon, Github, ExternalLink } from 'lucide-react';
+import { getActiveModelConfig, ModelConfig } from './utils/geminiClient';
+import { Sun, Moon, Github, ExternalLink, Cpu } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -12,12 +14,15 @@ export default function App() {
     return 'dark';
   });
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
+
   const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([{
     id: 'boot_001',
     timestamp: new Date().toISOString(),
     level: 'info',
     component: 'AGENT_ENGINE',
-    message: 'Lumen Clinical Safety Sandbox v2.0 initialized. FHIR R4 bridge online.',
+    message: 'Lumen Clinical Safety Sandbox v2.0 initialized. FHIR R bridge online.',
   }]);
 
   useEffect(() => {
@@ -25,10 +30,44 @@ export default function App() {
     localStorage.setItem('lumen-theme', theme);
   }, [theme]);
 
+  // Listen to configuration change events to synchronize settings console logs
+  useEffect(() => {
+    const handleConfigChange = (e: Event) => {
+      const config = (e as CustomEvent).detail as ModelConfig;
+      setActiveModel(config);
+      handleAddLog({
+        id: `config_log_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        component: 'AGENT_ENGINE',
+        message: `Gateway configuration changed. Source: ${config.source.toUpperCase()}, Model: ${config.modelName}, Endpoint: ${config.endpoint}`,
+      });
+    };
+    window.addEventListener('lumen_model_config_changed', handleConfigChange);
+    return () => window.removeEventListener('lumen_model_config_changed', handleConfigChange);
+  }, []);
+
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
   const handleAddLog = (log: TelemetryLog) => {
     setTelemetryLogs(prev => [...prev, log]);
+  };
+
+  const handleModalLog = (level: any, component: any, message: string) => {
+    handleAddLog({
+      id: `modal_log_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      level: (level === 'warning' ? 'warn' : level) as TelemetryLog['level'],
+      component: (component === 'GATEWAY' || component === 'DIAGNOSTICS' ? 'AGENT_ENGINE' : component) as TelemetryLog['component'],
+      message,
+    });
+  };
+
+  const getSourceLabel = (src: string) => {
+    if (src === 'gemini') return 'Gemini';
+    if (src === 'openvino') return 'OpenVINO';
+    if (src === 'ollama') return 'Ollama';
+    return 'Custom';
   };
 
   return (
@@ -53,7 +92,19 @@ export default function App() {
               <span className="dot" />
               <span>FHIR R4</span>
             </span>
-            <span className="status-pill">⚡ <span className="val">Gemini 2.0</span></span>
+            <span className="status-pill">
+              ⚡ <span className="val">{getSourceLabel(activeModel.source)} ({activeModel.modelName})</span>
+            </span>
+
+            {/* Model settings button */}
+            <button
+              className="theme-toggle"
+              onClick={() => setIsSettingsOpen(true)}
+              aria-label="Clinical AI Model Settings"
+              title="Clinical AI Model Settings"
+            >
+              <Cpu size={15} />
+            </button>
 
             {/* Theme toggle */}
             <button
@@ -78,6 +129,13 @@ export default function App() {
           </div>
         </div>
       </nav>
+
+      <ModelSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        onLog={handleModalLog}
+      />
+
 
       {/* ── Hero ── */}
       <header className="app-hero animate-in">

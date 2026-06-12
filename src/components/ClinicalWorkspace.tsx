@@ -7,13 +7,19 @@ import { LabViewer } from './LabViewer';
 import { PriorAuthAuditor } from './PriorAuthAuditor';
 import { FhirGraph } from './FhirGraph';
 import RedTeamLab from './RedTeamLab';
-import { ClipboardList, Swords, Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { SafetyLeaderboard } from './SafetyLeaderboard';
+import { ClinicalCopilot } from './ClinicalCopilot';
+import { ClinicalCompare } from './ClinicalCompare';
+import { ClinicalDeepResearch } from './ClinicalDeepResearch';
+import { ClinicalDocWorkbench } from './ClinicalDocWorkbench';
+import { ClinicalCookbook } from './ClinicalCookbook';
+import { ClipboardList, Swords, Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Trophy, Sparkles, Scale, BookOpen, FileEdit, BookOpenCheck } from 'lucide-react';
 
 interface ClinicalWorkspaceProps {
   onLog: (log: TelemetryLog) => void;
 }
 
-type WorkspaceMode = 'simulation' | 'redteam';
+type WorkspaceMode = 'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook';
 
 export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ onLog }) => {
   const [mode, setMode] = useState<WorkspaceMode>('simulation');
@@ -150,8 +156,68 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
             Red-Team Lab
             <span className="badge">New</span>
           </button>
+          <button className={`nav-tab ${mode === 'leaderboard' ? 'active-lb' : ''}`} onClick={() => setMode('leaderboard')}>
+            <Trophy size={13} />
+            Safety Leaderboard
+            <span className="badge">New</span>
+          </button>
+          <button className={`nav-tab ${mode === 'copilot' ? 'active-cp' : ''}`} onClick={() => setMode('copilot')}>
+            <Sparkles size={13} />
+            Clinical Copilot
+            <span className="badge">New</span>
+          </button>
+          <button className={`nav-tab ${mode === 'compare' ? 'active-sim' : ''}`} onClick={() => setMode('compare')}>
+            <Scale size={13} />
+            Clinical Compare
+            <span className="badge">New</span>
+          </button>
+          <button className={`nav-tab ${mode === 'research' ? 'active-cp' : ''}`} onClick={() => setMode('research')}>
+            <BookOpenCheck size={13} />
+            Deep Research
+            <span className="badge">New</span>
+          </button>
+          <button className={`nav-tab ${mode === 'workbench' ? 'active-rt' : ''}`} onClick={() => setMode('workbench')}>
+            <FileEdit size={13} />
+            Doc Workbench
+            <span className="badge">New</span>
+          </button>
+          <button className={`nav-tab ${mode === 'cookbook' ? 'active-lb' : ''}`} onClick={() => setMode('cookbook')}>
+            <BookOpen size={13} />
+            AI Cookbook
+            <span className="badge">New</span>
+          </button>
         </div>
       </div>
+
+      {/* ─── COMPARE MODE ─── */}
+      {mode === 'compare' && (
+        <ClinicalCompare onLog={onLog} />
+      )}
+
+      {/* ─── RESEARCH MODE ─── */}
+      {mode === 'research' && (
+        <ClinicalDeepResearch onLog={onLog} />
+      )}
+
+      {/* ─── WORKBENCH MODE ─── */}
+      {mode === 'workbench' && (
+        <ClinicalDocWorkbench onLog={onLog} />
+      )}
+
+      {/* ─── COOKBOOK MODE ─── */}
+      {mode === 'cookbook' && (
+        <ClinicalCookbook />
+      )}
+
+      {/* ─── LEADERBOARD MODE ─── */}
+      {mode === 'leaderboard' && (
+        <SafetyLeaderboard />
+      )}
+
+      {/* ─── COPILOT MODE ─── */}
+      {mode === 'copilot' && (
+        <ClinicalCopilot onLog={onLog} />
+      )}
 
       {/* ─── RED-TEAM MODE ─── */}
       {mode === 'redteam' && (
