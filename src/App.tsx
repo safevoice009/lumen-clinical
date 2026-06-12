@@ -4,6 +4,7 @@ import { TelemetryConsole } from './components/TelemetryConsole';
 import { ModelSettingsModal } from './components/ModelSettingsModal';
 import { TelemetryLog } from './types/clinical';
 import { getActiveModelConfig, ModelConfig } from './utils/geminiClient';
+import { DischargePortalView, PortalData } from './components/DischargePortalView';
 import { 
   Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale, 
   Sparkles, FileEdit, BookOpenCheck, Trophy, BookOpen, ShieldCheck,
@@ -20,6 +21,30 @@ export default function App() {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
+  const [portalData, setPortalData] = useState<PortalData | null>(null);
+
+  // Parse portal data from hash URL parameter if present
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#portal=')) {
+        try {
+          const base64 = hash.replace('#portal=', '');
+          const decodedText = decodeURIComponent(escape(atob(base64)));
+          const parsed = JSON.parse(decodedText);
+          setPortalData(parsed);
+        } catch (e) {
+          console.error("Failed to parse portal payload from URL hash:", e);
+        }
+      } else {
+        setPortalData(null);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const [pillar, setPillar] = useState<'sandbox' | 'scribe' | 'standards'>('sandbox');
   const [mode, setMode] = useState<'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook'>('simulation');
@@ -165,6 +190,20 @@ export default function App() {
       setMode('leaderboard');
     }
   };
+
+  if (portalData) {
+    return (
+      <div className="app-root" style={{ background: 'var(--bg-main)', minHeight: '100vh', padding: '20px 0', overflowY: 'auto' }}>
+        <DischargePortalView 
+          data={portalData} 
+          onBack={() => {
+            window.location.hash = '';
+            setPortalData(null);
+          }} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="app-root">

@@ -14,6 +14,7 @@ import { ClinicalDeepResearch } from './ClinicalDeepResearch';
 import { ClinicalDocWorkbench } from './ClinicalDocWorkbench';
 import { ClinicalCookbook } from './ClinicalCookbook';
 import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { saveHistoryRecord } from '../utils/geminiClient';
 
 interface ClinicalWorkspaceProps {
   mode: 'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook';
@@ -30,6 +31,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   const [safetyChecklist, setSafetyChecklist] = useState<SafetyCriterion[]>([]);
   const [fhirBundle, setFhirBundle] = useState<FHIRBundle | null>(null);
   const [rightTab, setRightTab] = useState<'audit' | 'fhir'>('audit');
+  const [portalUrl, setPortalUrl] = useState<string>('');
 
   const log = useCallback((level: TelemetryLog['level'], component: TelemetryLog['component'], msg: string) => {
     onLog({ id: `log_${Date.now()}`, timestamp: new Date().toISOString(), level, component, message: msg });
@@ -45,6 +47,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     setMessages([]);
     setToolCalls([]);
     setFhirBundle(null);
+    setPortalUrl('');
     setSafetyChecklist(JSON.parse(JSON.stringify(selectedPatient.safetyGuidelines)));
     log('info', 'AGENT_ENGINE', `Sandbox reset — ${selectedPatient.name} loaded. ${selectedPatient.safetyGuidelines.length} safety criteria armed.`);
   };
@@ -63,6 +66,40 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
         out.logs.forEach(l => onLog(l));
         log('success', 'FHIR_COMPILER', 'FHIR R4 transaction bundle compiled and ready.');
         setRightTab('fhir');
+
+        // Save Completed Simulation to Session History Archive
+        const passedCount = safetyChecklist.filter(c => c.status === 'passed').length;
+        const scoreString = `${passedCount}/${safetyChecklist.length} Passed`;
+        const portalPayload = {
+          patientName: selectedPatient.name,
+          dob: selectedPatient.dob,
+          gender: selectedPatient.gender,
+          mrn: selectedPatient.id,
+          diagnosis: selectedPatient.targetProcedureCpt ? `Prior Auth CPT ${selectedPatient.targetProcedureCpt}` : 'Clinical Consultation',
+          summary: messages.filter(m => m.sender === 'doctor').map(m => m.message).join('\n\n'),
+          warnings: selectedPatient.safetyGuidelines.map(g => g.description).join('\n'),
+          followupProvider: 'Clinical Safety Board',
+          followupDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          followupPhone: '+1 555-LUMEN-OK',
+          physicianName: 'Clinical AI Resident',
+          physicianNpi: '1029384756',
+          meds: toolCalls.map(t => ({
+            name: t.parameter,
+            code: t.code,
+            sig: '1 tab PO QD',
+            route: 'oral',
+            duration: '30 days',
+            instruction: 'Take as directed by doctor.'
+          })),
+          safetyScore: scoreString,
+          safetyStatus: safetyChecklist.some(c => c.status === 'violated' && c.severity === 'critical') ? 'FAILED' : 'APPROVED',
+          fhirValidation: 'valid',
+          timestamp: new Date().toLocaleDateString()
+        };
+        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(portalPayload))));
+        const generatedUrl = `${window.location.origin}${window.location.pathname}#portal=${base64}`;
+        setPortalUrl(generatedUrl);
+        saveHistoryRecord(selectedPatient.name, portalPayload.diagnosis, scoreString, portalPayload);
       }
       return;
     }
@@ -290,6 +327,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     onGenerateReport={handleGenerateReport}
                     simulationStep={stepIndex}
                     totalSteps={totalSteps}
+                    portalUrl={portalUrl}
                   />
                 ) : (
                   <FhirGraph

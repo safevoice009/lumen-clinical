@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, AlertTriangle, Play, Cpu, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Play, Cpu, ShieldCheck, ClipboardList } from 'lucide-react';
 import { ModelConfig, getActiveModelConfig, saveModelConfig, verifyModelConnection } from '../utils/geminiClient';
 
 interface ModelSettingsModalProps {
@@ -16,10 +16,16 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
     message: '',
   });
 
+  const [history, setHistory] = useState<any[]>([]);
+
   useEffect(() => {
     if (isOpen) {
       setConfig(getActiveModelConfig());
       setTestResult({ status: 'idle', message: '' });
+      try {
+        const stored = localStorage.getItem('lumen_session_history');
+        if (stored) setHistory(JSON.parse(stored));
+      } catch (e) {}
     }
   }, [isOpen]);
 
@@ -34,7 +40,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
         source: 'openvino',
         endpoint: 'http://127.0.0.1:8000',
         apiKey: '',
-        modelName: 'meta-llama/Meta-Llama-3-8B-Instruct',
+        modelName: 'qwen',
       });
     } else if (preset === 'ollama') {
       setConfig({
@@ -235,6 +241,38 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
               <div className="diagnostics-status-line idle">
                 <span>Awaiting connection test routines...</span>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Session Audit History Archive */}
+        <div className="diagnostics-panel" style={{ marginTop: '16px' }}>
+          <div className="diagnostics-header" style={{ borderColor: 'var(--border-default)' }}>
+            <ClipboardList className="diagnostics-icon" size={14} />
+            <span>Session Audit History Archive ({history.length} Saved)</span>
+          </div>
+          <div className="diagnostics-body" style={{ maxHeight: '110px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px' }}>
+            {history.length === 0 ? (
+              <span style={{ fontSize: '11px', color: 'var(--fg-muted)', display: 'block', textAlign: 'center', padding: '10px 0' }}>
+                No completed audits in the history log. Complete a simulation or workbench scan to record history.
+              </span>
+            ) : (
+              history.map((h: any) => (
+                <div key={h.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '6px 10px', fontSize: '11.5px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>{h.patientName}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--fg-muted)' }}>{h.diagnosis} · {h.timestamp}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ color: h.safetyScore.includes('violated') || (h.safetyScore.includes('/') && parseInt(h.safetyScore.split('/')[0]) < parseInt(h.safetyScore.split('/')[1])) ? 'var(--fg-danger)' : 'var(--fg-safe)', fontWeight: 800 }}>
+                      {h.safetyScore}
+                    </span>
+                    <a href={h.portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm" style={{ padding: '3px 8px', fontSize: '10px', background: 'var(--bg-card)', borderColor: 'var(--border-default)', textDecoration: 'none', color: 'var(--fg-secondary)' }}>
+                      Open Pass
+                    </a>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>

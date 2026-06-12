@@ -1,9 +1,9 @@
 // Model-Agnostic API Client for Lumen Clinical Safety Evaluator & Workstation
 // Supports Gemini (Google AI Studio), Ollama, and OpenVINO / OpenAI-compatible local model servers.
 
-const GEMINI_API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DOCTOR_MODEL = 'gemini-2.0-flash';
+export const GEMINI_API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+export const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+export const DOCTOR_MODEL = 'gemini-2.0-flash';
 
 export interface GeminiMessage {
   role: 'user' | 'model';
@@ -55,10 +55,10 @@ export function getActiveModelConfig(): ModelConfig {
   } catch (e) {}
 
   return {
-    source: 'gemini',
-    endpoint: GEMINI_BASE,
-    apiKey: GEMINI_API_KEY,
-    modelName: DOCTOR_MODEL,
+    source: 'openvino',
+    endpoint: 'http://127.0.0.1:8000',
+    apiKey: '',
+    modelName: 'qwen',
   };
 }
 
@@ -140,9 +140,13 @@ export async function executeModelRequest(
     };
   } else {
     // OpenVINO / Custom OpenAI-compatible
-    requestUrl = cleanEndpoint.includes('/chat/completions') 
-      ? cleanEndpoint 
-      : `${cleanEndpoint}/chat/completions`;
+    let endpointWithV1 = cleanEndpoint;
+    if (source === 'openvino' && !cleanEndpoint.endsWith('/v1') && !cleanEndpoint.includes('/v1/')) {
+      endpointWithV1 = `${cleanEndpoint}/v1`;
+    }
+    requestUrl = endpointWithV1.includes('/chat/completions') 
+      ? endpointWithV1 
+      : `${endpointWithV1}/chat/completions`;
 
     requestBody = {
       model: modelName,
@@ -196,8 +200,23 @@ export function extractAndParseJSON(text: string): any {
   try {
     return JSON.parse(cleaned);
   } catch (err) {
-    console.error("Failed to parse JSON content:", text, err);
-    return {};
+    // Attempt JSON Healing
+    try {
+      let healed = cleaned
+        // Remove trailing commas before closing braces and brackets
+        .replace(/,(\s*[\]\}])/g, '$1')
+        // Quote unquoted keys (e.g. { response: "text" } -> { "response": "text" })
+        .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+        // Replace single quotes with double quotes around keys or simple values (avoiding apostrophes within text)
+        .replace(/([{,]\s*)'([a-zA-Z0-9_]+)'\s*:/g, '$1"$2":')
+        // Normalize double quotes (smart quotes to standard quotes)
+        .replace(/[\u201C\u201D]/g, '"');
+      
+      return JSON.parse(healed);
+    } catch (healErr) {
+      console.error("Failed to parse JSON content, even after healing:", text, err, healErr);
+      return {};
+    }
   }
 }
 
@@ -273,8 +292,8 @@ export async function callGeminiDoctor(
       throw err;
     }
     return {
-      response: 'Clinical evaluation processed. Awaiting screening tests.',
-      reasoning: 'Model execution completed. Response: ' + err.message,
+      response: `⚠️ Local Model Gateway Error: Unable to process clinical request.`,
+      reasoning: `Technical Details: ${err.message}. Please check if the OpenVINO server_host.py is running on http://127.0.0.1:8000 and the 'qwen' model is downloaded.`,
       toolCall: null
     };
   }
@@ -327,11 +346,11 @@ Respond with ONLY valid JSON:
     };
   } catch (err: any) {
     return {
-      violations: ['Audit analysis completed. System checklist verification active.'],
+      violations: [`Audit execution error: ${err.message}`],
       passed: [],
-      score: 80,
-      grade: 'B',
-      explanation: 'Audit compiled: ' + err.message
+      score: 0,
+      grade: 'F',
+      explanation: `Failed to complete safety audit. Technical details: ${err.message}`
     };
   }
 }
@@ -375,6 +394,67 @@ export async function callGeminiSOAPGenerator(transcript: string): Promise<SOAPN
       rxNormMeds: parsed.rxNormMeds || []
     };
   } catch (err: any) {
-    throw new Error(`Failed to compile SOAP note: ${err.message}`);
+    throw new Error(`Failed to compile SOAP note: ${err.message}. Ensure local model is loaded and endpoint is accessible.`);
   }
 }
+
+// ── Session History Trackers & Share Parameters ──
+export interface HistoryRecord {
+  id: string;
+  patientName: string;
+  diagnosis: string;
+  safetyScore: string;
+  timestamp: string;
+  portalUrl: string;
+}
+
+export function saveHistoryRecord(patientName: string, diagnosis: string, score: string, data: any) {
+  try {
+    const recordsText = localStorage.getItem('lumen_session_history') || '[]';
+    const records = JSON.parse(recordsText);
+    
+    // Package into PortalData format
+    const portalPayload = {
+      patientName: data.patientName || patientName,
+      dob: data.dob || '1980-01-01',
+      gender: data.gender || 'unknown',
+      mrn: data.mrn || 'unknown',
+      diagnosis: data.diagnosis || diagnosis,
+      summary: data.summary || '',
+      warnings: data.warnings || '',
+      followupProvider: data.followupProvider || '',
+      followupDate: data.followupDate || '',
+      followupPhone: data.followupPhone || '',
+      physicianName: data.physicianName || 'Attending Physician',
+      physicianNpi: data.physicianNpi || '0000000000',
+      signatureUrl: data.signatureUrl || '',
+      meds: data.meds || [],
+      safetyScore: score,
+      safetyStatus: data.safetyStatus || (score.includes('/') && parseInt(score.split('/')[0]) < parseInt(score.split('/')[1]) ? 'FAILED' : 'APPROVED'),
+      fhirValidation: data.fhirValidation || 'valid',
+      timestamp: new Date().toLocaleDateString()
+    };
+    
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(portalPayload))));
+    const portalUrl = `${window.location.origin}${window.location.pathname}#portal=${base64}`;
+    
+    // Check if duplicate already exists, remove it
+    const filtered = records.filter((r: any) => r.patientName !== patientName || r.diagnosis !== diagnosis);
+    
+    const newRecord: HistoryRecord = {
+      id: `history_${Date.now()}`,
+      patientName,
+      diagnosis,
+      safetyScore: score,
+      timestamp: new Date().toLocaleString(),
+      portalUrl
+    };
+    
+    localStorage.setItem('lumen_session_history', JSON.stringify([newRecord, ...filtered].slice(0, 10)));
+    // Dispatch custom event to notify other modules
+    window.dispatchEvent(new Event('lumen_history_changed'));
+  } catch (e) {
+    console.error("Failed to save history record:", e);
+  }
+}
+

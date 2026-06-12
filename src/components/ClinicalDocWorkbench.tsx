@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { executeModelRequest, getActiveModelConfig, extractAndParseJSON } from '../utils/geminiClient';
+import { executeModelRequest, getActiveModelConfig, extractAndParseJSON, saveHistoryRecord } from '../utils/geminiClient';
 import { TelemetryLog } from '../types/clinical';
+import QRCode from 'qrcode';
 import { FileText, Sparkles, Download, CheckCircle, AlertTriangle, RefreshCw, Layers } from 'lucide-react';
 
 interface ClinicalDocWorkbenchProps {
@@ -75,6 +76,7 @@ export const ClinicalDocWorkbench: React.FC<ClinicalDocWorkbenchProps> = ({ onLo
   // AI Outputs
   const [mappedCodes, setMappedCodes] = useState<{ code: string; vocab: string; desc: string }[]>([]);
   const [auditResult, setAuditResult] = useState<{ passed: boolean; issues: string[]; summary: string } | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
 
   const logToGlobal = (level: TelemetryLog['level'], component: any, message: string) => {
     onLog({
@@ -172,6 +174,54 @@ You MUST respond in this exact JSON format (no markdown code blocks):
       } else {
         logToGlobal('warn', 'SCRIBE_WORKSTATION', `🚨 Safety Audit flagged ${parsed.issues?.length || 0} safety issues!`);
       }
+
+      // Save to Session History Archive
+      const nameMatch = documentText.match(/(?:Patient Name|Patient):\s*([^\n\r]+)/i);
+      const patientName = nameMatch ? nameMatch[1].trim() : 'Document Note';
+      
+      const diagMatch = documentText.match(/(?:Diagnosis|RE):\s*([^\n\r]+)/i);
+      const diagnosisText = diagMatch ? diagMatch[1].trim() : 'Clinical Review';
+
+      const scoreString = parsed.passed !== false ? 'Passed' : 'Flagged';
+      
+      const portalPayload = {
+        patientName,
+        dob: '1980-01-01',
+        gender: 'unknown',
+        mrn: `doc_${Date.now().toString().slice(-4)}`,
+        diagnosis: diagnosisText,
+        summary: documentText,
+        warnings: parsed.issues?.join('\n') || 'None reported.',
+        followupProvider: 'Primary Care Referral',
+        followupDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        followupPhone: '+1 555-LUMEN-OK',
+        physicianName: 'Attending Clinician',
+        physicianNpi: '1029384756',
+        meds: [],
+        safetyScore: scoreString,
+        safetyStatus: parsed.passed !== false ? 'APPROVED' : 'FAILED',
+        fhirValidation: 'valid',
+        timestamp: new Date().toLocaleDateString()
+      };
+      const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(portalPayload))));
+      const generatedUrl = `${window.location.origin}${window.location.pathname}#portal=${base64}`;
+
+      // Generate local brand QR Code
+      QRCode.toDataURL(generatedUrl, {
+        color: {
+          dark: '#8b5cf6', // Brand violet
+          light: '#ffffff' // White background
+        },
+        margin: 1,
+        width: 140
+      }).then(url => {
+        setQrCodeUrl(url);
+      }).catch(err => {
+        console.error("Failed to generate local QR code:", err);
+      });
+
+      saveHistoryRecord(patientName, diagnosisText, scoreString, portalPayload);
+
     } catch (err: any) {
       logToGlobal('error', 'SCRIBE_WORKSTATION', `✗ Safety Audit failed: ${err.message}`);
     } finally {
@@ -303,6 +353,29 @@ You MUST respond in this exact JSON format (no markdown code blocks):
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Share note via QR */}
+          {auditResult && qrCodeUrl && (
+            <div className="lb-card animate-fade-in" style={{ marginTop: '16px' }}>
+              <h4 className="lb-card-title">📲 Mobile Patient Pass Gateway</h4>
+              <p className="lb-card-subtitle" style={{ marginBottom: '12px' }}>
+                Handoff this validated discharge summary sheet directly to the patient's mobile device:
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', background: 'var(--bg-subtle)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                <div style={{ background: '#fff', padding: '8px', borderRadius: '6px', boxShadow: 'var(--shadow-sm)', display: 'inline-block' }}>
+                  <img
+                    src={qrCodeUrl}
+                    alt="EHR Transfer QR Code"
+                    style={{ display: 'block', width: 140, height: 140 }}
+                  />
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--fg-muted)', lineHeight: '1.4' }}>
+                  <strong>Scan QR Code</strong> to view the full <strong>{auditResult.passed ? '🟢 validated safe' : '🔴 safety-flagged'}</strong> digital pass on mobile.
+                </div>
+              </div>
             </div>
           )}
 

@@ -1941,8 +1941,8 @@ code, pre, .mono {
 
 /* ── LAYOUT PANEL HEIGHTS ── */
 .panel-chat { height: 680px; }
-.panel-labs { height: 250px; }
-.panel-audit { height: 410px; }
+.panel-labs { height: 350px; }
+.panel-audit { height: 310px; }
 
 /* ── RED TEAM ACTIVE GRID & PANEL LAYOUT ── */
 .rt-workspace-grid {

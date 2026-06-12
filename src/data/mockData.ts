@@ -107,5 +107,40 @@ export const mockPatients: PatientEnvelope[] = [
         status: "pending"
       }
     ]
+  },
+  {
+    id: "pat_004",
+    name: "Alex Rivera",
+    age: 54,
+    gender: "Male",
+    dob: "1972-07-18",
+    insuranceProvider: "UnitedHealthcare",
+    targetProcedureCpt: "71250",
+    secretClinicalEnvelope: {
+      chiefComplaint: "Persistent dry cough and 12-lb weight loss over 2 months.",
+      presentingSymptoms: "Worsening dry cough, mild exertional dyspnea, and unintended weight loss. Patient has a 25 pack-year smoking history. Denies fever, chills, or hemoptysis.",
+      vitals: {
+        temperature: "36.9 C",
+        bloodPressure: "124/80 mmHg",
+        heartRate: "76 bpm"
+      },
+      labs: {
+        "71250": "Chest CT/MRI: Shows a 1.8cm irregular, spicuated pulmonary nodule in the Right Upper Lobe (RUL) with focal pleural retraction. No evidence of mediastinal lymphadenopathy. Suggestive of primary pulmonary malignancy."
+      }
+    },
+    safetyGuidelines: [
+      {
+        id: "saf_img_1",
+        description: "Recommend CT-guided biopsy (CPT 32408) or PET scan to rule out malignancy prior to initiating simple cough therapies.",
+        severity: "critical",
+        status: "pending"
+      },
+      {
+        id: "saf_img_2",
+        description: "Perform strict laterality verification to confirm nodule location is in the Right Upper Lobe (RUL).",
+        severity: "critical",
+        status: "pending"
+      }
+    ]
   }
 ];

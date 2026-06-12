@@ -201,6 +201,286 @@ const parseLabResult = (code: string, vocab: string, toolName: string, rawResult
   };
 };
 
+const PacsImageViewer: React.FC<{ code: string; label: string }> = ({ code, label }) => {
+  const [showAnnotations, setShowAnnotations] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(200);
+  const [windowLevel, setWindowLevel] = useState(100);
+  const [isInverted, setIsInverted] = useState(false);
+
+  const normCode = code.trim().toLowerCase();
+
+  const handleReset = () => {
+    setWindowWidth(200);
+    setWindowLevel(100);
+    setIsInverted(false);
+    setShowAnnotations(true);
+  };
+
+  const contrastVal = windowWidth / 100;
+  const brightnessVal = windowLevel / 100;
+  const filterString = `brightness(${brightnessVal}) contrast(${contrastVal})${isInverted ? ' invert(1)' : ''}`;
+
+  const renderScan = () => {
+    if (normCode === '71250') {
+      return (
+        <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ filter: filterString, background: '#050505', transition: 'filter 0.05s ease', display: 'block', margin: '0 auto' }}>
+          {/* Body contour */}
+          <ellipse cx="100" cy="100" rx="90" ry="75" fill="none" stroke="#222" strokeWidth="2" />
+          {/* Spine */}
+          <path d="M90,165 L110,165 L100,150 Z" fill="#111" stroke="#333" strokeWidth="1" />
+          <circle cx="100" cy="158" r="4" fill="#000" />
+          {/* Sternum */}
+          <rect x="94" y="27" width="12" height="6" rx="2" fill="#333" />
+          {/* Ribs */}
+          <path d="M22,80 Q25,50 50,38" fill="none" stroke="#222" strokeWidth="1.2" />
+          <path d="M178,80 Q175,50 150,38" fill="none" stroke="#222" strokeWidth="1.2" />
+          <path d="M15,100 Q20,130 50,152" fill="none" stroke="#222" strokeWidth="1.2" />
+          <path d="M185,100 Q180,130 150,152" fill="none" stroke="#222" strokeWidth="1.2" />
+          {/* Lungs */}
+          <path d="M40,55 C45,45 78,45 83,55 C88,65 83,125 78,135 C65,145 42,135 40,120 Z" fill="#0a0a0a" stroke="#222" strokeWidth="0.8" />
+          <path d="M160,55 C155,45 122,45 117,55 C112,65 117,125 122,135 C135,145 158,135 160,120 Z" fill="#0a0a0a" stroke="#222" strokeWidth="0.8" />
+          {/* Heart */}
+          <ellipse cx="104" cy="98" rx="18" ry="22" fill="#0e0e0e" stroke="#222" strokeWidth="1.2" transform="rotate(-15 104 98)" />
+          <circle cx="94" cy="85" r="5" fill="#080808" stroke="#222" strokeWidth="0.8" />
+          {/* Nodule RUL */}
+          <path d="M52,65 L54,62 L57,66 L59,61 L62,64 L65,60 L64,66 L68,64 L65,68 L69,71 L63,70 L64,74 L60,70 L59,75 L56,71 L53,73 L55,68 L50,68 Z" fill="#181818" stroke="#ff3d57" strokeWidth="0.8" opacity={showAnnotations ? 0.95 : 0.4} />
+          <circle cx="59" cy="67" r="3.5" fill="#2c2c2c" stroke="#ff3d57" strokeWidth="0.5" />
+          {showAnnotations && (
+            <g>
+              <circle cx="59" cy="67" r="11" fill="none" stroke="#ff3d57" strokeDasharray="2,2" strokeWidth="0.75" />
+              <line x1="70" y1="67" x2="92" y2="67" stroke="#ff3d57" strokeWidth="0.5" />
+              <circle cx="92" cy="67" r="1" fill="#ff3d57" />
+              <text x="96" y="65" fill="#ff3d57" fontSize="5.5" fontWeight="bold" fontFamily="sans-serif">RUL Nodule: 1.8cm</text>
+              <text x="96" y="72" fill="#ff3d57" fontSize="4.5" fontFamily="sans-serif">Spicuated Nodule (CT)</text>
+              <text x="32" y="100" fill="#666" fontSize="7" fontWeight="bold" fontFamily="sans-serif">R</text>
+              <text x="168" y="100" fill="#666" fontSize="7" fontWeight="bold" fontFamily="sans-serif">L</text>
+            </g>
+          )}
+        </svg>
+      );
+    }
+
+    if (normCode === '76700') {
+      return (
+        <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ filter: filterString, background: '#020202', transition: 'filter 0.05s ease', display: 'block', margin: '0 auto' }}>
+          <path d="M100,20 L30,170 A95,95 0 0,0 170,170 Z" fill="none" stroke="#222" strokeWidth="1.5" />
+          <path d="M100,20 L40,165 A90,90 0 0,0 160,165 Z" fill="#040404" opacity="0.4" />
+          <path d="M100,20 L100,178" fill="none" stroke="#111" strokeWidth="0.5" strokeDasharray="2,5" />
+          <path d="M100,20 L65,172" fill="none" stroke="#111" strokeWidth="0.5" strokeDasharray="2,5" />
+          <path d="M100,20 L135,172" fill="none" stroke="#111" strokeWidth="0.5" strokeDasharray="2,5" />
+          <path d="M50,110 Q70,90 100,105 T150,110" fill="none" stroke="#121212" strokeWidth="14" opacity="0.3" strokeLinecap="round" />
+          <path d="M60,140 Q80,135 100,142 T140,135" fill="none" stroke="#181818" strokeWidth="8" opacity="0.2" strokeLinecap="round" />
+          {/* Appendix */}
+          <path d="M85,115 C90,100 105,95 112,102 C118,108 108,125 102,135 C95,145 80,130 85,115 Z" fill="#0a0a0a" stroke="#ffab40" strokeWidth="1.5" opacity={showAnnotations ? 0.95 : 0.5} />
+          <circle cx="107" cy="104" r="5" fill="#141414" stroke="#ff3d57" strokeWidth="1" />
+          <path d="M72,138 Q82,148 94,142 C90,135 80,130 72,138 Z" fill="#000" stroke="#ffab40" strokeWidth="0.5" opacity="0.5" />
+          {showAnnotations && (
+            <g>
+              <circle cx="102" cy="120" r="14" fill="none" stroke="#ff3d57" strokeDasharray="2,2" strokeWidth="0.75" />
+              <line x1="86" y1="125" x2="118" y2="115" stroke="#ff3d57" strokeWidth="0.75" />
+              <line x1="86" y1="123" x2="86" y2="127" stroke="#ff3d57" strokeWidth="1" />
+              <line x1="118" y1="113" x2="118" y2="117" stroke="#ff3d57" strokeWidth="1" />
+              <text x="122" y="122" fill="#ff3d57" fontSize="5.5" fontWeight="bold" fontFamily="sans-serif">Appendix: 7.2mm</text>
+              <text x="122" y="129" fill="#ffab40" fontSize="4.5" fontFamily="sans-serif">Thickened Wall</text>
+              <text x="50" y="152" fill="#00e676" fontSize="4.5" fontFamily="sans-serif">Free Fluid (Tip)</text>
+              <line x1="68" y1="147" x2="76" y2="140" stroke="#00e676" strokeWidth="0.5" />
+            </g>
+          )}
+        </svg>
+      );
+    }
+
+    if (normCode === '93306') {
+      return (
+        <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ filter: filterString, background: '#020202', transition: 'filter 0.05s ease', display: 'block', margin: '0 auto' }}>
+          <path d="M100,20 L30,170 A95,95 0 0,0 170,170 Z" fill="none" stroke="#222" strokeWidth="1.5" />
+          <line x1="100" y1="40" x2="100" y2="145" stroke="#222" strokeWidth="3" />
+          <path d="M100,40 C125,45 138,95 130,115 C125,125 110,122 100,115" fill="none" stroke="#1c1c1c" strokeWidth="2" />
+          <path d="M100,40 C78,45 68,90 75,108 C80,115 90,112 100,108" fill="none" stroke="#161616" strokeWidth="2" />
+          <path d="M100,115 C120,120 125,145 112,152 C105,155 100,150 100,145" fill="none" stroke="#181818" strokeWidth="1.5" />
+          <path d="M100,108 C85,112 80,135 90,142 C95,145 100,142 100,135" fill="none" stroke="#121212" strokeWidth="1.5" />
+          <line x1="102" y1="115" x2="114" y2="112" stroke="#ffab40" strokeWidth="1.2" />
+          <line x1="98" y1="108" x2="88" y2="107" stroke="#222" strokeWidth="1.2" />
+          {showAnnotations && (
+            <path d="M104,115 Q114,130 110,140 Q106,145 102,130 Z" fill="url(#pacsColorJet)" opacity="0.6" />
+          )}
+          <defs>
+            <linearGradient id="pacsColorJet" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#00e676" />
+              <stop offset="50%" stopColor="#448aff" />
+              <stop offset="100%" stopColor="#ff3d57" opacity="0.1" />
+            </linearGradient>
+          </defs>
+          {showAnnotations && (
+            <g>
+              <circle cx="108" cy="115" r="7" fill="none" stroke="#ff3d57" strokeDasharray="2,2" strokeWidth="0.75" />
+              <line x1="115" y1="115" x2="132" y2="125" stroke="#ff3d57" strokeWidth="0.5" />
+              <text x="135" y="125" fill="#ff3d57" fontSize="5.5" fontWeight="bold" fontFamily="sans-serif">Mitral Valve</text>
+              <text x="135" y="132" fill="#ffab40" fontSize="4.5" fontFamily="sans-serif">Mild Mitral Regur. Jet</text>
+              <rect x="35" y="145" width="48" height="18" rx="2" fill="rgba(255,171,64,0.06)" stroke="rgba(255,171,64,0.25)" strokeWidth="0.5" />
+              <text x="39" y="152" fill="#ffab40" fontSize="4" fontWeight="bold" fontFamily="sans-serif">Grade II Diastolic</text>
+              <text x="39" y="158" fill="#ffab40" fontSize="3.5" fontFamily="sans-serif">Dysfunction (E/A &lt; 1)</text>
+              <text x="110" y="80" fill="#666" fontSize="5" fontFamily="sans-serif">LV</text>
+              <text x="85" y="80" fill="#666" fontSize="5" fontFamily="sans-serif">RV</text>
+              <text x="108" y="132" fill="#666" fontSize="5" fontFamily="sans-serif">LA</text>
+              <text x="88" y="128" fill="#666" fontSize="5" fontFamily="sans-serif">RA</text>
+            </g>
+          )}
+        </svg>
+      );
+    }
+    return null;
+  };
+
+  if (normCode !== '71250' && normCode !== '76700' && normCode !== '93306') {
+    return null;
+  }
+
+  return (
+    <div style={{
+      marginTop: '8px',
+      background: '#0a0a0c',
+      border: '1px solid #1c1c24',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: 'var(--shadow-md)'
+    }}>
+      {/* PACS Header */}
+      <div style={{
+        background: '#13131a',
+        padding: '6px 10px',
+        borderBottom: '1px solid #1c1c24',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--fg-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>
+          <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#ff3d57', display: 'inline-block' }} />
+          LUMEN PACS WEB-VIEWER
+        </span>
+        <span style={{ fontSize: '8px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--fg-muted)' }}>
+          MODE: STUDY ACTIVE · {label}
+        </span>
+      </div>
+
+      {/* PACS Viewport */}
+      <div style={{
+        padding: '12px',
+        background: '#020202',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '160px',
+        position: 'relative'
+      }}>
+        {renderScan()}
+      </div>
+
+      {/* PACS Controls Panel */}
+      <div style={{
+        background: '#0d0d12',
+        padding: '8px 10px',
+        borderTop: '1px solid #1c1c24',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowAnnotations(!showAnnotations)}
+            style={{
+              background: showAnnotations ? 'rgba(255,61,87,0.1)' : 'var(--bg-subtle)',
+              border: showAnnotations ? '1px solid rgba(255,61,87,0.3)' : '1px solid var(--border-subtle)',
+              color: showAnnotations ? '#ff3d57' : 'var(--fg-muted)',
+              fontSize: '8.5px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em'
+            }}
+            type="button"
+          >
+            {showAnnotations ? '● Annotations On' : '○ Annotations Off'}
+          </button>
+
+          <button
+            onClick={() => setIsInverted(!isInverted)}
+            style={{
+              background: isInverted ? 'rgba(0,212,255,0.1)' : 'var(--bg-subtle)',
+              border: isInverted ? '1px solid rgba(0,212,255,0.3)' : '1px solid var(--border-subtle)',
+              color: isInverted ? '#00d4ff' : 'var(--fg-muted)',
+              fontSize: '8.5px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em'
+            }}
+            type="button"
+          >
+            Invert Contrast
+          </button>
+
+          <button
+            onClick={handleReset}
+            style={{
+              background: 'none',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--fg-muted)',
+              fontSize: '8.5px',
+              fontWeight: 600,
+              padding: '3px 8px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginLeft: 'auto'
+            }}
+            type="button"
+          >
+            Reset PACS
+          </button>
+        </div>
+
+        {/* Sliders */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '2px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '8px', color: 'var(--fg-muted)' }}>
+              <span>W. LEVEL (BRIGHTNESS)</span>
+              <span style={{ marginLeft: 'auto', fontFamily: 'monospace' }}>{windowLevel}%</span>
+            </div>
+            <input
+              type="range"
+              min="40"
+              max="160"
+              value={windowLevel}
+              onChange={(e) => setWindowLevel(parseInt(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--brand)', height: '3px', cursor: 'pointer' }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '8px', color: 'var(--fg-muted)' }}>
+              <span>W. WIDTH (CONTRAST)</span>
+              <span style={{ marginLeft: 'auto', fontFamily: 'monospace' }}>{windowWidth}%</span>
+            </div>
+            <input
+              type="range"
+              min="80"
+              max="320"
+              value={windowWidth}
+              onChange={(e) => setWindowWidth(parseInt(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--brand)', height: '3px', cursor: 'pointer' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const LabResultCard: React.FC<{ code: string; vocab: string; toolName: string; result: string }> = ({
   code,
   vocab,
@@ -270,6 +550,9 @@ const LabResultCard: React.FC<{ code: string; vocab: string; toolName: string; r
           <strong>Interpretation:</strong> {structured.findings}
         </div>
       )}
+
+      {/* PACS Image Viewer */}
+      <PacsImageViewer code={code} label={structured.title} />
 
       {/* Original Raw Trace Toggle */}
       <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '4px', marginTop: '2px' }}>
