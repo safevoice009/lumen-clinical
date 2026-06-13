@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Award, Activity, Server, ShieldCheck, BookOpen, TrendingDown, Users, ShieldAlert, Plus } from 'lucide-react';
+import { 
+  Play, Award, Activity, Server, ShieldCheck, BookOpen, TrendingDown, 
+  Users, ShieldAlert, Plus, Scale, FileText, RefreshCw, Download, Copy
+} from 'lucide-react';
 
 interface LeaderboardModel {
   name: string;
@@ -76,13 +79,94 @@ const DRIFT_STEPS = [
   { text: 'Drift verification complete: 24.2% semantic shift detected. Flagging warning channels.', score: 74, duration: 1000 }
 ];
 
+const RECAL_STEPS = [
+  { text: 'Parsing attending clinician override exceptions & justifications...', duration: 900 },
+  { text: 'Updating system prompt directives: restricting biologic orders without screening...', duration: 1100 },
+  { text: 'Re-indexing Epic observation mappings for geriatric cohorts...', duration: 1000 },
+  { text: 'Running regression safety suite on 1,000 baseline adversarial transcripts...', duration: 1200 },
+  { text: 'Recalibration complete: Compliance grade restored to 98% (Grade A+). Output signed.', duration: 800 }
+];
+
+const FHIR_ATTESTATION = {
+  resourceType: "AuditEvent",
+  id: "lumen-safety-attestation-2026",
+  meta: {
+    profile: ["http://hl7.org/fhir/StructureDefinition/AuditEvent"]
+  },
+  type: {
+    system: "http://terminology.hl7.org/CodeSystem/audit-event-type",
+    code: "verify",
+    display: "Clinical Model Safety Verification"
+  },
+  action: "E",
+  recorded: "2026-06-13T08:00:00Z",
+  outcome: "0",
+  outcomeDesc: "Model safety verification passed: 98% compliance index achieved against Stanford NOHARM & MedHELM guidelines.",
+  agent: [
+    {
+      type: {
+        coding: [
+          {
+            system: "http://terminology.hl7.org/CodeSystem/extra-security-role-type",
+            code: "authserver",
+            display: "Authorization Server"
+          }
+        ]
+      },
+      who: {
+        identifier: {
+          system: "https://lumen.ai/verifiers",
+          value: "lumen-clinical-safety-engine-v2.4"
+        }
+      },
+      requestor: false
+    }
+  ],
+  source: {
+    site: "Lumen Local AI Sandbox Network",
+    observer: {
+      display: "Lumen Air-Gapped Compliance Agent"
+    }
+  },
+  entity: [
+    {
+      type: {
+        system: "http://terminology.hl7.org/CodeSystem/audit-entity-type",
+        code: "2",
+        display: "System Object"
+      },
+      role: {
+        system: "http://terminology.hl7.org/CodeSystem/object-role",
+        code: "4",
+        display: "Domain"
+      },
+      what: {
+        identifier: {
+          system: "https://lumen.ai/models",
+          value: "openvino-qwen-local"
+        }
+      },
+      name: "Qwen 7B (OpenVINO Optimized Clinical Instance)",
+      description: "Adversarial evaluation signature: sha256-f6d23a490eb93855e92c24f9cf2cf224c8b6b2fa41df9043236e78cf7dcf32ae"
+    }
+  ]
+};
+
 export const SafetyLeaderboard: React.FC = () => {
   const [models, setModels] = useState<LeaderboardModel[]>(INITIAL_MODELS);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards' | 'governance'>('scores');
+  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards' | 'governance' | 'matrix'>('scores');
+  
+  // Competitive upgrades & recalibration states
+  const [recalibrating, setRecalibrating] = useState(false);
+  const [recalProgress, setRecalProgress] = useState(0);
+  const [recalLogs, setRecalLogs] = useState<string[]>([]);
+  const [currentRecalStep, setCurrentRecalStep] = useState(-1);
+  const [showAttestation, setShowAttestation] = useState(false);
+  const [attestationCopied, setAttestationCopied] = useState(false);
 
   // Drift simulation states
   const [driftTesting, setDriftTesting] = useState(false);
@@ -227,6 +311,44 @@ export const SafetyLeaderboard: React.FC = () => {
       clearInterval(progressTimer);
     };
   }, [currentDriftStep]);
+
+  // Recalibration simulation timeline hooks
+  useEffect(() => {
+    if (currentRecalStep === -1 || currentRecalStep >= RECAL_STEPS.length) {
+      if (currentRecalStep >= RECAL_STEPS.length) {
+        setRecalibrating(false);
+        setRecalProgress(100);
+        setRecalLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✓ RECALIBRATION SUCCESSFUL. Compliance restored to 98% (Grade A+).`]);
+        setDriftScore(98);
+      }
+      return;
+    }
+
+    const step = RECAL_STEPS[currentRecalStep];
+    const timeStr = new Date().toLocaleTimeString();
+    setRecalLogs(prev => [...prev, `[${timeStr}] ${step.text}`]);
+
+    const stepWeight = 100 / RECAL_STEPS.length;
+    const progressStart = currentRecalStep * stepWeight;
+
+    const stepsCount = step.duration / 100;
+    let tick = 0;
+    const progressTimer = setInterval(() => {
+      tick++;
+      const current = progressStart + (stepWeight * (tick / stepsCount));
+      setRecalProgress(Math.min(Math.round(current), 99));
+    }, 100);
+
+    const timer = setTimeout(() => {
+      clearInterval(progressTimer);
+      setCurrentRecalStep(prev => prev + 1);
+    }, step.duration);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(progressTimer);
+    };
+  }, [currentRecalStep]);
 
   const getGradeClass = (grade: string) => {
     if (grade.startsWith('A')) return 'grade-a';
@@ -397,14 +519,24 @@ export const SafetyLeaderboard: React.FC = () => {
                 Lattice-style daily observer tracking clinical LLM performance degradation against EHR software version updates and clinical guidelines.
               </p>
             </div>
-            <button 
-              className={`btn btn-primary btn-sm ${driftTesting ? 'running' : ''}`}
-              onClick={runDriftAuditor}
-              disabled={driftTesting}
-            >
-              <Play size={12} className={driftTesting ? 'spin' : ''} />
-              {driftTesting ? 'Simulating 10,000 Patient Flows...' : 'Trigger Model Drift Check'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setShowAttestation(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <FileText size={12} />
+                Generate Safety Attestation
+              </button>
+              <button 
+                className={`btn btn-primary btn-sm ${driftTesting ? 'running' : ''}`}
+                onClick={runDriftAuditor}
+                disabled={driftTesting || recalibrating}
+              >
+                <Play size={12} className={driftTesting ? 'spin' : ''} />
+                {driftTesting ? 'Simulating 10,000 Patient Flows...' : 'Trigger Model Drift Check'}
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginTop: '16px' }}>
@@ -420,7 +552,7 @@ export const SafetyLeaderboard: React.FC = () => {
             </div>
             <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <span style={{ fontSize: '10px', color: 'var(--fg-muted)', textTransform: 'uppercase' }}>EHR Semantic Variance</span>
-              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--brand)', marginTop: '4px' }}>24.2% shift detected</strong>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--brand)', marginTop: '4px' }}>{driftScore < 98 ? '24.2% shift detected' : '0.2% variance'}</strong>
             </div>
           </div>
 
@@ -446,6 +578,68 @@ export const SafetyLeaderboard: React.FC = () => {
               <div className="lb-terminal-body" style={{ maxHeight: '120px' }}>
                 {driftLogs.map((log, idx) => (
                   <div key={idx} className="terminal-line" style={{ color: log.includes('⚠') ? 'var(--fg-danger)' : '#00d4ff' }}>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {driftScore < 80 && !recalibrating && (
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'rgba(244, 63, 94, 0.08)', borderRadius: '8px', border: '1px solid rgba(244, 63, 94, 0.22)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)' }}>
+                <TrendingDown size={16} />
+                <span style={{ fontSize: '13px', fontWeight: 'bold' }}>CRITICAL DRIFT: Safety Score degraded to {driftScore}%</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--fg-secondary)' }}>
+                Demographic drift and guideline decay detected. Geriatric prior authorization bypasses exceed threshold (NOHARM violation on biologic safety).
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-sm btn-primary animate-pulse"
+                  onClick={() => {
+                    setRecalibrating(true);
+                    setRecalProgress(0);
+                    setRecalLogs([]);
+                    setCurrentRecalStep(0);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--brand)', color: 'white', border: 'none' }}
+                >
+                  <RefreshCw size={12} className={recalibrating ? 'spin' : ''} />
+                  Trigger Prompt Recalibration &amp; Update Guidelines
+                </button>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setShowAttestation(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <FileText size={12} />
+                  Generate Safety Attestation
+                </button>
+              </div>
+            </div>
+          )}
+
+          {recalibrating && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--fg-muted)', marginBottom: '4px' }}>
+                <span>Optimizing system prompt &amp; regression testing guidelines...</span>
+                <span>{recalProgress}%</span>
+              </div>
+              <div className="lb-progress-track">
+                <div className="lb-progress-fill" style={{ width: `${recalProgress}%`, background: 'var(--color-safe)' }} />
+              </div>
+            </div>
+          )}
+
+          {(recalibrating || recalLogs.length > 0) && (
+            <div className="lb-terminal-panel" style={{ marginTop: '16px' }}>
+              <div className="lb-terminal-header">
+                <span className="terminal-title">Intelligent Recalibration Telemetry</span>
+              </div>
+              <div className="lb-terminal-body" style={{ maxHeight: '120px' }}>
+                {recalLogs.map((log, idx) => (
+                  <div key={idx} className="terminal-line" style={{ color: log.includes('✓') ? 'var(--color-safe)' : '#e9a08e' }}>
                     {log}
                   </div>
                 ))}
@@ -561,6 +755,91 @@ export const SafetyLeaderboard: React.FC = () => {
     );
   };
 
+  const renderMatrixPanel = () => {
+    return (
+      <div className="standards-library-container animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="lb-card" style={{ padding: '24px' }}>
+          <h3 className="lb-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+            <Scale size={16} style={{ color: 'var(--brand)' }} />
+            Clinical AI Safety Governance: Competitive Gap Analysis
+          </h3>
+          <p className="lb-card-subtitle" style={{ marginBottom: '20px' }}>
+            Lumen Clinical stands as the first proactive AI verification layer. While other benchmarks are static or passive, Lumen integrates simulation sandboxing with local air-gapped deployment safety audits.
+          </p>
+
+          <div className="lb-table-wrapper" style={{ overflowX: 'auto' }}>
+            <table className="lb-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-default)' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Capability / Dimension</th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>Static Benchmarks (e.g. MedBench)</th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>Passive Observability (e.g. Lattice Health)</th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--brand)', fontWeight: 'bold' }}>Lumen Proactive Governance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Adversarial Pre-Deployment Testing</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ None. Tests general clinical QA.</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ None. Evaluates only post-hoc live logs.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Proactive Red-Team Sandboxing (simulates patient responses)</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Data Contamination Protection</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Highly vulnerable. Models memorize static answers.</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>✓ High. Inspects real clinical data pools.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Dynamic scenario generation avoids answer memorization.</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Air-Gapped Intranet Integration</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Requires external cloud APIs for dataset scoring.</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ External SaaS backend requires HIPAA data export.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Fully Local Verification (OpenVINO / Ollama / LM Studio).</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Attending Clinician-in-the-Loop (HIL)</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ No physician feedback channel.</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Passive dashboards with alert noise.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Actionable Override Exception Logging &amp; Guideline Updates.</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Real-time Version &amp; Guideline Drift</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Re-evaluations are manual and static.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Scans logs for demographic anomalies.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ Synthetic patient pipeline simulates software &amp; guideline upgrades.</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '12px', fontWeight: '600' }}>Standardized Compliance Audits</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Basic score card printouts.</td>
+                  <td style={{ padding: '12px', color: 'var(--fg-secondary)' }}>❌ Proprietary compliance reports.</td>
+                  <td style={{ padding: '12px', color: 'var(--color-safe)', fontWeight: '600' }}>✓ HL7 FHIR R4 AuditEvent generation &amp; signed attestation exports.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ marginTop: '24px', background: 'var(--bg-subtle)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldAlert size={14} />
+              Why Static Benchmarks and Passive Monitoring Fail in Enterprise Healthcare
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: 'var(--fg-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li>
+                <strong>Static QA Memorization (e.g. MedBench):</strong> Model creators optimize prompts specifically to ace static exams. This results in models that score 95%+ on paper but fail to check drug-to-drug contraindications during a fluid, multi-turn clinical chat.
+              </li>
+              <li>
+                <strong>Post-Hoc-Only Observation (e.g. Lattice Health):</strong> Observing patient safety drift <i>after</i> a model goes live means the error is caught on real clinical decisions. Lumen\'s sandboxing acts as a pre-deployment firewall, catching failure modes before they reach patient care.
+              </li>
+              <li>
+                <strong>The HIPAA Trust Barrier:</strong> Enterprise systems cannot export patient EHR records to standard SaaS APIs. Lumen’s design runs completely on local host instances (e.g., OpenVINO Qwen or Ollama) to prove safety compliance within the firewall.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="leaderboard-view animate-slide-up">
       {/* Overview stats cards */}
@@ -644,6 +923,14 @@ export const SafetyLeaderboard: React.FC = () => {
             <Activity size={12} />
             Clinical Governance &amp; Drift Auditor
             <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px', fontSize: '9px', padding: '1px 5px' }}>NEW</span>
+          </button>
+          <button 
+            className={`lb-subpanel-tab ${activeSubTab === 'matrix' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('matrix')}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <Scale size={12} />
+            Competitive Gap Analysis
           </button>
         </div>
 
@@ -733,8 +1020,10 @@ export const SafetyLeaderboard: React.FC = () => {
           </>
         ) : activeSubTab === 'standards' ? (
           renderStandardsLibrary()
-        ) : (
+        ) : activeSubTab === 'governance' ? (
           renderGovernancePanel()
+        ) : (
+          renderMatrixPanel()
         )}
       </div>
 
@@ -774,6 +1063,215 @@ export const SafetyLeaderboard: React.FC = () => {
           Lumen safety evaluations run clinical transcripts through multi-agent safety auditors that verify compliance with clinical protocols (e.g. screening checks, step therapy compliance, dosage limitations). Results are dynamically signed using cryptographically auditable FHIR transaction structures.
         </p>
       </div>
+
+      {showAttestation && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '12px',
+            boxShadow: 'var(--shadow-xl)',
+            width: '650px',
+            maxWidth: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--border-subtle)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'var(--bg-subtle)',
+              borderRadius: '12px 12px 0 0'
+            }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--fg-primary)' }}>
+                <ShieldCheck style={{ color: 'var(--color-safe)' }} size={16} />
+                Clinical AI Safety Verification Certificate
+              </h3>
+              <button 
+                onClick={() => setShowAttestation(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: '16px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Badge/Stamp Style Area */}
+              <div style={{
+                border: '2px solid var(--brand)',
+                background: 'var(--brand-subtle)',
+                borderRadius: '8px',
+                padding: '20px',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '-10px',
+                  width: '60px',
+                  height: '60px',
+                  background: 'var(--brand-border)',
+                  transform: 'rotate(45deg)'
+                }} />
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Lumen Certified Safe
+                </h2>
+                <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--fg-secondary)' }}>
+                  HL7 FHIR R4 COMPLIANT VERIFICATION
+                </p>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--fg-primary)',
+                  fontWeight: '600',
+                  borderTop: '1px dashed var(--brand-border)',
+                  borderBottom: '1px dashed var(--brand-border)',
+                  padding: '8px 0',
+                  margin: '0 auto',
+                  maxWidth: '360px'
+                }}>
+                  Model: Qwen 7B (OpenVINO optimized local)
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginTop: '12px', fontSize: '12px' }}>
+                  <div>
+                    <span style={{ color: 'var(--fg-muted)' }}>Verification Grade: </span>
+                    <strong style={{ color: 'var(--color-safe)' }}>A+ (98/100)</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--fg-muted)' }}>Timestamp: </span>
+                    <strong>2026-06-13 13:37</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* SHA Hash block */}
+              <div>
+                <span style={{ fontSize: '11px', color: 'var(--fg-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  Adversarial Verification Signature Hash
+                </span>
+                <code style={{
+                  display: 'block',
+                  background: 'var(--bg-subtle)',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--fg-primary)'
+                }}>
+                  sha256-f6d23a490eb93855e92c24f9cf2cf224c8b6b2fa41df9043236e78cf7dcf32ae
+                </code>
+              </div>
+
+              {/* FHIR Audit JSON block */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--fg-muted)', textTransform: 'uppercase' }}>
+                    HL7 FHIR R4 AuditEvent Resource Output
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(FHIR_ATTESTATION, null, 2));
+                        setAttestationCopied(true);
+                        setTimeout(() => setAttestationCopied(false), 2000);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--brand)',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Copy size={10} />
+                      {attestationCopied ? 'Copied!' : 'Copy JSON'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([JSON.stringify(FHIR_ATTESTATION, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `lumen-fhir-audit-qwen.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--brand)',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Download size={10} />
+                      Download
+                    </button>
+                  </div>
+                </div>
+                <pre style={{
+                  margin: 0,
+                  background: 'var(--bg-subtle)',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontSize: '10px',
+                  fontFamily: 'monospace',
+                  maxHeight: '180px',
+                  overflowY: 'auto',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--fg-secondary)',
+                  textAlign: 'left'
+                }}>
+                  {JSON.stringify(FHIR_ATTESTATION, null, 2)}
+                </pre>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '12px 20px',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              background: 'var(--bg-subtle)',
+              borderRadius: '0 0 12px 12px'
+            }}>
+              <button 
+                className="btn btn-sm btn-primary"
+                onClick={() => setShowAttestation(false)}
+                style={{ background: 'var(--brand)', color: 'white', border: 'none' }}
+              >
+                Close Verification Portal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

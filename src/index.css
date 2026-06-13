@@ -242,6 +242,66 @@
   --bg-card:          #ffffff;
 }
 
+/* Custom Navigation Menu Overrides for Light Mode Pastel Blossom theme */
+[data-theme="light"][data-palette="pastel"] .nav-dropdown {
+  background: rgba(253, 251, 247, 0.98);
+  border-color: rgba(195, 123, 108, 0.25);
+  box-shadow: 0 10px 30px rgba(195, 123, 108, 0.12), 0 1px 3px rgba(195, 123, 108, 0.06);
+}
+
+[data-theme="light"][data-palette="pastel"] .dropdown-link-btn {
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+}
+
+[data-theme="light"][data-palette="pastel"] .sandbox-dropdown .dropdown-link-btn {
+  background: rgba(181, 161, 232, 0.05); /* soft lavender tint */
+  border-color: rgba(181, 161, 232, 0.12);
+}
+[data-theme="light"][data-palette="pastel"] .sandbox-dropdown .dropdown-link-btn:hover {
+  background: rgba(181, 161, 232, 0.12);
+  border-color: rgba(181, 161, 232, 0.3);
+}
+[data-theme="light"][data-palette="pastel"] .sandbox-dropdown .dropdown-link-btn.active {
+  background: rgba(181, 161, 232, 0.18);
+  border-color: rgba(181, 161, 232, 0.4);
+  color: #5d3eb3;
+}
+
+[data-theme="light"][data-palette="pastel"] .scribe-dropdown .dropdown-link-btn {
+  background: rgba(141, 199, 162, 0.05); /* soft mint tint */
+  border-color: rgba(141, 199, 162, 0.12);
+}
+[data-theme="light"][data-palette="pastel"] .scribe-dropdown .dropdown-link-btn:hover {
+  background: rgba(141, 199, 162, 0.12);
+  border-color: rgba(141, 199, 162, 0.3);
+}
+[data-theme="light"][data-palette="pastel"] .scribe-dropdown .dropdown-link-btn.active {
+  background: rgba(141, 199, 162, 0.18);
+  border-color: rgba(141, 199, 162, 0.4);
+  color: #3b7a54;
+}
+
+[data-theme="light"][data-palette="pastel"] .standards-dropdown .dropdown-link-btn {
+  background: rgba(233, 160, 142, 0.05); /* soft coral peach tint */
+  border-color: rgba(233, 160, 142, 0.12);
+}
+[data-theme="light"][data-palette="pastel"] .standards-dropdown .dropdown-link-btn:hover {
+  background: rgba(233, 160, 142, 0.12);
+  border-color: rgba(233, 160, 142, 0.3);
+}
+[data-theme="light"][data-palette="pastel"] .standards-dropdown .dropdown-link-btn.active {
+  background: rgba(233, 160, 142, 0.18);
+  border-color: rgba(233, 160, 142, 0.4);
+  color: #7d4338;
+}
+
+[data-theme="light"][data-palette="pastel"] .dropdown-footer {
+  border-top: 1px dashed rgba(195, 123, 108, 0.2);
+  color: #7d4338;
+}
+
 /* ── Tier 3: Structural Constants ── */
 :root {
   /* Radius scale */

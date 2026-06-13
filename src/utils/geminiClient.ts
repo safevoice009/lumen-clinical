@@ -54,6 +54,16 @@ export function getActiveModelConfig(): ModelConfig {
     }
   } catch (e) {}
 
+  const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+  if (envKey) {
+    return {
+      source: 'gemini',
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+      apiKey: '',
+      modelName: 'gemini-2.0-flash',
+    };
+  }
+
   return {
     source: 'openvino',
     endpoint: 'http://127.0.0.1:8000',

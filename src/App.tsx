@@ -8,7 +8,7 @@ import { DischargePortalView, PortalData } from './components/DischargePortalVie
 import { 
   Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale, 
   Sparkles, FileEdit, BookOpenCheck, Trophy, BookOpen, ShieldCheck,
-  Stethoscope, BarChart3, ChevronDown, Menu, X
+  Stethoscope, BarChart3, ChevronDown, Menu, X, Palette
 } from 'lucide-react';
 
 export default function App() {
@@ -27,6 +27,7 @@ export default function App() {
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPaletteDropdownOpen, setIsPaletteDropdownOpen] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
   const [portalData, setPortalData] = useState<PortalData | null>(null);
 
@@ -74,6 +75,7 @@ export default function App() {
       if (e.key === 'Escape') {
         setActiveDropdown(null);
         setIsMobileMenuOpen(false);
+        setIsPaletteDropdownOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -86,6 +88,9 @@ export default function App() {
       const target = e.target as HTMLElement;
       if (!target.closest('.nav-item-container')) {
         setActiveDropdown(null);
+      }
+      if (!target.closest('.palette-toggle-container')) {
+        setIsPaletteDropdownOpen(false);
       }
     };
     window.addEventListener('click', handleOutsideClick);
@@ -475,6 +480,119 @@ export default function App() {
             >
               {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
             </button>
+
+            {/* Palette selection toggler */}
+            <div className="palette-toggle-container" style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                className={`theme-toggle ${isPaletteDropdownOpen ? 'active' : ''}`}
+                onClick={() => setIsPaletteDropdownOpen(!isPaletteDropdownOpen)}
+                aria-label="Customize Color Palette"
+                title="Customize Color Palette"
+              >
+                <Palette size={15} />
+              </button>
+              {isPaletteDropdownOpen && (
+                <div 
+                  className="palette-menu-dropdown animate-fade-in" 
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-md)',
+                    padding: '8px',
+                    width: '170px',
+                    zIndex: 1100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
+                  <button 
+                    onClick={() => { setPalette('classic'); setIsPaletteDropdownOpen(false); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: palette === 'classic' ? 'var(--brand-subtle)' : 'transparent',
+                      border: 'none',
+                      color: 'var(--fg-primary)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F18B62', display: 'inline-block' }} />
+                    <span style={{ fontWeight: palette === 'classic' ? '600' : 'normal' }}>Classic Orange</span>
+                  </button>
+                  <button 
+                    onClick={() => { setPalette('royal'); setIsPaletteDropdownOpen(false); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: palette === 'royal' ? 'var(--brand-subtle)' : 'transparent',
+                      border: 'none',
+                      color: 'var(--fg-primary)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block' }} />
+                    <span style={{ fontWeight: palette === 'royal' ? '600' : 'normal' }}>Royal Violet</span>
+                  </button>
+                  <button 
+                    onClick={() => { setPalette('emerald'); setIsPaletteDropdownOpen(false); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: palette === 'emerald' ? 'var(--brand-subtle)' : 'transparent',
+                      border: 'none',
+                      color: 'var(--fg-primary)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                    <span style={{ fontWeight: palette === 'emerald' ? '600' : 'normal' }}>Emerald Clinical</span>
+                  </button>
+                  <button 
+                    onClick={() => { setPalette('pastel'); setIsPaletteDropdownOpen(false); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: palette === 'pastel' ? 'var(--brand-subtle)' : 'transparent',
+                      border: 'none',
+                      color: 'var(--fg-primary)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e9a08e', display: 'inline-block' }} />
+                    <span style={{ fontWeight: palette === 'pastel' ? '600' : 'normal' }}>Pastel Blossom</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* GitHub link */}
             <a
