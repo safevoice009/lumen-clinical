@@ -164,6 +164,84 @@
   --icon-invert: 0;
 }
 
+/* ==========================================================================
+   COLOR PALETTES OVERRIDES (Odysseus style customization)
+   ========================================================================== */
+
+/* ── Royal Violet Palette ── */
+[data-palette="royal"] {
+  --brand:            hsl(var(--violet-400));
+  --brand-dim:        hsl(var(--violet-500));
+  --brand-subtle:     hsla(259, 55%, 62%, 0.10);
+  --brand-border:     hsla(259, 55%, 62%, 0.22);
+  --brand-glow:       0 0 20px hsla(259, 55%, 62%, 0.14);
+  --fg-brand:         #e8dffc;
+  --fg-code:          #e8dffc;
+}
+[data-theme="light"][data-palette="royal"] {
+  --brand:            hsl(var(--violet-500));
+  --brand-dim:        hsl(259, 50%, 42%);
+  --brand-subtle:     hsla(259, 50%, 52%, 0.08);
+  --brand-border:     hsla(259, 50%, 52%, 0.22);
+  --brand-glow:       0 0 20px hsla(259, 50%, 52%, 0.12);
+  --fg-brand:         hsl(259, 50%, 42%);
+  --fg-code:          hsl(259, 50%, 42%);
+}
+
+/* ── Emerald Clinical Palette ── */
+[data-palette="emerald"] {
+  --brand:            hsl(var(--emerald-400));
+  --brand-dim:        hsl(var(--emerald-500));
+  --brand-subtle:     hsla(142, 55%, 48%, 0.10);
+  --brand-border:     hsla(142, 55%, 48%, 0.22);
+  --brand-glow:       0 0 20px hsla(142, 55%, 48%, 0.14);
+  --fg-brand:         #d1fae5;
+  --fg-code:          #d1fae5;
+}
+[data-theme="light"][data-palette="emerald"] {
+  --brand:            hsl(var(--emerald-500));
+  --brand-dim:        hsl(var(--emerald-600));
+  --brand-subtle:     hsla(142, 50%, 40%, 0.08);
+  --brand-border:     hsla(142, 50%, 40%, 0.22);
+  --brand-glow:       0 0 20px hsla(142, 50%, 40%, 0.12);
+  --fg-brand:         hsl(var(--emerald-600));
+  --fg-code:          hsl(var(--emerald-600));
+}
+
+/* ── Pastel Blossom Palette (Pastel Mint, Lavender, Peach) ── */
+[data-palette="pastel"] {
+  --brand:            #e9a08e; /* soft coral-peach */
+  --brand-dim:        #d48674;
+  --brand-subtle:     rgba(233, 160, 142, 0.12);
+  --brand-border:     rgba(233, 160, 142, 0.25);
+  --brand-glow:       0 0 20px rgba(233, 160, 142, 0.15);
+  --fg-brand:         #fcefe8;
+  --fg-code:          #fcefe8;
+  
+  /* Soft pastel overrides for light/dark elements */
+  --color-redteam:    #b5a1e8; /* pastel lavender */
+  --color-redteam-bg: rgba(181, 161, 232, 0.12);
+  --color-redteam-border: rgba(181, 161, 232, 0.25);
+  
+  --color-safe:       #8dc7a2; /* pastel mint */
+  --color-safe-bg:    rgba(141, 199, 162, 0.12);
+  --color-safe-border:rgba(141, 199, 162, 0.25);
+}
+[data-theme="light"][data-palette="pastel"] {
+  --brand:            #c37b6c;
+  --brand-dim:        #a36052;
+  --brand-subtle:     rgba(195, 123, 108, 0.08);
+  --brand-border:     rgba(195, 123, 108, 0.22);
+  --brand-glow:       0 0 20px rgba(195, 123, 108, 0.12);
+  --fg-brand:         #7d4338;
+  --fg-code:          #7d4338;
+  
+  /* Light mode app bg modifications to fit warm pastel sand */
+  --bg-app:           #fbfaf7;
+  --bg-subtle:        #f3f1e9;
+  --bg-card:          #ffffff;
+}
+
 /* ── Tier 3: Structural Constants ── */
 :root {
   /* Radius scale */

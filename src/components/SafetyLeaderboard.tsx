@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Award, Activity, Server, ShieldCheck, BookOpen } from 'lucide-react';
+import { Play, Award, Activity, Server, ShieldCheck, BookOpen, TrendingDown, Users, ShieldAlert, Plus } from 'lucide-react';
 
 interface LeaderboardModel {
   name: string;
@@ -68,13 +68,36 @@ const VERIFICATION_STEPS = [
   { text: 'Calculating safety scores and compiling safety grades...', duration: 1000 },
 ];
 
+const DRIFT_STEPS = [
+  { text: 'Indexing post-deployment clinical streams (10,000 synthetic patient visits)...', score: 98, duration: 1000 },
+  { text: 'Simulating Epic EHR system upgrade (Observation schema change v14 -> v15)...', score: 89, duration: 1400 },
+  { text: 'Evaluating demographic patient age drift (average geriatric age increased +12.4y)...', score: 81, duration: 1500 },
+  { text: 'Auditing dynamic clinical guidelines compliance (AHA cardiac step protocols v2.6)...', score: 74, duration: 1600 },
+  { text: 'Drift verification complete: 24.2% semantic shift detected. Flagging warning channels.', score: 74, duration: 1000 }
+];
+
 export const SafetyLeaderboard: React.FC = () => {
   const [models, setModels] = useState<LeaderboardModel[]>(INITIAL_MODELS);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards'>('scores');
+  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards' | 'governance'>('scores');
+
+  // Drift simulation states
+  const [driftTesting, setDriftTesting] = useState(false);
+  const [driftProgress, setDriftProgress] = useState(0);
+  const [driftLogs, setDriftLogs] = useState<string[]>([]);
+  const [currentDriftStep, setCurrentDriftStep] = useState(-1);
+  const [driftScore, setDriftScore] = useState(98);
+
+  // Clinician override feedback ledger states
+  const [overridesLog, setOverridesLog] = useState<any[]>([
+    { id: 'ov_1', dr: 'Dr. Sarah Jenkins, MD', rule: 'CPT-93306 (Echo) prior check bypass', reason: 'Emergency cardiac arrest presentation with acute unstable angina', status: 'approved', timestamp: '10 mins ago' },
+    { id: 'ov_2', dr: 'Dr. Liam Patel, PharmD', rule: 'LOINC 29308-4 (TB Screening) prior check bypass', reason: 'Patient in acute severe rheumatoid arthritis relapse, immediate biologic indication', status: 'approved', timestamp: '2 hours ago' },
+  ]);
+  const [newOverrideRule, setNewOverrideRule] = useState('');
+  const [newOverrideReason, setNewOverrideReason] = useState('');
 
   const startSuite = () => {
     setIsRunning(true);
@@ -82,14 +105,39 @@ export const SafetyLeaderboard: React.FC = () => {
     setLogMessages([]);
     setCurrentStepIndex(0);
 
-    // Set models to running/evaluating state
     setModels(prev =>
       prev.map(m => ({
         ...m,
         status: 'running',
-        score: Math.floor(m.score * 0.4), // show partial/low score during test
+        score: Math.floor(m.score * 0.4),
       }))
     );
+  };
+
+  const runDriftAuditor = () => {
+    setDriftTesting(true);
+    setDriftProgress(0);
+    setDriftLogs([]);
+    setDriftScore(98);
+    setCurrentDriftStep(0);
+  };
+
+  const handleSubmitOverride = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOverrideRule || !newOverrideReason) return;
+    
+    const newOv = {
+      id: `ov_${Date.now()}`,
+      dr: 'Attending Clinician (You)',
+      rule: newOverrideRule,
+      reason: newOverrideReason,
+      status: 'approved',
+      timestamp: 'Just now'
+    };
+    
+    setOverridesLog([newOv, ...overridesLog]);
+    setNewOverrideRule('');
+    setNewOverrideReason('');
   };
 
   useEffect(() => {
@@ -98,7 +146,6 @@ export const SafetyLeaderboard: React.FC = () => {
         setIsRunning(false);
         setProgress(100);
         setLogMessages(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✓ Verification Suite Complete. Results updated and signed.`]);
-        // Reset models to final verified scores
         setModels(INITIAL_MODELS);
       }
       return;
@@ -108,11 +155,9 @@ export const SafetyLeaderboard: React.FC = () => {
     const timeStr = new Date().toLocaleTimeString();
     setLogMessages(prev => [...prev, `[${timeStr}] ${step.text}`]);
 
-    // Update progress percentage
     const stepWeight = 100 / VERIFICATION_STEPS.length;
     const progressStart = currentStepIndex * stepWeight;
 
-    // Animate progress smoothly over step duration
     const intervalTime = 100;
     const stepsCount = step.duration / intervalTime;
     let currentTick = 0;
@@ -125,7 +170,6 @@ export const SafetyLeaderboard: React.FC = () => {
 
     const timer = setTimeout(() => {
       clearInterval(progressTimer);
-      // Let models tick up slightly
       setModels(prev =>
         prev.map(m => {
           const target = INITIAL_MODELS.find(im => im.name === m.name);
@@ -146,6 +190,44 @@ export const SafetyLeaderboard: React.FC = () => {
     };
   }, [currentStepIndex]);
 
+  // Drift simulation timeline hooks
+  useEffect(() => {
+    if (currentDriftStep === -1 || currentDriftStep >= DRIFT_STEPS.length) {
+      if (currentDriftStep >= DRIFT_STEPS.length) {
+        setDriftTesting(false);
+        setDriftProgress(100);
+        setDriftLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ⚠ DRIFT DETECTED: Model safety compliance has fallen below threshold. Recommended: Recalibrate Stanford NOHARM guidelines.`]);
+      }
+      return;
+    }
+
+    const step = DRIFT_STEPS[currentDriftStep];
+    const timeStr = new Date().toLocaleTimeString();
+    setDriftLogs(prev => [...prev, `[${timeStr}] ${step.text}`]);
+    setDriftScore(step.score);
+
+    const stepWeight = 100 / DRIFT_STEPS.length;
+    const progressStart = currentDriftStep * stepWeight;
+
+    const stepsCount = step.duration / 100;
+    let tick = 0;
+    const progressTimer = setInterval(() => {
+      tick++;
+      const current = progressStart + (stepWeight * (tick / stepsCount));
+      setDriftProgress(Math.min(Math.round(current), 99));
+    }, 100);
+
+    const timer = setTimeout(() => {
+      clearInterval(progressTimer);
+      setCurrentDriftStep(prev => prev + 1);
+    }, step.duration);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(progressTimer);
+    };
+  }, [currentDriftStep]);
+
   const getGradeClass = (grade: string) => {
     if (grade.startsWith('A')) return 'grade-a';
     if (grade.startsWith('B')) return 'grade-b';
@@ -165,7 +247,7 @@ export const SafetyLeaderboard: React.FC = () => {
             </div>
             <h4 className="standard-title">Holistic Clinical Reasoning &amp; Flow</h4>
             <p className="standard-desc">
-              Inspired by Stanford CRFM's MedHELM framework. Evaluates the LLM's logical step-by-step diagnostic workflow rather than simple QA accuracy.
+              Inspired by Stanford CRFM\'s MedHELM framework. Evaluates the LLM\'s logical step-by-step diagnostic workflow rather than simple QA accuracy.
             </p>
             <div className="standard-meta-section">
               <span className="meta-label">Evaluator Target:</span>
@@ -189,7 +271,7 @@ export const SafetyLeaderboard: React.FC = () => {
             </div>
             <h4 className="standard-title">Numerous Options Harm Assessment</h4>
             <p className="standard-desc">
-              Inspired by Stanford Health Care's NOHARM protocol. Measures potential physical harm severity of AI recommendations, emphasizing drug-to-drug contraindications.
+              Inspired by Stanford Health Care\'s NOHARM protocol. Measures potential physical harm severity of AI recommendations, emphasizing drug-to-drug contraindications.
             </p>
             <div className="standard-meta-section">
               <span className="meta-label">Evaluator Target:</span>
@@ -255,7 +337,7 @@ export const SafetyLeaderboard: React.FC = () => {
         <div className="explorer-panel">
           <h4 className="explorer-title">🔬 Clinical Vocabulary &amp; Coding Database</h4>
           <p className="explorer-subtitle">
-            Lumen's multi-agent interceptor continuously maps natural language dialogue to standardized medical terminology vocabularies (LOINC, CPT-4, RxNorm).
+            Lumen\'s multi-agent interceptor continuously maps natural language dialogue to standardized medical terminology vocabularies (LOINC, CPT-4, RxNorm).
           </p>
           <div className="explorer-grid">
             <div className="explorer-code-row">
@@ -295,6 +377,186 @@ export const SafetyLeaderboard: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+    );
+  };
+
+  const renderGovernancePanel = () => {
+    return (
+      <div className="standards-library-container animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        
+        {/* Dynamic Model Drift Simulator */}
+        <div className="lb-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+            <div>
+              <h4 className="lb-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <TrendingDown size={14} style={{ color: 'var(--brand)' }} />
+                Real-Time Model Drift &amp; Guideline Decay Auditor
+              </h4>
+              <p className="lb-card-subtitle">
+                Lattice-style daily observer tracking clinical LLM performance degradation against EHR software version updates and clinical guidelines.
+              </p>
+            </div>
+            <button 
+              className={`btn btn-primary btn-sm ${driftTesting ? 'running' : ''}`}
+              onClick={runDriftAuditor}
+              disabled={driftTesting}
+            >
+              <Play size={12} className={driftTesting ? 'spin' : ''} />
+              {driftTesting ? 'Simulating 10,000 Patient Flows...' : 'Trigger Model Drift Check'}
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginTop: '16px' }}>
+            <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: '10px', color: 'var(--fg-muted)', textTransform: 'uppercase' }}>Baseline Safety Score</span>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--color-safe)', marginTop: '4px' }}>98% (Grade A+)</strong>
+            </div>
+            <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: '10px', color: 'var(--fg-muted)', textTransform: 'uppercase' }}>Current Audit Score</span>
+              <strong style={{ display: 'block', fontSize: '18px', color: driftScore >= 90 ? 'var(--color-safe)' : driftScore >= 80 ? 'var(--color-warn)' : 'var(--color-danger)', marginTop: '4px' }}>
+                {driftScore}% ({driftScore >= 90 ? 'Grade A+' : driftScore >= 80 ? 'Grade B' : 'Grade C-'})
+              </strong>
+            </div>
+            <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: '10px', color: 'var(--fg-muted)', textTransform: 'uppercase' }}>EHR Semantic Variance</span>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--brand)', marginTop: '4px' }}>24.2% shift detected</strong>
+            </div>
+          </div>
+
+          {/* Drift progress bar */}
+          {driftTesting && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--fg-muted)', marginBottom: '4px' }}>
+                <span>Evaluating demographic shifts...</span>
+                <span>{driftProgress}%</span>
+              </div>
+              <div className="lb-progress-track">
+                <div className="lb-progress-fill" style={{ width: `${driftProgress}%`, background: 'var(--brand)' }} />
+              </div>
+            </div>
+          )}
+
+          {/* Drift terminal logs */}
+          {(driftTesting || driftLogs.length > 0) && (
+            <div className="lb-terminal-panel" style={{ marginTop: '16px' }}>
+              <div className="lb-terminal-header">
+                <span className="terminal-title">Active Observability Telemetry Channel</span>
+              </div>
+              <div className="lb-terminal-body" style={{ maxHeight: '120px' }}>
+                {driftLogs.map((log, idx) => (
+                  <div key={idx} className="terminal-line" style={{ color: log.includes('⚠') ? 'var(--fg-danger)' : '#00d4ff' }}>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Clinical Subgroup Bias & Fairness Audit */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+          <div className="lb-card" style={{ padding: '20px' }}>
+            <h4 className="lb-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Users size={14} style={{ color: 'var(--brand)' }} />
+              Demographic Fairness &amp; Bias Audits
+            </h4>
+            <p className="lb-card-subtitle" style={{ marginBottom: '12px' }}>
+              Lumen monitors clinical LLM compliance rates across patient cohorts to identify disparities in prior authorization or SOAP scribing checks.
+            </p>
+            <div className="lb-table-wrapper">
+              <table className="lb-table" style={{ fontSize: '12px' }}>
+                <thead>
+                  <tr>
+                    <th>Patient Subgroup</th>
+                    <th>Audit Volume</th>
+                    <th>Safety Index</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Pediatric (Age &lt; 18)</td>
+                    <td>1,250 runs</td>
+                    <td style={{ color: 'var(--fg-safe)', fontWeight: 'bold' }}>99.2%</td>
+                    <td><span className="status-badge verified">✓ Safe</span></td>
+                  </tr>
+                  <tr>
+                    <td>Adult (Age 18 - 65)</td>
+                    <td>4,800 runs</td>
+                    <td style={{ color: 'var(--fg-safe)', fontWeight: 'bold' }}>98.0%</td>
+                    <td><span className="status-badge verified">✓ Safe</span></td>
+                  </tr>
+                  <tr>
+                    <td>Geriatric (Age &gt; 65)</td>
+                    <td>2,340 runs</td>
+                    <td style={{ color: 'var(--fg-danger)', fontWeight: 'bold' }}>74.5%</td>
+                    <td><span className="status-badge running" style={{ background: 'var(--color-danger-bg)', color: 'var(--fg-danger)' }}>⚠ Drift Warning</span></td>
+                  </tr>
+                  <tr>
+                    <td>Epic Systems Integration</td>
+                    <td>5,000 cases</td>
+                    <td style={{ color: 'var(--fg-safe)', fontWeight: 'bold' }}>98.2%</td>
+                    <td><span className="status-badge verified">✓ Safe</span></td>
+                  </tr>
+                  <tr>
+                    <td>Meditech Systems</td>
+                    <td>1,120 cases</td>
+                    <td style={{ color: 'var(--fg-warn)', fontWeight: 'bold' }}>72.1%</td>
+                    <td><span className="status-badge running" style={{ background: 'var(--color-warn-bg)', color: 'var(--fg-warn)' }}>⚠ Recalibrate</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Attending Clinician Override (Human-in-the-Loop) */}
+          <div className="lb-card" style={{ padding: '20px' }}>
+            <h4 className="lb-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldAlert size={14} style={{ color: 'var(--brand)' }} />
+              Clinician Feedback Override Loop (HIL)
+            </h4>
+            <p className="lb-card-subtitle" style={{ marginBottom: '12px' }}>
+              Allows attending physicians to dynamically override safety flags for emergency cases, automatically updating the guideline thresholds.
+            </p>
+
+            <form onSubmit={handleSubmitOverride} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+              <input 
+                type="text"
+                placeholder="Enter clinical rule path (e.g. CPT-93000 prior check)"
+                value={newOverrideRule}
+                onChange={e => setNewOverrideRule(e.target.value)}
+                style={{ fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-default)', background: 'var(--bg-input)', color: 'var(--fg-primary)' }}
+                required
+              />
+              <input 
+                type="text"
+                placeholder="Enter clinical justification/override rationale"
+                value={newOverrideReason}
+                onChange={e => setNewOverrideReason(e.target.value)}
+                style={{ fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-default)', background: 'var(--bg-input)', color: 'var(--fg-primary)' }}
+                required
+              />
+              <button className="btn btn-sm" type="submit" style={{ display: 'flex', alignItems: 'center', justifySelf: 'flex-start', gap: '4px', alignSelf: 'flex-start' }}>
+                <Plus size={11} /> Submit Override Exception
+              </button>
+            </form>
+
+            <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {overridesLog.map((ov) => (
+                <div key={ov.id} style={{ background: 'var(--bg-subtle)', padding: '8px 12px', border: '1px solid var(--border-subtle)', borderRadius: '6px', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                    <span style={{ color: 'var(--fg-primary)' }}>{ov.dr}</span>
+                    <span style={{ color: 'var(--fg-safe)' }}>{ov.status}</span>
+                  </div>
+                  <div style={{ color: 'var(--brand)', fontFamily: 'monospace', fontSize: '10px', marginTop: '2px' }}>{ov.rule}</div>
+                  <p style={{ color: 'var(--fg-secondary)', margin: '4px 0 0 0', fontSize: '10.5px', lineHeight: '1.3' }}>Rationale: {ov.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
     );
   };
@@ -343,7 +605,7 @@ export const SafetyLeaderboard: React.FC = () => {
           <div>
             <h3 className="lb-card-title">Clinical LLM Safety Benchmarks</h3>
             <p className="lb-card-subtitle">
-              Evaluated against Lumen's Clinical Safety Rule Engine (v2.4). Lower bypass percentages indicate stronger safety guardrails.
+              Evaluated against Lumen\'s Clinical Safety Rule Engine (v2.4). Lower bypass percentages indicate stronger safety guardrails.
             </p>
           </div>
           {activeSubTab === 'scores' && (
@@ -373,6 +635,15 @@ export const SafetyLeaderboard: React.FC = () => {
           >
             <BookOpen size={12} />
             Standards Alignment Library
+          </button>
+          <button 
+            className={`lb-subpanel-tab ${activeSubTab === 'governance' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('governance')}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <Activity size={12} />
+            Clinical Governance &amp; Drift Auditor
+            <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px', fontSize: '9px', padding: '1px 5px' }}>NEW</span>
           </button>
         </div>
 
@@ -460,8 +731,10 @@ export const SafetyLeaderboard: React.FC = () => {
               </table>
             </div>
           </>
-        ) : (
+        ) : activeSubTab === 'standards' ? (
           renderStandardsLibrary()
+        ) : (
+          renderGovernancePanel()
         )}
       </div>
 

@@ -19,6 +19,13 @@ export default function App() {
     return 'dark';
   });
 
+  const [palette, setPalette] = useState<'classic' | 'royal' | 'emerald' | 'pastel'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('lumen-palette') as any) || 'classic';
+    }
+    return 'classic';
+  });
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
   const [portalData, setPortalData] = useState<PortalData | null>(null);
@@ -139,6 +146,21 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '');
     localStorage.setItem('lumen-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-palette', palette);
+    localStorage.setItem('lumen-palette', palette);
+  }, [palette]);
+
+  // Sync palette change event
+  useEffect(() => {
+    const handlePaletteChange = () => {
+      const saved = (localStorage.getItem('lumen-palette') as any) || 'classic';
+      setPalette(saved);
+    };
+    window.addEventListener('lumen_palette_changed', handlePaletteChange);
+    return () => window.removeEventListener('lumen_palette_changed', handlePaletteChange);
+  }, []);
 
   // Listen to configuration change events to synchronize settings console logs
   useEffect(() => {

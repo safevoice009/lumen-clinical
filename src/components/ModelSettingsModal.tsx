@@ -21,6 +21,13 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
   const [discovering, setDiscovering] = useState(false);
   const [discoveryError, setDiscoveryError] = useState('');
 
+  const [palette, setPalette] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lumen-palette') || 'classic';
+    }
+    return 'classic';
+  });
+
   const handleDiscoverModels = async () => {
     setDiscovering(true);
     setDiscoveryError('');
@@ -57,6 +64,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
       setTestResult({ status: 'idle', message: '' });
       setDiscoveredModels([]);
       setDiscoveryError('');
+      setPalette(localStorage.getItem('lumen-palette') || 'classic');
       try {
         const stored = localStorage.getItem('lumen_session_history');
         if (stored) setHistory(JSON.parse(stored));
@@ -133,11 +141,13 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
 
   const handleSave = () => {
     saveModelConfig(config);
+    localStorage.setItem('lumen-palette', palette);
     if (onLog) {
       onLog('success', 'GATEWAY', `Gateway bound to local model server (${config.source.toUpperCase()}) on model "${config.modelName}".`);
     }
-    // Dispatch custom event to notify other modules
+    // Dispatch custom events to notify other modules
     window.dispatchEvent(new CustomEvent('lumen_model_config_changed', { detail: config }));
+    window.dispatchEvent(new Event('lumen_palette_changed'));
     onClose();
   };
 
@@ -281,6 +291,50 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
               />
             </div>
           )}
+        </div>
+
+        {/* Workstation Aesthetics Panel */}
+        <div className="settings-section" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
+          <label className="section-label">Workstation Theme Palette</label>
+          <div className="presets-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <button 
+              type="button"
+              className={`preset-btn ${palette === 'classic' ? 'active' : ''}`}
+              onClick={() => setPalette('classic')}
+              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F18B62', display: 'inline-block' }} />
+              <strong style={{ fontSize: '10.5px' }}>Classic Orange</strong>
+            </button>
+            <button 
+              type="button"
+              className={`preset-btn ${palette === 'royal' ? 'active' : ''}`}
+              onClick={() => setPalette('royal')}
+              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block' }} />
+              <strong style={{ fontSize: '10.5px' }}>Royal Violet</strong>
+            </button>
+            <button 
+              type="button"
+              className={`preset-btn ${palette === 'emerald' ? 'active' : ''}`}
+              onClick={() => setPalette('emerald')}
+              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+              <strong style={{ fontSize: '10.5px' }}>Emerald Clinical</strong>
+            </button>
+            <button 
+              type="button"
+              className={`preset-btn ${palette === 'pastel' ? 'active' : ''}`}
+              onClick={() => setPalette('pastel')}
+              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+              title="Soft pastels - highly recommended for Light Mode"
+            >
+              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#e9a08e', display: 'inline-block' }} />
+              <strong style={{ fontSize: '10.5px' }}>Pastel Blossom</strong>
+            </button>
+          </div>
         </div>
 
         {/* Diagnostics & Connection Test Status */}
