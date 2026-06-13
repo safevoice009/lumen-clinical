@@ -445,7 +445,16 @@ code, pre, .mono {
   animation: pulse-dot 2s ease-in-out infinite;
   box-shadow: 0 0 0 2px var(--color-safe-bg);
 }
-.status-pill .val { color: var(--fg-secondary); font-weight: 700; }
+.status-pill .val {
+  color: var(--fg-secondary);
+  font-weight: 700;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
 
 /* Theme toggle */
 .theme-toggle {
@@ -5170,6 +5179,19 @@ code, pre, .mono {
   visibility: visible;
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
+}
+
+/* Hover Bridge to prevent premature mouseleave across the 12px gap */
+.nav-dropdown::after {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: transparent;
+  pointer-events: auto;
+  z-index: -1;
 }
 
 /* Visual color indicators at the top of each card */

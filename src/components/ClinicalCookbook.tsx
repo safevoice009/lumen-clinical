@@ -389,6 +389,12 @@ python -m vllm.entrypoints.openai.api_server \\
                       {serviceStates.openvino.status === 'loading' ? 'Checking...' : 'Detect Models'}
                     </button>
                   </div>
+                  {/* Connection Error Message */}
+                  {serviceStates.openvino.status === 'failed' && serviceStates.openvino.error && (
+                    <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--fg-danger)', background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)', padding: '8px 12px', borderRadius: '6px', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                      <strong>Connection Error:</strong> {serviceStates.openvino.error}. Ensure the host wrapper is running and CORS is enabled.
+                    </div>
+                  )}
                   {/* Model List */}
                   {serviceStates.openvino.status === 'success' && (
                     <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '10px' }}>
@@ -443,6 +449,12 @@ python -m vllm.entrypoints.openai.api_server \\
                       {serviceStates.ollama.status === 'loading' ? 'Checking...' : 'Detect Models'}
                     </button>
                   </div>
+                  {/* Connection Error Message */}
+                  {serviceStates.ollama.status === 'failed' && serviceStates.ollama.error && (
+                    <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--fg-danger)', background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)', padding: '8px 12px', borderRadius: '6px', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                      <strong>Connection Error:</strong> {serviceStates.ollama.error}. Ensure Ollama is running and CORS is enabled (run <code>OLLAMA_ORIGINS="*" ollama serve</code>).
+                    </div>
+                  )}
                   {/* Model List */}
                   {serviceStates.ollama.status === 'success' && (
                     <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '10px' }}>
@@ -497,6 +509,12 @@ python -m vllm.entrypoints.openai.api_server \\
                       {serviceStates.lmstudio.status === 'loading' ? 'Checking...' : 'Detect Models'}
                     </button>
                   </div>
+                  {/* Connection Error Message */}
+                  {serviceStates.lmstudio.status === 'failed' && serviceStates.lmstudio.error && (
+                    <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--fg-danger)', background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)', padding: '8px 12px', borderRadius: '6px', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                      <strong>Connection Error:</strong> {serviceStates.lmstudio.error}. Ensure server is running and CORS is enabled in settings.
+                    </div>
+                  )}
                   {/* Model List */}
                   {serviceStates.lmstudio.status === 'success' && (
                     <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '10px' }}>

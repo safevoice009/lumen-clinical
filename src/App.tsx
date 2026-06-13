@@ -104,10 +104,10 @@ export default function App() {
     if (dropdownTimeoutId) {
       clearTimeout(dropdownTimeoutId);
     }
-    // Give 300ms window so cursor can travel across gaps and into the dropdown
+    // Give 650ms window so cursor can travel across gaps and into the dropdown
     const timer = setTimeout(() => {
       setActiveDropdown(null);
-    }, 300);
+    }, 650);
     setDropdownTimeoutId(timer);
   };
 
@@ -430,7 +430,7 @@ export default function App() {
               <span className="dot" />
               <span>FHIR R4</span>
             </span>
-            <span className="status-pill">
+            <span className="status-pill" title={`${getSourceLabel(activeModel.source)} (${activeModel.modelName})`}>
               ⚡ <span className="val">{getSourceLabel(activeModel.source)} ({activeModel.modelName})</span>
             </span>
 
