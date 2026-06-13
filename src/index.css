@@ -2958,6 +2958,7 @@ code, pre, .mono {
   z-index: 2000;
   padding: var(--space-4);
   animation: fade-in 0.2s ease-out;
+  overflow-y: auto;
 }
 
 /* Modal Content Container */
@@ -2968,6 +2969,7 @@ code, pre, .mono {
   box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 650px;
+  max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;

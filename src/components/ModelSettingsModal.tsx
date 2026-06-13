@@ -168,234 +168,240 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
           </button>
         </div>
 
-        {/* Presets Panel */}
-        <div className="settings-section">
-          <label className="section-label">Select Model Presets</label>
-          <div className="presets-grid">
-            <button 
-              className={`preset-btn ${config.source === 'openvino' ? 'active' : ''}`}
-              onClick={() => handlePreset('openvino')}
-            >
-              <span className="preset-source">Local Host</span>
-              <strong className="preset-name">Intel OpenVINO</strong>
-              <span className="preset-url">127.0.0.1:8000</span>
-            </button>
-            <button 
-              className={`preset-btn ${config.source === 'ollama' ? 'active' : ''}`}
-              onClick={() => handlePreset('ollama')}
-            >
-              <span className="preset-source">Local Host</span>
-              <strong className="preset-name">Ollama Engine</strong>
-              <span className="preset-url">localhost:11434</span>
-            </button>
-            <button 
-              className={`preset-btn ${config.source === 'gemini' ? 'active' : ''}`}
-              onClick={() => handlePreset('gemini')}
-            >
-              <span className="preset-source">Cloud API</span>
-              <strong className="preset-name">Google Gemini 2.0</strong>
-              <span className="preset-url">AI Studio (Default)</span>
-            </button>
-            <button 
-              className={`preset-btn ${config.source === 'custom' ? 'active' : ''}`}
-              onClick={() => handlePreset('openai')}
-            >
-              <span className="preset-source">Cloud API</span>
-              <strong className="preset-name">OpenAI GPT-4o</strong>
-              <span className="preset-url">api.openai.com</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Input Fields */}
-        <div className="settings-form">
-          <div className="form-group-row">
-            <div className="input-group">
-              <label htmlFor="source-select">AI Provider Source</label>
-              <select 
-                id="source-select" 
-                value={config.source}
-                onChange={e => setConfig({ ...config, source: e.target.value as any })}
+        <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Presets Panel */}
+          <div className="settings-section">
+            <label className="section-label">Select Model Presets</label>
+            <div className="presets-grid">
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'openvino' ? 'active' : ''}`}
+                onClick={() => handlePreset('openvino')}
               >
-                <option value="gemini">Google Gemini AI</option>
-                <option value="ollama">Ollama Local API</option>
-                <option value="openvino">Intel OpenVINO Model Server</option>
-                <option value="custom">Custom OpenAI Compatible</option>
-              </select>
+                <span className="preset-source">Local Host</span>
+                <strong className="preset-name">Intel OpenVINO</strong>
+                <span className="preset-url">127.0.0.1:8000</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'ollama' ? 'active' : ''}`}
+                onClick={() => handlePreset('ollama')}
+              >
+                <span className="preset-source">Local Host</span>
+                <strong className="preset-name">Ollama Engine</strong>
+                <span className="preset-url">localhost:11434</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'gemini' ? 'active' : ''}`}
+                onClick={() => handlePreset('gemini')}
+              >
+                <span className="preset-source">Cloud API</span>
+                <strong className="preset-name">Google Gemini 2.0</strong>
+                <span className="preset-url">AI Studio (Default)</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'custom' ? 'active' : ''}`}
+                onClick={() => handlePreset('openai')}
+              >
+                <span className="preset-source">Cloud API</span>
+                <strong className="preset-name">OpenAI GPT-4o</strong>
+                <span className="preset-url">api.openai.com</span>
+              </button>
             </div>
-            <div className="input-group" style={{ flex: 1 }}>
-              <label htmlFor="model-name-input">Model Name / Identifier</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input 
-                  id="model-name-input"
-                  type="text" 
-                  placeholder="e.g. gemini-2.0-flash or llama-3-8b"
-                  value={config.modelName}
-                  onChange={e => setConfig({ ...config, modelName: e.target.value })}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={handleDiscoverModels}
-                  disabled={discovering}
-                  style={{ padding: '0 12px', fontSize: '11px', whiteSpace: 'nowrap', minHeight: '38px', background: 'var(--bg-input)', borderColor: 'var(--border-default)', color: 'var(--fg-secondary)' }}
+          </div>
+
+          {/* Dynamic Input Fields */}
+          <div className="settings-form">
+            <div className="form-group-row">
+              <div className="input-group">
+                <label htmlFor="source-select">AI Provider Source</label>
+                <select 
+                  id="source-select" 
+                  value={config.source}
+                  onChange={e => setConfig({ ...config, source: e.target.value as any })}
                 >
-                  {discovering ? 'Finding...' : 'Discover'}
-                </button>
+                  <option value="gemini">Google Gemini AI</option>
+                  <option value="ollama">Ollama Local API</option>
+                  <option value="openvino">Intel OpenVINO Model Server</option>
+                  <option value="custom">Custom OpenAI Compatible</option>
+                </select>
               </div>
-              {discoveredModels.length > 0 && (
-                <div style={{ marginTop: '8px' }}>
-                  <label htmlFor="discovered-select" style={{ fontSize: '10px', color: 'var(--fg-muted)', marginBottom: '4px', display: 'block' }}>Or select from discovered models:</label>
-                  <select
-                    id="discovered-select"
+              <div className="input-group" style={{ flex: 1 }}>
+                <label htmlFor="model-name-input">Model Name / Identifier</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    id="model-name-input"
+                    type="text" 
+                    placeholder="e.g. gemini-2.0-flash or llama-3-8b"
                     value={config.modelName}
                     onChange={e => setConfig({ ...config, modelName: e.target.value })}
-                    style={{ width: '100%', fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: 'var(--bg-input)', color: 'var(--fg-primary)' }}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={handleDiscoverModels}
+                    disabled={discovering}
+                    style={{ padding: '0 12px', fontSize: '11px', whiteSpace: 'nowrap', minHeight: '38px', background: 'var(--bg-input)', borderColor: 'var(--border-default)', color: 'var(--fg-secondary)' }}
                   >
-                    <option value="" disabled>-- Select a model --</option>
-                    {discoveredModels.map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
+                    {discovering ? 'Finding...' : 'Discover'}
+                  </button>
                 </div>
-              )}
-              {discoveryError && (
-                <span style={{ fontSize: '10px', color: 'var(--fg-danger)', marginTop: '4px', display: 'block' }}>
-                  ⚠ {discoveryError}
-                </span>
-              )}
+                {discoveredModels.length > 0 && (
+                  <div style={{ marginTop: '8px' }}>
+                    <label htmlFor="discovered-select" style={{ fontSize: '10px', color: 'var(--fg-muted)', marginBottom: '4px', display: 'block' }}>Or select from discovered models:</label>
+                    <select
+                      id="discovered-select"
+                      value={config.modelName}
+                      onChange={e => setConfig({ ...config, modelName: e.target.value })}
+                      style={{ width: '100%', fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: 'var(--bg-input)', color: 'var(--fg-primary)' }}
+                    >
+                      <option value="" disabled>-- Select a model --</option>
+                      {discoveredModels.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {discoveryError && (
+                  <span style={{ fontSize: '10px', color: 'var(--fg-danger)', marginTop: '4px', display: 'block' }}>
+                    ⚠ {discoveryError}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="input-group">
-            <label htmlFor="endpoint-url-input">Server Endpoint URL</label>
-            <input 
-              id="endpoint-url-input"
-              type="text" 
-              placeholder="e.g. https://generativelanguage.googleapis.com..."
-              value={config.endpoint}
-              onChange={e => setConfig({ ...config, endpoint: e.target.value })}
-            />
-          </div>
-
-          {config.source !== 'openvino' && config.source !== 'ollama' && (
             <div className="input-group">
-              <label htmlFor="api-key-input">Authorization API Key</label>
+              <label htmlFor="endpoint-url-input">Server Endpoint URL</label>
               <input 
-                id="api-key-input"
-                type="password" 
-                placeholder="Enter API Key passcode..."
-                value={config.apiKey}
-                onChange={e => setConfig({ ...config, apiKey: e.target.value })}
+                id="endpoint-url-input"
+                type="text" 
+                placeholder="e.g. https://generativelanguage.googleapis.com..."
+                value={config.endpoint}
+                onChange={e => setConfig({ ...config, endpoint: e.target.value })}
               />
             </div>
-          )}
-        </div>
 
-        {/* Workstation Aesthetics Panel */}
-        <div className="settings-section" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
-          <label className="section-label">Workstation Theme Palette</label>
-          <div className="presets-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            <button 
-              type="button"
-              className={`preset-btn ${palette === 'classic' ? 'active' : ''}`}
-              onClick={() => setPalette('classic')}
-              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-            >
-              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F18B62', display: 'inline-block' }} />
-              <strong style={{ fontSize: '10.5px' }}>Classic Orange</strong>
-            </button>
-            <button 
-              type="button"
-              className={`preset-btn ${palette === 'royal' ? 'active' : ''}`}
-              onClick={() => setPalette('royal')}
-              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-            >
-              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block' }} />
-              <strong style={{ fontSize: '10.5px' }}>Royal Violet</strong>
-            </button>
-            <button 
-              type="button"
-              className={`preset-btn ${palette === 'emerald' ? 'active' : ''}`}
-              onClick={() => setPalette('emerald')}
-              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-            >
-              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
-              <strong style={{ fontSize: '10.5px' }}>Emerald Clinical</strong>
-            </button>
-            <button 
-              type="button"
-              className={`preset-btn ${palette === 'pastel' ? 'active' : ''}`}
-              onClick={() => setPalette('pastel')}
-              style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-              title="Soft pastels - highly recommended for Light Mode"
-            >
-              <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#e9a08e', display: 'inline-block' }} />
-              <strong style={{ fontSize: '10.5px' }}>Pastel Blossom</strong>
-            </button>
-          </div>
-        </div>
-
-        {/* Diagnostics & Connection Test Status */}
-        <div className="diagnostics-panel">
-          <div className="diagnostics-header">
-            <ShieldCheck className="diagnostics-icon" />
-            <span>Connection Diagnostics Console</span>
-          </div>
-          <div className="diagnostics-body">
-            {testing ? (
-              <div className="diagnostics-status-line processing">
-                <span className="spinner-dots" />
-                <span>Pinging LLM server endpoint &amp; validating CORS headers...</span>
-              </div>
-            ) : testResult.status === 'success' ? (
-              <div className="diagnostics-status-line success animate-fade-in">
-                <CheckCircle size={15} />
-                <span>{testResult.message}</span>
-              </div>
-            ) : testResult.status === 'failed' ? (
-              <div className="diagnostics-status-line failed animate-fade-in">
-                <AlertTriangle size={15} />
-                <span>{testResult.message}</span>
-              </div>
-            ) : (
-              <div className="diagnostics-status-line idle">
-                <span>Awaiting connection test routines...</span>
+            {config.source !== 'openvino' && config.source !== 'ollama' && (
+              <div className="input-group">
+                <label htmlFor="api-key-input">Authorization API Key</label>
+                <input 
+                  id="api-key-input"
+                  type="password" 
+                  placeholder="Enter API Key passcode..."
+                  value={config.apiKey}
+                  onChange={e => setConfig({ ...config, apiKey: e.target.value })}
+                />
               </div>
             )}
           </div>
-        </div>
 
-        {/* Session Audit History Archive */}
-        <div className="diagnostics-panel" style={{ marginTop: '16px' }}>
-          <div className="diagnostics-header" style={{ borderColor: 'var(--border-default)' }}>
-            <ClipboardList className="diagnostics-icon" size={14} />
-            <span>Session Audit History Archive ({history.length} Saved)</span>
+          {/* Workstation Aesthetics Panel */}
+          <div className="settings-section" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
+            <label className="section-label">Workstation Theme Palette</label>
+            <div className="presets-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+              <button 
+                type="button"
+                className={`preset-btn ${palette === 'classic' ? 'active' : ''}`}
+                onClick={() => setPalette('classic')}
+                style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+              >
+                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F18B62', display: 'inline-block' }} />
+                <strong style={{ fontSize: '10.5px' }}>Classic Orange</strong>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${palette === 'royal' ? 'active' : ''}`}
+                onClick={() => setPalette('royal')}
+                style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+              >
+                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block' }} />
+                <strong style={{ fontSize: '10.5px' }}>Royal Violet</strong>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${palette === 'emerald' ? 'active' : ''}`}
+                onClick={() => setPalette('emerald')}
+                style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+              >
+                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                <strong style={{ fontSize: '10.5px' }}>Emerald Clinical</strong>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${palette === 'pastel' ? 'active' : ''}`}
+                onClick={() => setPalette('pastel')}
+                style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+                title="Soft pastels - highly recommended for Light Mode"
+              >
+                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#e9a08e', display: 'inline-block' }} />
+                <strong style={{ fontSize: '10.5px' }}>Pastel Blossom</strong>
+              </button>
+            </div>
           </div>
-          <div className="diagnostics-body" style={{ maxHeight: '110px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px' }}>
-            {history.length === 0 ? (
-              <span style={{ fontSize: '11px', color: 'var(--fg-muted)', display: 'block', textAlign: 'center', padding: '10px 0' }}>
-                No completed audits in the history log. Complete a simulation or workbench scan to record history.
-              </span>
-            ) : (
-              history.map((h: any) => (
-                <div key={h.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '6px 10px', fontSize: '11.5px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>{h.patientName}</span>
-                    <span style={{ fontSize: '10px', color: 'var(--fg-muted)' }}>{h.diagnosis} · {h.timestamp}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: h.safetyScore.includes('violated') || (h.safetyScore.includes('/') && parseInt(h.safetyScore.split('/')[0]) < parseInt(h.safetyScore.split('/')[1])) ? 'var(--fg-danger)' : 'var(--fg-safe)', fontWeight: 800 }}>
-                      {h.safetyScore}
-                    </span>
-                    <a href={h.portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm" style={{ padding: '3px 8px', fontSize: '10px', background: 'var(--bg-card)', borderColor: 'var(--border-default)', textDecoration: 'none', color: 'var(--fg-secondary)' }}>
-                      Open Pass
-                    </a>
-                  </div>
+
+          {/* Diagnostics & Connection Test Status */}
+          <div className="diagnostics-panel">
+            <div className="diagnostics-header">
+              <ShieldCheck className="diagnostics-icon" />
+              <span>Connection Diagnostics Console</span>
+            </div>
+            <div className="diagnostics-body">
+              {testing ? (
+                <div className="diagnostics-status-line processing">
+                  <span className="spinner-dots" />
+                  <span>Pinging LLM server endpoint &amp; validating CORS headers...</span>
                 </div>
-              ))
-            )}
+              ) : testResult.status === 'success' ? (
+                <div className="diagnostics-status-line success animate-fade-in">
+                  <CheckCircle size={15} />
+                  <span>{testResult.message}</span>
+                </div>
+              ) : testResult.status === 'failed' ? (
+                <div className="diagnostics-status-line failed animate-fade-in">
+                  <AlertTriangle size={15} />
+                  <span>{testResult.message}</span>
+                </div>
+              ) : (
+                <div className="diagnostics-status-line idle">
+                  <span>Awaiting connection test routines...</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Session Audit History Archive */}
+          <div className="diagnostics-panel" style={{ marginTop: '16px' }}>
+            <div className="diagnostics-header" style={{ borderColor: 'var(--border-default)' }}>
+              <ClipboardList className="diagnostics-icon" size={14} />
+              <span>Session Audit History Archive ({history.length} Saved)</span>
+            </div>
+            <div className="diagnostics-body" style={{ maxHeight: '110px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px' }}>
+              {history.length === 0 ? (
+                <span style={{ fontSize: '11px', color: 'var(--fg-muted)', display: 'block', textAlign: 'center', padding: '10px 0' }}>
+                  No completed audits in the history log. Complete a simulation or workbench scan to record history.
+                </span>
+              ) : (
+                history.map((h: any) => (
+                  <div key={h.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '6px 10px', fontSize: '11.5px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--fg-primary)' }}>{h.patientName}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--fg-muted)' }}>{h.diagnosis} · {h.timestamp}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: h.safetyScore.includes('violated') || (h.safetyScore.includes('/') && parseInt(h.safetyScore.split('/')[0]) < parseInt(h.safetyScore.split('/')[1])) ? 'var(--fg-danger)' : 'var(--fg-safe)', fontWeight: 800 }}>
+                        {h.safetyScore}
+                      </span>
+                      <a href={h.portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm" style={{ padding: '3px 8px', fontSize: '10px', background: 'var(--bg-card)', borderColor: 'var(--border-default)', textDecoration: 'none', color: 'var(--fg-secondary)' }}>
+                        Open Pass
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

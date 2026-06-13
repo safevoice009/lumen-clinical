@@ -1074,7 +1074,8 @@ export const SafetyLeaderboard: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 9999,
-          padding: '20px'
+          padding: '20px',
+          overflowY: 'auto'
         }}>
           <div style={{
             background: 'var(--bg-card)',
@@ -1084,7 +1085,7 @@ export const SafetyLeaderboard: React.FC = () => {
             width: '650px',
             maxWidth: '100%',
             maxHeight: '90vh',
-            overflowY: 'auto',
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -1111,7 +1112,7 @@ export const SafetyLeaderboard: React.FC = () => {
             </div>
 
             {/* Body */}
-            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               {/* Badge/Stamp Style Area */}
               <div style={{
                 border: '2px solid var(--brand)',
