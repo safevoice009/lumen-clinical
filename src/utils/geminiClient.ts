@@ -458,3 +458,40 @@ export function saveHistoryRecord(patientName: string, diagnosis: string, score:
   }
 }
 
+export async function fetchAvailableModels(config: ModelConfig): Promise<string[]> {
+  const { source, endpoint, apiKey } = config;
+  const cleanEndpoint = endpoint.replace(/\/$/, '');
+  
+  if (source === 'gemini') {
+    const key = apiKey || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+    if (!key) throw new Error('API key is required to query models');
+    const res = await fetch(`${cleanEndpoint}?key=${key}`);
+    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+    const data = await res.json();
+    return (data.models || []).map((m: any) => m.name.replace('models/', ''));
+  }
+  
+  const headers: Record<string, string> = {};
+  if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+  
+  if (source === 'ollama') {
+    const res = await fetch(`${cleanEndpoint}/api/tags`, { headers });
+    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+    const data = await res.json();
+    return (data.models || []).map((m: any) => m.name);
+  }
+  
+  // OpenVINO / Custom OpenAI-compatible
+  let endpointWithV1 = cleanEndpoint;
+  if (source === 'openvino' && !cleanEndpoint.endsWith('/v1') && !cleanEndpoint.includes('/v1/')) {
+    endpointWithV1 = `${cleanEndpoint}/v1`;
+  }
+  const url = endpointWithV1.endsWith('/models') ? endpointWithV1 : `${endpointWithV1}/models`;
+  
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+  const data = await res.json();
+  return (data.data || []).map((m: any) => m.id);
+}
+
+

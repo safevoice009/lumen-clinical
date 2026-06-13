@@ -13,11 +13,65 @@ function formatTs(iso: string): string {
 
 export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClear }) => {
   const [open, setOpen] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [manuallyOpened, setManuallyOpened] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prevLogsLength = useRef(logs.length);
+  const timeoutRef = useRef<any>(null);
 
+  // Auto-dock and auto-hide logic on log activity
   useEffect(() => {
-    if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (logs.length > prevLogsLength.current) {
+      prevLogsLength.current = logs.length;
+
+      // Auto open if a process adds a log and the user hasn't manually closed or opened it
+      if (!manuallyOpened) {
+        setOpen(true);
+
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+
+        // Auto-hide after 3 seconds of no new logs (inactivity)
+        timeoutRef.current = setTimeout(() => {
+          setOpen(false);
+        }, 3000);
+      }
+    } else {
+      prevLogsLength.current = logs.length;
+    }
+  }, [logs, manuallyOpened]);
+
+  // Scroll to bottom of log terminal container programmatically
+  useEffect(() => {
+    if (open && scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [logs, open]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const handleHeaderClick = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    if (open) {
+      setOpen(false);
+      setManuallyOpened(false);
+    } else {
+      setOpen(true);
+      setManuallyOpened(true);
+    }
+  };
 
   const errorCount   = logs.filter(l => l.level === 'error').length;
   const warnCount    = logs.filter(l => l.level === 'warn').length;
@@ -30,7 +84,7 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
         style={{ height: open ? '260px' : '42px' }}
       >
         {/* Header / Toggle */}
-        <div className="telemetry-header" onClick={() => setOpen(o => !o)}>
+        <div className="telemetry-header" onClick={handleHeaderClick}>
           {/* macOS dots */}
           <div className="tbar-dots">
             <span className="dot-red" />
@@ -65,7 +119,7 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
         {/* Log entries */}
         {open && (
           <div className="telemetry-body">
-            <div className="log-entries">
+            <div className="log-entries" ref={scrollRef}>
               {logs.length === 0 && (
                 <div className="log-entry" style={{ color: 'var(--fg-subtle)', fontStyle: 'italic' }}>
                   — no telemetry events yet —
@@ -78,7 +132,6 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
                   <span className="log-msg">{log.message}</span>
                 </div>
               ))}
-              <div ref={endRef} />
             </div>
           </div>
         )}

@@ -11,10 +11,15 @@ function formatTime(iso: string): string {
 }
 
 export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
-  const endRef = React.useRef<HTMLDivElement>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages]);
 
   return (
@@ -29,7 +34,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
         </span>
       </div>
 
-      <div className="panel-body">
+      <div className="panel-body" ref={scrollRef}>
         {messages.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">
@@ -72,7 +77,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
                 </div>
               );
             })}
-            <div ref={endRef} />
           </div>
         )}
       </div>

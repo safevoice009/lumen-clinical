@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, AlertTriangle, Play, Cpu, ShieldCheck, ClipboardList } from 'lucide-react';
-import { ModelConfig, getActiveModelConfig, saveModelConfig, verifyModelConnection } from '../utils/geminiClient';
+import { ModelConfig, getActiveModelConfig, saveModelConfig, verifyModelConnection, fetchAvailableModels } from '../utils/geminiClient';
 
 interface ModelSettingsModalProps {
   isOpen: boolean;
@@ -17,11 +17,46 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
   });
 
   const [history, setHistory] = useState<any[]>([]);
+  const [discoveredModels, setDiscoveredModels] = useState<string[]>([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveryError, setDiscoveryError] = useState('');
+
+  const handleDiscoverModels = async () => {
+    setDiscovering(true);
+    setDiscoveryError('');
+    setDiscoveredModels([]);
+    if (onLog) {
+      onLog('info', 'DIAGNOSTICS', `Discovering available models on endpoint: ${config.endpoint}...`);
+    }
+    try {
+      const models = await fetchAvailableModels(config);
+      setDiscoveredModels(models);
+      if (models.length > 0) {
+        if (onLog) {
+          onLog('success', 'DIAGNOSTICS', `✓ Discovered ${models.length} active models on the endpoint.`);
+        }
+      } else {
+        setDiscoveryError('Endpoint returned empty model list');
+        if (onLog) {
+          onLog('warning', 'DIAGNOSTICS', `⚠ Dynamic model discovery returned 0 models.`);
+        }
+      }
+    } catch (e: any) {
+      setDiscoveryError(e.message || 'Failed to fetch models');
+      if (onLog) {
+        onLog('error', 'DIAGNOSTICS', `✗ Model discovery failed: ${e.message}`);
+      }
+    } finally {
+      setDiscovering(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
       setConfig(getActiveModelConfig());
       setTestResult({ status: 'idle', message: '' });
+      setDiscoveredModels([]);
+      setDiscoveryError('');
       try {
         const stored = localStorage.getItem('lumen_session_history');
         if (stored) setHistory(JSON.parse(stored));
@@ -178,15 +213,48 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
                 <option value="custom">Custom OpenAI Compatible</option>
               </select>
             </div>
-            <div className="input-group">
+            <div className="input-group" style={{ flex: 1 }}>
               <label htmlFor="model-name-input">Model Name / Identifier</label>
-              <input 
-                id="model-name-input"
-                type="text" 
-                placeholder="e.g. gemini-2.0-flash or llama-3-8b"
-                value={config.modelName}
-                onChange={e => setConfig({ ...config, modelName: e.target.value })}
-              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  id="model-name-input"
+                  type="text" 
+                  placeholder="e.g. gemini-2.0-flash or llama-3-8b"
+                  value={config.modelName}
+                  onChange={e => setConfig({ ...config, modelName: e.target.value })}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleDiscoverModels}
+                  disabled={discovering}
+                  style={{ padding: '0 12px', fontSize: '11px', whiteSpace: 'nowrap', minHeight: '38px', background: 'var(--bg-input)', borderColor: 'var(--border-default)', color: 'var(--fg-secondary)' }}
+                >
+                  {discovering ? 'Finding...' : 'Discover'}
+                </button>
+              </div>
+              {discoveredModels.length > 0 && (
+                <div style={{ marginTop: '8px' }}>
+                  <label htmlFor="discovered-select" style={{ fontSize: '10px', color: 'var(--fg-muted)', marginBottom: '4px', display: 'block' }}>Or select from discovered models:</label>
+                  <select
+                    id="discovered-select"
+                    value={config.modelName}
+                    onChange={e => setConfig({ ...config, modelName: e.target.value })}
+                    style={{ width: '100%', fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: 'var(--bg-input)', color: 'var(--fg-primary)' }}
+                  >
+                    <option value="" disabled>-- Select a model --</option>
+                    {discoveredModels.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {discoveryError && (
+                <span style={{ fontSize: '10px', color: 'var(--fg-danger)', marginTop: '4px', display: 'block' }}>
+                  ⚠ {discoveryError}
+                </span>
+              )}
             </div>
           </div>
 
