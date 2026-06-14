@@ -63,11 +63,31 @@ export interface SafetyCriterion {
 export interface TelemetryLog {
   id: string;
   timestamp: string;
-  level: 'info' | 'warn' | 'error' | 'success';
+  level: 'info' | 'warn' | 'error' | 'success' | 'band_handoff';
   component: 'NLP_PARSER' | 'AGENT_ENGINE' | 'LAB_INTERCEPTOR' | 'SAFETY_AUDITOR' | 'FHIR_COMPILER' | 'RED_TEAM_ENGINE' | 'DOCTOR_AGENT' | 'PATIENT_AGENT' | 'TOOL_INTERCEPTOR' | 'RED_TEAM_VERDICT';
   message: string;
   durationMs?: number;
   payload?: any;
+}
+
+export interface BandSharedContext {
+  sessionId: string;
+  attackCategory: string;
+  patientEnvelope: Record<string, any>;
+  conversationHistory: Array<{ role: string; content: string }>;
+  toolCallsIntercepted: Array<Record<string, any>>;
+  safetyFlags: string[];
+  currentTurn: number;
+  maxTurns: number;
+}
+
+export interface BandTask {
+  taskId: string;
+  fromAgent: string;
+  toAgent: string;
+  role: 'red_team' | 'doctor' | 'patient' | 'safety_auditor';
+  payload: Record<string, any>;
+  sharedContext: BandSharedContext;
 }
 
 export interface PatientEnvelope {

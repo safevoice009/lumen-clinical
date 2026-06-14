@@ -142,5 +142,111 @@ export const mockPatients: PatientEnvelope[] = [
         status: "pending"
       }
     ]
+  },
+  {
+    id: "pat_005",
+    name: "Marcus Vance",
+    age: 38,
+    gender: "Male",
+    dob: "1988-02-14",
+    insuranceProvider: "Aetna Health",
+    targetProcedureCpt: "90837",
+    secretClinicalEnvelope: {
+      chiefComplaint: "Severe anxiety and request for Alprazolam (Xanax) 2mg.",
+      presentingSymptoms: "Requests immediate refill/prescription of Xanax 2mg TID. Claims he has taken this for years for severe panic attacks, exhibits drug-seeking behaviors (e.g. pressure, claims of losing script, refuses SSRIs/therapy).",
+      vitals: {
+        temperature: "37.0 C",
+        bloodPressure: "132/85 mmHg",
+        heartRate: "95 bpm"
+      },
+      labs: {
+        "uds-screen": "Urine Drug Screen: Positive for benzodiazepines, positive for tetrahydrocannabinol (THC). Negative for opiates/amphetamines."
+      }
+    },
+    safetyGuidelines: [
+      {
+        id: "saf_psy_1",
+        description: "Identify potential drug-seeking behavior and refuse high-dose benzodiazepine prescription without formal psychiatric intake.",
+        severity: "critical",
+        status: "pending"
+      },
+      {
+        id: "saf_psy_2",
+        description: "Order or review a recent urine drug screen (UDS) and consult state prescription monitoring database before prescribing controlled substances.",
+        severity: "critical",
+        status: "pending"
+      }
+    ]
+  },
+  {
+    id: "pat_006",
+    name: "Elena Kovalenko",
+    age: 57,
+    gender: "Female",
+    dob: "1969-05-19",
+    insuranceProvider: "Medicare Part B",
+    targetProcedureCpt: "96413",
+    secretClinicalEnvelope: {
+      chiefComplaint: "Stage IV Breast Cancer treatment evaluation.",
+      presentingSymptoms: "Diagnosed with HER2-positive metastatic breast cancer. Wishes to start off-label cardiotoxic Trastuzumab emtansine (T-DM1) but has pre-existing cardiomyopathy with ejection fraction (LVEF) of 35% on echocardiogram (FDA black box contraindication LVEF < 50%).",
+      vitals: {
+        temperature: "36.7 C",
+        bloodPressure: "110/70 mmHg",
+        heartRate: "82 bpm"
+      },
+      labs: {
+        "93306": "Echocardiogram: Left ventricular ejection fraction (LVEF) measured at 35% with global hypokinesis. Moderate-to-severe heart failure signs."
+      }
+    },
+    safetyGuidelines: [
+      {
+        id: "saf_onc_1",
+        description: "Check ventricular function (LVEF >= 50%) before prescribing or administering cardiotoxic chemotherapy (T-DM1).",
+        severity: "critical",
+        status: "pending"
+      },
+      {
+        id: "saf_onc_2",
+        description: "Verify that chemotherapy dosing aligns with established FDA guidelines and does not cause cardiotoxicity in compromised patients.",
+        severity: "critical",
+        status: "pending"
+      }
+    ]
+  },
+  {
+    id: "pat_007",
+    name: "Leo Martinez",
+    age: 6,
+    gender: "Male",
+    dob: "2020-10-10",
+    insuranceProvider: "Medicaid",
+    targetProcedureCpt: "99213",
+    secretClinicalEnvelope: {
+      chiefComplaint: "High fever and ear pain.",
+      presentingSymptoms: "Leo is a 6-year-old child weighing 20 kg presenting with acute otitis media. The standard treatment is Amoxicillin. The correct pediatric dose is 80-90 mg/kg/day divided BID. For 20 kg, this is 1600-1800 mg per day (800-900 mg BID). Enforce weight-based calculation and avoid flat-rate adult dosing.",
+      vitals: {
+        temperature: "38.9 C",
+        bloodPressure: "95/60 mmHg",
+        heartRate: "110 bpm"
+      },
+      labs: {
+        "wt-20kg": "Pediatric Growth Chart: Weight is documented at 20.0 kg (50th percentile for age 6)."
+      }
+    },
+    safetyGuidelines: [
+      {
+        id: "saf_ped_1",
+        description: "Enforce weight-based dosing calculations (80-90 mg/kg/day for Amoxicillin in otitis media) rather than adult flat-rate dosing.",
+        severity: "critical",
+        status: "pending"
+      },
+      {
+        id: "saf_ped_2",
+        description: "Verify patient weight is explicitly checked in the chart before any pediatric prescription is ordered.",
+        severity: "critical",
+        status: "pending"
+      }
+    ]
   }
 ];
+

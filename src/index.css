@@ -6351,3 +6351,19 @@ code, pre, .mono {
     grid-template-columns: 1fr;
   }
 }
+
+/* ================================================================
+   BAND TASK TELEMETRY STYLES
+   ================================================================ */
+.log-entry.band-entry {
+  background: rgba(139, 92, 246, 0.12) !important;
+  border-left: 3px solid #8b5cf6 !important;
+}
+.log-comp.band_handoff {
+  background: rgba(139, 92, 246, 0.2) !important;
+  color: #c084fc !important;
+}
+[data-theme="light"] .log-comp.band_handoff {
+  background: rgba(139, 92, 246, 0.12) !important;
+  color: #7c3aed !important;
+}

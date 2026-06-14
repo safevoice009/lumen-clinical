@@ -125,13 +125,16 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
                   — no telemetry events yet —
                 </div>
               )}
-              {logs.map((log) => (
-                <div key={log.id} className="log-entry">
-                  <span className="log-ts">{formatTs(log.timestamp)}</span>
-                  <span className={`log-comp ${log.level}`}>{log.component}</span>
-                  <span className="log-msg">{log.message}</span>
-                </div>
-              ))}
+              {logs.map((log) => {
+                const isBand = log.level === 'band_handoff';
+                return (
+                  <div key={log.id} className={`log-entry ${isBand ? 'band-entry' : ''}`}>
+                    <span className="log-ts">{formatTs(log.timestamp)}</span>
+                    <span className={`log-comp ${log.level}`}>{log.component}</span>
+                    <span className="log-msg">{log.message}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

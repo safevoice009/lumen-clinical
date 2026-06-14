@@ -55,7 +55,7 @@ export default function App() {
   }, []);
 
   const [pillar, setPillar] = useState<'sandbox' | 'scribe' | 'standards'>('sandbox');
-  const [mode, setMode] = useState<'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook' | 'handbook'>('simulation');
+  const [mode, setMode] = useState<'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook' | 'handbook' | 'benchmark'>('simulation');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Navigation Dropdown States (Claude-style)
@@ -317,6 +317,21 @@ export default function App() {
                           <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px' }}>NEW</span>
                         </span>
                         <span className="dropdown-item-desc">Audit safety side-by-side across LLM gateways</span>
+                      </div>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className={`dropdown-link-btn ${mode === 'benchmark' && pillar === 'sandbox' ? 'active' : ''}`}
+                      onClick={() => handleDropdownItemClick('sandbox', 'benchmark')}
+                    >
+                      <div className="dropdown-icon-box"><BarChart3 size={14} /></div>
+                      <div className="dropdown-text-box">
+                        <span className="dropdown-item-title">
+                          Benchmark Lab
+                          <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px' }}>NEW</span>
+                        </span>
+                        <span className="dropdown-item-desc">Compare safety scores across 20 MedQA prior auth cases</span>
                       </div>
                     </button>
                   </li>
