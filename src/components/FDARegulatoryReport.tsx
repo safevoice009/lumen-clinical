@@ -83,35 +83,32 @@ Signature of Attending Safety Board Officer: ___________________________________
   };
 
   return (
-    <div className="panel panel-audit animate-slide-up" style={{ border: '1px solid var(--border-strong)', padding: '16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <div className="panel panel-audit animate-slide-up" style={{ border: '1px solid var(--border-strong)', position: 'relative' }}>
+      <div className="panel-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FileText className="diagnostics-icon" style={{ color: 'var(--brand)' }} />
-          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            FDA SaMD Scorecard Exporter
+          <FileText className="diagnostics-icon" style={{ color: 'var(--brand)', width: '13px', height: '13px' }} />
+          <h4 style={{ margin: 0, fontSize: '11.5px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            FDA SaMD Scorecard
           </h4>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Download size={12} /> Export Report
-        </button>
       </div>
 
-      <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '12px', marginBottom: '14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--fg-secondary)' }}>Pre-deployment Performance Checklist</span>
-          <span style={{ fontSize: '12px', fontWeight: 800, color: verdict === 'PASS' ? 'var(--color-safe)' : verdict === 'FAIL' ? 'var(--color-danger)' : 'var(--color-warn)' }}>
-            {verdict} ({safetyScore}/100)
-          </span>
+      <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--fg-secondary)' }}>Pre-deployment Performance Checklist</span>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: verdict === 'PASS' ? 'var(--color-safe)' : verdict === 'FAIL' ? 'var(--color-danger)' : 'var(--color-warn)' }}>
+              {verdict} ({safetyScore}/100)
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11px', color: 'var(--fg-secondary)' }}>
+            <div>Device: <strong>Lumen CDSS v2.5</strong></div>
+            <div>Target Patient: <strong>{patient.name}</strong></div>
+            <div>Registry Synced: <strong>ABDM (India) / FHIR (US)</strong></div>
+            <div>Rules Enforced: <strong>{guidelines.length} Clinical Exclusions</strong></div>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11.5px', color: 'var(--fg-secondary)' }}>
-          <div>Device: <strong>Lumen CDSS v2.5</strong></div>
-          <div>Target Patient: <strong>{patient.name}</strong></div>
-          <div>Registry Synced: <strong>ABDM (India) / FHIR (US)</strong></div>
-          <div>Rules Enforced: <strong>{guidelines.length} Clinical Exclusions</strong></div>
-        </div>
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div>
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--fg-primary)', marginBottom: '4px' }}>
             Intended Use Statement (Editable)
@@ -122,8 +119,8 @@ Signature of Attending Safety Board Officer: ___________________________________
             rows={2}
             style={{
               width: '100%',
-              fontSize: '11.5px',
-              padding: '8px',
+              fontSize: '11px',
+              padding: '6px 8px',
               background: 'var(--bg-card)',
               color: 'var(--fg-secondary)',
               border: '1px solid var(--border-default)',
@@ -143,8 +140,8 @@ Signature of Attending Safety Board Officer: ___________________________________
             rows={3}
             style={{
               width: '100%',
-              fontSize: '11.5px',
-              padding: '8px',
+              fontSize: '11px',
+              padding: '6px 8px',
               background: 'var(--bg-card)',
               color: 'var(--fg-secondary)',
               border: '1px solid var(--border-default)',
@@ -153,6 +150,12 @@ Signature of Attending Safety Board Officer: ___________________________________
             }}
           />
         </div>
+      </div>
+
+      <div className="panel-footer">
+        <button className="btn btn-primary" onClick={handleExport} style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Download size={12} /> Export Report
+        </button>
       </div>
     </div>
   );

@@ -124,7 +124,7 @@ export const BenchmarkMode: React.FC = () => {
   const medbenchPoints = getPointsStr(HISTORICAL_MEDBENCH);
 
   return (
-    <div className="panel panel-audit animate-slide-up" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="panel animate-slide-up" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>Clinical LLM Benchmark Lab</h3>
