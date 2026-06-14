@@ -53,7 +53,20 @@ Every tool call (lab orders, imaging orders, prescriptions) is intercepted and c
 ### 4. 🏥 FHIR R4 Export
 Completed simulation sessions compile into **HL7 FHIR R4 transaction bundles** — the standard format required by US CMS regulations for interoperability. Download and validate against any FHIR server.
 
-### 5. 📋 Telemetry Logs
+### 5. 🌍 Global/Regional Medical API Directory
+Lumen features built-in directory routing mappings for standard registries and APIs across multiple jurisdictions:
+- **India:** Ayushman Bharat Digital Mission (ABDM) Sandbox (ABHA ID, HIE-CM Consent, registries).
+- **USA:** Mayo Clinic Platform API, NIH NLM (RxNorm, LOINC, SNOMED CT), and OpenFDA.
+- **UK:** NHS England Developer portal GP Connect.
+- **Japan:** PMDA drug reviews & J-Stage bibliographies.
+- **China:** NHC EHR vocabularies & Traditional Chinese Medicine (TCM) ontology query models.
+
+### 6. 📂 Local-First Workstation Library (Odysseus-Inspired)
+Drawing design inspiration from PewDiePie's *Odysseus* local-first AI workstation:
+- **AI Draft Generator:** Select a patient case and document type (Prior-Auth Appeal, Specialist Referral, Discharge instructions) to generate complete documents from scratch.
+- **Workspace EMR Database:** Save audited clinical notes locally in the workspace database. Load, delete, and export records completely air-gapped using local browser storage.
+
+### 7. 📋 Telemetry Logs
 Every agent action is logged with timestamps and component labels — providing the audit trail that FDA's 2025 AI guidance explicitly calls for.
 
 ---
@@ -171,7 +184,8 @@ lumen-clinical/
 │   ├── utils/
 │   │   ├── geminiClient.ts         # Gemini 2.0 Flash API wrapper
 │   │   ├── redTeamEngine.ts        # Adversarial scenario generator
-│   │   └── agentCore.ts            # Simulation engine + FHIR compiler
+│   │   ├── agentCore.ts            # Simulation engine + FHIR compiler
+│   │   └── regionalApis.ts         # Global/Regional medical API schemas [NEW]
 │   ├── types/clinical.ts           # All TypeScript types
 │   └── data/mockData.ts            # Patient envelopes + safety guidelines
 ├── GEMINI_AGENT_INSTRUCTIONS.md    # AI agent build guide
