@@ -177,22 +177,35 @@ npm run dev
 lumen-clinical/
 ├── src/
 │   ├── components/
-│   │   ├── ClinicalWorkspace.tsx   # Main workspace with mode switcher
+│   │   ├── ClinicalWorkspace.tsx   # Main workspace with mode switcher [UPDATED]
 │   │   ├── RedTeamLab.tsx          # ⚔️ Adversarial attack sandbox
-│   │   ├── AgentChat.tsx           # Doctor/Patient dialogue display
+│   │   ├── AgentChat.tsx           # Doctor/Patient dialogue display [UPDATED]
 │   │   ├── LabViewer.tsx           # Tool call interceptor UI
-│   │   ├── PriorAuthAuditor.tsx    # Safety checklist panel
+│   │   ├── PriorAuthAuditor.tsx    # Safety checklist panel (3-judge consensus) [UPDATED]
 │   │   ├── FhirGraph.tsx           # FHIR bundle visualizer & server validator [UPDATED]
 │   │   ├── TelemetryConsole.tsx    # Event log console with Band handoffs [UPDATED]
 │   │   ├── BenchmarkMode.tsx       # 📊 SVG Radar Chart comparison bench [NEW]
-│   │   └── FDARegulatoryReport.tsx # 📋 FDA SaMD scorecard exporter [NEW]
+│   │   ├── FDARegulatoryReport.tsx # 📋 FDA SaMD scorecard exporter [NEW]
+│   │   ├── AgentStatusBar.tsx      # 🟢 Live agent role status bar (Doctor, Patient, Red-team) [NEW]
+│   │   ├── CascadeTrace.tsx        # ⛓️ Vertical timeline displaying cascading failure paths [NEW]
+│   │   ├── CounterfactualPanel.tsx # ⚖️ Renders original vs corrected clinical paths [NEW]
+│   │   ├── DriftTestPanel.tsx      # 📉 Consistency analyzer (calculates mean & stdDev) [NEW]
+│   │   ├── HITLOverride.tsx        # ✏️ Human-in-the-loop manual override dialog [NEW]
+│   │   ├── CommandPalette.tsx      # ⌘K Command palette overlay supporting fuzzy-search [NEW]
+│   │   └── SpectatorDashboard.tsx  # 📡 Real-time read-only spectator cockpit for judges [NEW]
 │   ├── utils/
 │   │   ├── geminiClient.ts         # Gemini 2.0 Flash API wrapper (adaptive adversary) [UPDATED]
 │   │   ├── redTeamEngine.ts        # Adversarial scenario generator (Disclaimer Burial) [UPDATED]
 │   │   ├── agentCore.ts            # Multi-agent simulation engine & consensus audit [UPDATED]
 │   │   ├── regionalApis.ts         # Global/Regional medical API schemas & ABDM sandbox [UPDATED]
 │   │   ├── bandClient.ts           # Band protocol agentic task handoffs wrapper [NEW]
-│   │   └── ollamaClient.ts         # Local Ollama client wrapper [NEW]
+│   │   ├── ollamaClient.ts         # Local Ollama client wrapper [NEW]
+│   │   ├── patientAgent.ts         # Autonomous Patient Simulator with dynamic personas [NEW]
+│   │   ├── driftAnalysis.ts        # Drift calculation engine across repeated runs [NEW]
+│   │   ├── citationChecker.ts      # PubMed real-time citation hallucination lookup [NEW]
+│   │   ├── openFdaRedTeam.ts       # OpenFDA active drug interaction scenario builder [NEW]
+│   │   ├── syntheaParser.ts        # SMART-on-FHIR Synthea HL7 bundle parsing logic [NEW]
+│   │   └── spectatorMode.ts        # SSE ntfy.sh broadcast integration helper [NEW]
 │   ├── types/clinical.ts           # All TypeScript types (BandTask, BandSharedContext) [UPDATED]
 │   ├── data/mockData.ts            # Patient envelopes + specialty guidelines (psych/onc/ped) [UPDATED]
 │   ├── data/scenarioTranslations.ts# Multilingual translations (Hindi, Telugu, Tamil, Marathi) [NEW]
