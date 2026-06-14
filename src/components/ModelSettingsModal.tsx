@@ -74,7 +74,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai') => {
+  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai' | 'aiml' | 'featherless') => {
     if (onLog) {
       onLog('info', 'GATEWAY', `Loading settings preset for: ${preset.toUpperCase()}`);
     }
@@ -106,9 +106,24 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
         apiKey: '',
         modelName: 'gpt-4o-mini',
       });
+    } else if (preset === 'aiml') {
+      setConfig({
+        source: 'custom',
+        endpoint: 'https://api.aimlapi.com/v1',
+        apiKey: (import.meta as any).env?.VITE_AIML_API_KEY || '',
+        modelName: 'meta-llama/Llama-3-70b-chat-hf',
+      });
+    } else if (preset === 'featherless') {
+      setConfig({
+        source: 'custom',
+        endpoint: 'https://api.featherless.ai/v1',
+        apiKey: (import.meta as any).env?.VITE_FEATHERLESS_API_KEY || '',
+        modelName: 'meta-llama/Meta-Llama-3-70B-Instruct',
+      });
     }
     setTestResult({ status: 'idle', message: '' });
   };
+
 
   const handleTestConnection = async () => {
     setTesting(true);
@@ -172,7 +187,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
           {/* Presets Panel */}
           <div className="settings-section">
             <label className="section-label">Select Model Presets</label>
-            <div className="presets-grid">
+            <div className="presets-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
               <button 
                 type="button"
                 className={`preset-btn ${config.source === 'openvino' ? 'active' : ''}`}
@@ -202,12 +217,30 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
               </button>
               <button 
                 type="button"
-                className={`preset-btn ${config.source === 'custom' ? 'active' : ''}`}
+                className={`preset-btn ${config.source === 'custom' && config.endpoint.includes('openai.com') ? 'active' : ''}`}
                 onClick={() => handlePreset('openai')}
               >
                 <span className="preset-source">Cloud API</span>
                 <strong className="preset-name">OpenAI GPT-4o</strong>
                 <span className="preset-url">api.openai.com</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'custom' && config.endpoint.includes('aimlapi.com') ? 'active' : ''}`}
+                onClick={() => handlePreset('aiml')}
+              >
+                <span className="preset-source">Cloud Sponsor</span>
+                <strong className="preset-name">AI/ML API</strong>
+                <span className="preset-url">api.aimlapi.com</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'custom' && config.endpoint.includes('featherless.ai') ? 'active' : ''}`}
+                onClick={() => handlePreset('featherless')}
+              >
+                <span className="preset-source">Cloud Sponsor</span>
+                <strong className="preset-name">Featherless AI</strong>
+                <span className="preset-url">api.featherless.ai</span>
               </button>
             </div>
           </div>
