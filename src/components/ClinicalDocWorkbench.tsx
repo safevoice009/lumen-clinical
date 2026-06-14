@@ -71,12 +71,25 @@ Warning Signs (Call immediately if noticed):
 export const ClinicalDocWorkbench: React.FC<ClinicalDocWorkbenchProps> = ({ onLog }) => {
   const [activeTab, setActiveTab] = useState<DocType>('appeal');
   const [documentText, setDocumentText] = useState(TEMPLATES.appeal);
+  const [selectedPatientCase, setSelectedPatientCase] = useState<string>('appendicitis');
+  const [savedDocs, setSavedDocs] = useState<{ id: string; title: string; type: DocType; content: string; timestamp: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
   // AI Outputs
   const [mappedCodes, setMappedCodes] = useState<{ code: string; vocab: string; desc: string }[]>([]);
   const [auditResult, setAuditResult] = useState<{ passed: boolean; issues: string[]; summary: string } | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('lumen_saved_documents');
+      if (saved) {
+        setSavedDocs(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load saved documents:", e);
+    }
+  }, []);
 
   const logToGlobal = (level: TelemetryLog['level'], component: any, message: string) => {
     onLog({
@@ -86,6 +99,68 @@ export const ClinicalDocWorkbench: React.FC<ClinicalDocWorkbenchProps> = ({ onLo
       component: (component === 'SCRIBE_WORKSTATION' ? 'NLP_PARSER' : component) as TelemetryLog['component'],
       message,
     });
+  };
+
+  const handleSaveDocument = () => {
+    const nameMatch = documentText.match(/(?:Patient Name|Patient):\s*([^\n\r]+)/i);
+    const patientName = nameMatch ? nameMatch[1].trim() : 'Unknown Patient';
+    const title = `${activeTab.toUpperCase()} - ${patientName}`;
+    
+    const newDoc = {
+      id: `doc_${Date.now()}`,
+      title,
+      type: activeTab,
+      content: documentText,
+      timestamp: new Date().toLocaleString()
+    };
+    
+    const updated = [newDoc, ...savedDocs];
+    setSavedDocs(updated);
+    localStorage.setItem('lumen_saved_documents', JSON.stringify(updated));
+    logToGlobal('success', 'SCRIBE_WORKSTATION', `✓ Document saved to local library: "${title}"`);
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    const updated = savedDocs.filter(d => d.id !== id);
+    setSavedDocs(updated);
+    localStorage.setItem('lumen_saved_documents', JSON.stringify(updated));
+    logToGlobal('info', 'SCRIBE_WORKSTATION', 'Document deleted from library.');
+  };
+
+  const handleAiGenerateDocument = async () => {
+    setLoading(true);
+    logToGlobal('info', 'SCRIBE_WORKSTATION', `Generating clinical ${activeTab} using AI for case: ${selectedPatientCase}...`);
+    
+    const config = getActiveModelConfig();
+    
+    const caseDetails = selectedPatientCase === 'appendicitis' 
+      ? "Patient Sarah Jenkins, 35 years old, presenting with acute lower right abdominal pain migrating from umbilicus, rebound tenderness at McBurney's point, WBC 14.5, Ultrasound showing 7.2mm appendix with fluid. Indicates acute appendicitis. Needs laparoscopic appendectomy."
+      : selectedPatientCase === 'cardiac'
+      ? "Patient Liam O'Connor, 72 years old, history of diastolic heart failure, progressive ankle swelling (2+ pedal edema), jugular venous distension 10cm. Echocardiogram showing LVEF 52% and moderate aortic stenosis. Needs right heart catheterization."
+      : "Patient Elena Rostova, 45 years old, severe plaque psoriasis covering 12% of skin, failed clobetasol cream and oral methotrexate. Negative TB screening (Quantiferon-TB Gold). Prescribed Infliximab biologic infusion 5mg/kg.";
+
+    const systemPrompt = `You are a Senior Clinical AI Scribe. Your task is to draft a professional, medically accurate clinical document of type: ${activeTab.toUpperCase()}.
+CASE CONTEXT:
+${caseDetails}
+
+FORMAT INSTRUCTIONS:
+- For 'appeal': Draft a standard Prior Authorization Appeal Letter to the Appeals Department explaining the medical necessity of the proposed drug/procedure, referencing previous trial/failures (e.g. failed methotrexate) and negative screenings (e.g. TB).
+- For 'referral': Draft a formal Clinical Referral Note referring the patient to the relevant specialist (e.g. cardiovascular specialist or general surgeon), detailing preliminary non-invasive screening results (ECG, Ultrasound, Echo).
+- For 'discharge': Draft a detailed Patient Discharge Handout & Instructions summarizing the diagnosis, medication schedules (with dosages/frequency), and critical safety warnings (signs of infection, when to call clinic).
+
+Write the full document text. Do not include any conversational introductions, markdown block wrappers, or summary explanations. Start directly with the document title.`;
+
+    try {
+      const resultText = await executeModelRequest(config, systemPrompt, [], "Generate the clinical document now.", false);
+      setDocumentText(resultText.trim());
+      logToGlobal('success', 'SCRIBE_WORKSTATION', `✓ Clinical ${activeTab} successfully generated via AI.`);
+      setMappedCodes([]);
+      setAuditResult(null);
+    } catch (err: any) {
+      logToGlobal('error', 'SCRIBE_WORKSTATION', `✗ AI Document generation failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTabChange = (tab: DocType) => {
@@ -260,6 +335,39 @@ You MUST respond in this exact JSON format (no markdown code blocks):
         {/* Left Side: Editor */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="lb-card">
+            {/* AI Draft Generator Bar */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'var(--bg-subtle)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)', marginBottom: '12px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--fg-primary)' }}>AI Draft Generator:</span>
+              <select
+                value={selectedPatientCase}
+                onChange={e => setSelectedPatientCase(e.target.value)}
+                disabled={loading}
+                style={{
+                  background: 'var(--bg-card)',
+                  color: 'var(--fg-primary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="appendicitis">Appendicitis Case (Sarah Jenkins)</option>
+                <option value="cardiac">Cardiac Congestion Case (Liam O'Connor)</option>
+                <option value="immuno">Biologic Immunology Case (Elena Rostova)</option>
+              </select>
+              <button
+                className="btn btn-sm"
+                onClick={handleAiGenerateDocument}
+                disabled={loading}
+                style={{ background: 'var(--brand)', color: '#fff', border: 'none', padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                {loading ? <RefreshCw size={11} className="spin" /> : <Sparkles size={11} />}
+                Generate Draft
+              </button>
+            </div>
+
             {/* Editor Tabs */}
             <div className="doc-workbench-tabs">
               <button className={`doc-tab ${activeTab === 'appeal' ? 'active' : ''}`} onClick={() => handleTabChange('appeal')} disabled={loading}>
@@ -279,11 +387,12 @@ You MUST respond in this exact JSON format (no markdown code blocks):
               value={documentText}
               onChange={e => setDocumentText(e.target.value)}
               disabled={loading}
+              style={{ height: '360px' }}
             />
 
             {/* Editor Actions Footer */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button className="btn btn-sm" onClick={handleAutocomplete} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {loading ? <RefreshCw size={12} className="spin" /> : <Sparkles size={12} />}
                   Autocomplete Paragraph
@@ -295,6 +404,9 @@ You MUST respond in this exact JSON format (no markdown code blocks):
                 <button className="btn btn-sm" onClick={handleSafetyAudit} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {loading ? <RefreshCw size={12} className="spin" /> : <AlertTriangle size={12} />}
                   Run Safety Audit
+                </button>
+                <button className="btn btn-sm" onClick={handleSaveDocument} disabled={loading || !documentText.trim()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0, 230, 118, 0.15)', color: 'var(--color-safe)', border: 'none' }}>
+                  Save to Library
                 </button>
               </div>
               <button className="btn btn-primary btn-sm" onClick={handleDownloadText} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -379,16 +491,56 @@ You MUST respond in this exact JSON format (no markdown code blocks):
             </div>
           )}
 
-          {/* Default Placeholder */}
-          {mappedCodes.length === 0 && !auditResult && (
-            <div className="lb-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: '12px', textAlign: 'center', height: '100%' }}>
-              <FileText size={32} style={{ color: 'var(--fg-muted)' }} />
-              <div>
-                <strong style={{ color: 'var(--fg-primary)', display: 'block' }}>Awaiting Workbench Analytics</strong>
-                <span style={{ fontSize: '12px', color: 'var(--fg-muted)' }}>Use the toolbar actions below the editor to extract standards, audit safety, or expand contents.</span>
+          {/* Workspace Documents Library */}
+          <div className="lb-card animate-fade-in" style={{ marginTop: '16px' }}>
+            <h4 className="lb-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileText size={15} style={{ color: 'var(--brand)' }} />
+              Workspace Documents Library ({savedDocs.length})
+            </h4>
+            <p className="lb-card-subtitle" style={{ marginBottom: '12px' }}>
+              Saved clinical records stored in local-first database:
+            </p>
+            {savedDocs.length === 0 ? (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--fg-muted)', fontSize: '12px', border: '1px dashed var(--border-subtle)', borderRadius: '6px' }}>
+                No documents saved in library yet.
               </div>
-            </div>
-          )}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                {savedDocs.map(doc => (
+                  <div key={doc.id} style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '8px' }}>
+                      <strong style={{ fontSize: '12px', color: 'var(--fg-primary)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {doc.title}
+                      </strong>
+                      <span style={{ fontSize: '10.5px', color: 'var(--fg-muted)' }}>{doc.timestamp}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => {
+                          setDocumentText(doc.content);
+                          setActiveTab(doc.type);
+                          setMappedCodes([]);
+                          setAuditResult(null);
+                          logToGlobal('info', 'SCRIBE_WORKSTATION', `Loaded document: "${doc.title}"`);
+                        }}
+                        style={{ padding: '2px 6px', fontSize: '10px' }}
+                      >
+                        Load
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        style={{ padding: '2px 6px', fontSize: '10px', background: 'rgba(255, 61, 87, 0.15)', color: '#ff3d57', border: 'none' }}
+                      >
+                        Del
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

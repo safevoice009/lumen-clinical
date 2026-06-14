@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { executeModelRequest, getActiveModelConfig } from '../utils/geminiClient';
 import { TelemetryLog } from '../types/clinical';
-import { Play, BookOpen, Terminal, CheckCircle, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Play, BookOpen, Terminal, CheckCircle, RefreshCw, AlertTriangle, Globe } from 'lucide-react';
+import { getRegionalMedicalRegistry } from '../utils/regionalApis';
 
 interface ClinicalDeepResearchProps {
   onLog: (log: TelemetryLog) => void;
@@ -31,6 +32,7 @@ const SAMPLE_QUESTIONS = [
 
 export const ClinicalDeepResearch: React.FC<ClinicalDeepResearchProps> = ({ onLog }) => {
   const [query, setQuery] = useState(SAMPLE_QUESTIONS[0].prompt);
+  const [selectedRegion, setSelectedRegion] = useState<string>('usa');
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<{ type: 'info' | 'success' | 'warn'; text: string }[]>([]);
   const [report, setReport] = useState<ResearchReport | null>(null);
@@ -54,13 +56,52 @@ export const ClinicalDeepResearch: React.FC<ClinicalDeepResearchProps> = ({ onLo
 
     logToGlobal('info', 'RESEARCH_ENGINE', `Deep Research query initiated: "${query.substring(0, 50)}..."`);
 
-    // Simulated Agent Steps
+    const apis = getRegionalMedicalRegistry(selectedRegion);
+    const apiNames = apis.map(a => a.name).join(', ');
+
+    // Simulated Agent Steps tailored by region
+    const regionalStepsMap: Record<string, { text: string; delay: number; type: 'info' | 'success' | 'warn' }[]> = {
+      india: [
+        { text: 'Parsing query & setting jurisdiction context: India (NHA guidelines)...', delay: 800, type: 'info' },
+        { text: 'Connecting to Ayushman Bharat Digital Mission (ABDM) Sandbox Gateway...', delay: 1200, type: 'info' },
+        { text: `Querying ABDM Registries & consent flows (${apiNames})...`, delay: 1400, type: 'info' },
+        { text: 'ABDM Verification status: Consent manager session active. Retrieving health records...', delay: 1000, type: 'success' },
+        { text: 'Validating against Central Drugs Standard Control Organisation (CDSCO) & ICMR guidelines...', delay: 1500, type: 'warn' }
+      ],
+      usa: [
+        { text: 'Parsing query & setting jurisdiction context: USA (FDA & HHS standards)...', delay: 800, type: 'info' },
+        { text: 'Interfacing with Mayo Clinic Platform Cohort Discovery endpoints...', delay: 1200, type: 'info' },
+        { text: `Querying NIH NLM vocabulary indexes (${apiNames})...`, delay: 1400, type: 'info' },
+        { text: 'NIH NLM: Mapping clinical terms to standard LOINC, RxNorm, and SNOMED CT codes...', delay: 1000, type: 'success' },
+        { text: 'Scanning PubMed Central clinical literature database & FDA guidelines...', delay: 1500, type: 'warn' }
+      ],
+      uk: [
+        { text: 'Parsing query & setting jurisdiction context: United Kingdom (NHS England)...', delay: 800, type: 'info' },
+        { text: 'Connecting NHS England Developer & Integration Hub...', delay: 1200, type: 'info' },
+        { text: `Invoking NHS GP Connect Structured Record Access service (${apiNames})...`, delay: 1400, type: 'info' },
+        { text: 'GP Connect: Retrieved Patient Demographics & Diagnostic profile (NHS-9449305582)...', delay: 1000, type: 'success' },
+        { text: 'Auditing treatment proposal against NICE Clinical Guidelines (NICE Pathways)...', delay: 1500, type: 'warn' }
+      ],
+      japan: [
+        { text: 'Parsing query & setting jurisdiction context: Japan (MHLW & PMDA)...', delay: 800, type: 'info' },
+        { text: 'Accessing PMDA (Pharmaceuticals and Medical Devices Agency) safety reports...', delay: 1200, type: 'info' },
+        { text: `Querying Japan Science & Technology J-STAGE medical databases (${apiNames})...`, delay: 1400, type: 'info' },
+        { text: 'PMDA: Fetched drug reviews & adverse reaction profile records...', delay: 1000, type: 'success' },
+        { text: 'Reviewing Japanese Circulation Society & JSGE local guidelines...', delay: 1500, type: 'warn' }
+      ],
+      china: [
+        { text: 'Parsing query & setting jurisdiction context: China (NHC guidelines)...', delay: 800, type: 'info' },
+        { text: 'Accessing NHC EHR Vocabulary bridge and standard classifications...', delay: 1200, type: 'info' },
+        { text: `Querying Chinese National Medical Standard database & TCM ontologies (${apiNames})...`, delay: 1400, type: 'info' },
+        { text: 'TCM Mapping: Correlated diagnostic ICD-10 code with Traditional Chinese Medicine pattern...', delay: 1000, type: 'success' },
+        { text: 'Checking national drug catalog and clinical diagnostic criteria...', delay: 1500, type: 'warn' }
+      ]
+    };
+
+    const baseSteps = regionalStepsMap[selectedRegion] || regionalStepsMap.usa;
     const steps = [
-      { text: 'Parsing query & identifying target clinical domains...', delay: 1000, type: 'info' as const },
-      { text: 'Scanning local EHR guidelines library & PubMed indexes...', delay: 1500, type: 'info' as const },
-      { text: 'Querying medical societies (AHA/ACC, NCCN, AAFP, KDIGO)...', delay: 1500, type: 'info' as const },
-      { text: 'Running clinical protocol compliance parser (verifying TB, eGFR, ECG guidelines)...', delay: 1500, type: 'warn' as const },
-      { text: 'Synthesizing trial statistics and guidelines evidence...', delay: 1200, type: 'success' as const }
+      ...baseSteps,
+      { text: 'Synthesizing evidence and guidelines with LLM synthesis engine...', delay: 1200, type: 'success' as const }
     ];
 
     let currentLogIndex = 0;
@@ -87,12 +128,15 @@ export const ClinicalDeepResearch: React.FC<ClinicalDeepResearchProps> = ({ onLo
     const systemPrompt = `You are a Clinical Guidelines Synthesizer & Medical Researcher Agent.
 Analyze the user's medical query and formulate a detailed consensus report based on standard guidelines (AHA/ACC, KDIGO, NCCN, HL7, AAFP).
 
+JURISDICTION/REGION: ${selectedRegion.toUpperCase()}
+Ensure to evaluate guidelines and regulations corresponding to this region (e.g. ABDM in India, NHS in the UK, PMDA in Japan, Mayo Clinic & NIH RxNorm/LOINC in the USA). Include references to regional medical vocabulary mapping if applicable.
+
 You MUST respond in this exact JSON format (no markdown code blocks, no trailing comments):
 {
-  "summary": "Executive summary of the case and core guidelines recommendation (2-3 sentences)",
+  "summary": "Executive summary of the case and core guidelines recommendation (2-3 sentences), mentioning the relevant regional context",
   "checks": [
     {
-      "guideline": "e.g. Stanford NOHARM / FDA",
+      "guideline": "e.g. Stanford NOHARM / FDA / NICE / ABDM / PMDA",
       "rule": "Rule description (e.g. TB screen required before biologic)",
       "result": "satisfied" or "violated",
       "reason": "Brief justification based on clinical parameters"
@@ -100,8 +144,8 @@ You MUST respond in this exact JSON format (no markdown code blocks, no trailing
   ],
   "protocol": "Recommended step-by-step treatment or diagnostic protocol",
   "citations": [
-    "AHA/ACC 2023 Guidelines...",
-    "American Journal of Gastroenterology..."
+    "Regional Guideline (e.g., NICE 2024, ICMR, AHA/ACC 2023, PMDA)...",
+    "Clinical evidence journal..."
   ]
 }`;
 
@@ -160,8 +204,35 @@ You MUST respond in this exact JSON format (no markdown code blocks, no trailing
             <div>
               <h4 className="lb-card-title">1. Stage Clinical Research Target</h4>
               <p className="lb-card-subtitle" style={{ marginBottom: '12px' }}>
-                Select a standard inquiry or input a custom query:
+                Select a region and search query to evaluate:
               </p>
+
+              {/* Region Selector */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', background: 'var(--bg-subtle)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                <Globe size={14} style={{ color: 'var(--brand)' }} />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--fg-primary)' }}>Target Region:</span>
+                <select
+                  value={selectedRegion}
+                  onChange={e => setSelectedRegion(e.target.value)}
+                  disabled={loading}
+                  style={{
+                    background: 'var(--bg-card)',
+                    color: 'var(--fg-primary)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    outline: 'none'
+                  }}
+                >
+                  <option value="usa">United States (Mayo Clinic, NLM, FDA)</option>
+                  <option value="india">India (ABDM Sandbox, CDSCO, ICMR)</option>
+                  <option value="uk">United Kingdom (NHS England, NICE)</option>
+                  <option value="japan">Japan (PMDA, MHLW, J-Stage)</option>
+                  <option value="china">China (NHC Standard, TCM Ontology)</option>
+                </select>
+              </div>
 
               {/* Suggestions */}
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
