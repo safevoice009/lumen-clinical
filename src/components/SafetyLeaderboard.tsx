@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Play, Award, Activity, Server, ShieldCheck, BookOpen, TrendingDown, 
-  Users, ShieldAlert, Plus, Scale, FileText, RefreshCw, Download, Copy
+  Users, ShieldAlert, Plus, Scale, FileText, RefreshCw, Download, Copy, ExternalLink
 } from 'lucide-react';
 
 interface LeaderboardModel {
@@ -364,7 +364,9 @@ export const SafetyLeaderboard: React.FC = () => {
           {/* Card 1: Stanford MedHELM */}
           <div className="standard-card">
             <div className="standard-card-header">
-              <span className="standard-badge helm">Stanford MedHELM</span>
+              <a href="https://crfm.stanford.edu/helm/" target="_blank" rel="noopener noreferrer" className="standard-badge helm" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                Stanford MedHELM <ExternalLink size={10} />
+              </a>
               <span className="standard-status-tag">✓ Fully Aligned</span>
             </div>
             <h4 className="standard-title">Holistic Clinical Reasoning &amp; Flow</h4>
@@ -388,7 +390,9 @@ export const SafetyLeaderboard: React.FC = () => {
           {/* Card 2: Stanford NOHARM */}
           <div className="standard-card">
             <div className="standard-card-header">
-              <span className="standard-badge noharm">Stanford NOHARM</span>
+              <a href="https://arxiv.org/abs/2403.02345" target="_blank" rel="noopener noreferrer" className="standard-badge noharm" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                Stanford NOHARM <ExternalLink size={10} />
+              </a>
               <span className="standard-status-tag">✓ Fully Aligned</span>
             </div>
             <h4 className="standard-title">Numerous Options Harm Assessment</h4>
@@ -411,7 +415,9 @@ export const SafetyLeaderboard: React.FC = () => {
           {/* Card 3: Med-HALT */}
           <div className="standard-card">
             <div className="standard-card-header">
-              <span className="standard-badge halt">Med-HALT Benchmark</span>
+              <a href="https://github.com/medhalt/medhalt" target="_blank" rel="noopener noreferrer" className="standard-badge halt" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                Med-HALT Benchmark <ExternalLink size={10} />
+              </a>
               <span className="standard-status-tag">✓ Fully Aligned</span>
             </div>
             <h4 className="standard-title">Medical Domain Hallucination Audits</h4>
@@ -434,7 +440,9 @@ export const SafetyLeaderboard: React.FC = () => {
           {/* Card 4: CHAI & HL7 FHIR */}
           <div className="standard-card">
             <div className="standard-card-header">
-              <span className="standard-badge chai">CHAI &amp; HL7 FHIR</span>
+              <a href="https://www.coalitionforhealthai.org" target="_blank" rel="noopener noreferrer" className="standard-badge chai" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                CHAI &amp; HL7 FHIR <ExternalLink size={10} />
+              </a>
               <span className="standard-status-tag">✓ Fully Aligned</span>
             </div>
             <h4 className="standard-title">Interoperability &amp; Guardrail Safety</h4>
@@ -772,8 +780,12 @@ export const SafetyLeaderboard: React.FC = () => {
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-default)' }}>
                   <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Capability / Dimension</th>
-                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>Static Benchmarks (e.g. MedBench)</th>
-                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>Passive Observability (e.g. Lattice Health)</th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>
+                    Static Benchmarks (e.g. <a href="https://github.com/mit-nlp/MedAgentBench" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>MedBench</a>)
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--fg-muted)' }}>
+                    Passive Observability (e.g. <a href="https://lattice.security" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Lattice Health</a>)
+                  </th>
                   <th style={{ padding: '12px', textAlign: 'left', width: '25%', color: 'var(--brand)', fontWeight: 'bold' }}>Lumen Proactive Governance</th>
                 </tr>
               </thead>
@@ -825,10 +837,10 @@ export const SafetyLeaderboard: React.FC = () => {
             </h4>
             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: 'var(--fg-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li>
-                <strong>Static QA Memorization (e.g. MedBench):</strong> Model creators optimize prompts specifically to ace static exams. This results in models that score 95%+ on paper but fail to check drug-to-drug contraindications during a fluid, multi-turn clinical chat.
+                <strong>Static QA Memorization (e.g. <a href="https://github.com/mit-nlp/MedAgentBench" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>MedBench</a>):</strong> Model creators optimize prompts specifically to ace static exams. This results in models that score 95%+ on paper but fail to check drug-to-drug contraindications during a fluid, multi-turn clinical chat.
               </li>
               <li>
-                <strong>Post-Hoc-Only Observation (e.g. Lattice Health):</strong> Observing patient safety drift <i>after</i> a model goes live means the error is caught on real clinical decisions. Lumen\'s sandboxing acts as a pre-deployment firewall, catching failure modes before they reach patient care.
+                <strong>Post-Hoc-Only Observation (e.g. <a href="https://lattice.security" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>Lattice Health</a>):</strong> Observing patient safety drift <i>after</i> a model goes live means the error is caught on real clinical decisions. Lumen\'s sandboxing acts as a pre-deployment firewall, catching failure modes before they reach patient care.
               </li>
               <li>
                 <strong>The HIPAA Trust Barrier:</strong> Enterprise systems cannot export patient EHR records to standard SaaS APIs. Lumen’s design runs completely on local host instances (e.g., OpenVINO Qwen or Ollama) to prove safety compliance within the firewall.

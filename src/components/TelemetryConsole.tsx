@@ -81,7 +81,7 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
     <div className="telemetry-shell">
       <div
         className="telemetry-drawer"
-        style={{ height: open ? '260px' : '42px' }}
+        style={{ height: open ? '260px' : '54px' }}
       >
         {/* Header / Toggle */}
         <div className="telemetry-header" onClick={handleHeaderClick}>

@@ -13,11 +13,12 @@ import { ClinicalCompare } from './ClinicalCompare';
 import { ClinicalDeepResearch } from './ClinicalDeepResearch';
 import { ClinicalDocWorkbench } from './ClinicalDocWorkbench';
 import { ClinicalCookbook } from './ClinicalCookbook';
+import { ClinicalHandbook } from './ClinicalHandbook';
 import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu } from 'lucide-react';
 import { saveHistoryRecord, callGeminiDoctor, callGeminiPatient, callGeminiSafetyAuditor, GeminiMessage } from '../utils/geminiClient';
 
 interface ClinicalWorkspaceProps {
-  mode: 'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook';
+  mode: 'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook' | 'handbook';
   onLog: (log: TelemetryLog) => void;
 }
 
@@ -628,6 +629,11 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
 
   return (
     <div>
+
+      {/* ─── HANDBOOK MODE ─── */}
+      {mode === 'handbook' && (
+        <ClinicalHandbook />
+      )}
 
       {/* ─── COMPARE MODE ─── */}
       {mode === 'compare' && (

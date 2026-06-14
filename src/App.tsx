@@ -8,7 +8,7 @@ import { DischargePortalView, PortalData } from './components/DischargePortalVie
 import { 
   Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale, 
   Sparkles, FileEdit, BookOpenCheck, Trophy, BookOpen, ShieldCheck,
-  Stethoscope, BarChart3, ChevronDown, Menu, X, Palette
+  Stethoscope, BarChart3, ChevronDown, Menu, X, Palette, Linkedin, Lock, ShieldAlert
 } from 'lucide-react';
 
 export default function App() {
@@ -55,7 +55,7 @@ export default function App() {
   }, []);
 
   const [pillar, setPillar] = useState<'sandbox' | 'scribe' | 'standards'>('sandbox');
-  const [mode, setMode] = useState<'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook'>('simulation');
+  const [mode, setMode] = useState<'simulation' | 'redteam' | 'leaderboard' | 'copilot' | 'compare' | 'research' | 'workbench' | 'cookbook' | 'handbook'>('simulation');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Navigation Dropdown States (Claude-style)
@@ -439,6 +439,21 @@ export default function App() {
                       </div>
                     </button>
                   </li>
+                  <li>
+                    <button 
+                      className={`dropdown-link-btn ${mode === 'handbook' && pillar === 'standards' ? 'active' : ''}`}
+                      onClick={() => handleDropdownItemClick('standards', 'handbook')}
+                    >
+                      <div className="dropdown-icon-box"><BookOpenCheck size={14} /></div>
+                      <div className="dropdown-text-box">
+                        <span className="dropdown-item-title">
+                          Clinical Handbook
+                          <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px' }}>NEW</span>
+                        </span>
+                        <span className="dropdown-item-desc">Interactive guidelines, red-team rules & APIs</span>
+                      </div>
+                    </button>
+                  </li>
                 </ul>
                 <div className="dropdown-footer">
                   <span>Last evaluated: <strong>Today</strong></span>
@@ -660,27 +675,116 @@ export default function App() {
 
       {/* ── Footer ── */}
       <footer className="app-footer">
-        <div className="footer-inner">
-          <span className="footer-copy">
-            © 2025 Lumen Clinical · Built by a clinician, powered by Gemini 2.0
-          </span>
-          <div className="footer-links">
-            <a
-              href="https://github.com/safevoice009/lumen-clinical"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-link"
-            >
-              <Github size={11} /> GitHub
-            </a>
-            <a
-              href="https://lumen-clinical.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-link"
-            >
-              <ExternalLink size={11} /> Live Demo
-            </a>
+        <div className="footer-container">
+          <div className="footer-grid">
+            {/* Col 1: Developer Profile */}
+            <div className="footer-col">
+              <h5 className="footer-col-title">Developer &amp; Credits</h5>
+              <div className="dev-card">
+                <span className="dev-name">Dr. Baddam Sucharith Reddy</span>
+                <span className="dev-title">Clinical AI Researcher &amp; Doctor</span>
+                <p className="dev-desc">
+                  Bridging healthcare workflows, regional frameworks, and local multi-agent model audits for secure hospital deployment.
+                </p>
+                <div className="dev-links">
+                  <a
+                    href="https://www.linkedin.com/in/sucharith007"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="footer-link-btn"
+                  >
+                    <Linkedin size={12} /> LinkedIn Profile
+                  </a>
+                  <a
+                    href="https://github.com/safevoice009"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="footer-link-btn"
+                  >
+                    <Github size={12} /> GitHub Profile
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Col 2: Repository & Licensing */}
+            <div className="footer-col">
+              <h5 className="footer-col-title">Workspace Repository</h5>
+              <p className="footer-text">
+                Lumen is an open-source, local-first clinical decision-support and safety-auditing sandbox designed for private enterprise systems.
+              </p>
+              <div className="footer-repo-links">
+                <a
+                  href="https://github.com/safevoice009/lumen-clinical"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="repo-link"
+                >
+                  <Github size={13} /> github.com/safevoice009/lumen-clinical
+                </a>
+                <span className="license-badge">License: MIT &amp; Apache-2.0</span>
+              </div>
+            </div>
+
+            {/* Col 3: Ecosystem References */}
+            <div className="footer-col">
+              <h5 className="footer-col-title">Clinical AI Ecosystem</h5>
+              <p className="footer-text-sm">
+                Lumen is developed in alignment with state-of-the-art agentic medical evaluation platforms:
+              </p>
+              <ul className="ecosystem-list">
+                <li>
+                  <a href="https://github.com/Jiaqi-Li-NLP/AgentClinic" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={10} /> AgentClinic (Stanford)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/mit-nlp/MedAgentBench" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={10} /> MedAgentBench (MIT NLP)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/allanj/EHR-Agent" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={10} /> EHRAgent Benchmark
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Local Safeguards Card Row */}
+          <div className="footer-safeguards">
+            <div className="safeguard-card">
+              <div className="safeguard-icon-box"><Lock size={14} /></div>
+              <div className="safeguard-content">
+                <h6>Client-Side Verification</h6>
+                <p>All safety logs, simulations, and settings run locally in the browser context (zero external cloud leaks).</p>
+              </div>
+            </div>
+            <div className="safeguard-card">
+              <div className="safeguard-icon-box"><ShieldAlert size={14} /></div>
+              <div className="safeguard-content">
+                <h6>Auto De-Identification</h6>
+                <p>Scrubs HIPAA identifiers (Names, SSNs, PHI details) prior to sending queries to configured external endpoints.</p>
+              </div>
+            </div>
+            <div className="safeguard-card">
+              <div className="safeguard-icon-box"><Cpu size={14} /></div>
+              <div className="safeguard-content">
+                <h6>Local persistence</h6>
+                <p>Configuration states and session history are saved using local sandboxed browser storage.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Copyright & Disclaimer Row */}
+          <div className="footer-bottom">
+            <span className="copyright-text">
+              © 2026 Lumen Clinical · Open-Source Medical AI Safety Sandbox
+            </span>
+            <p className="disclaimer-text">
+              <strong>Clinical Disclaimer:</strong> Lumen is a research simulation tool for evaluating LLM response safety. It does not provide medical advice or substitute for the clinical judgment of a licensed practitioner.
+            </p>
           </div>
         </div>
       </footer>
