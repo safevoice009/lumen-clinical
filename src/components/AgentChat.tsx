@@ -4,13 +4,14 @@ import { Brain, User } from 'lucide-react';
 
 interface AgentChatProps {
   messages: SimulationMessage[];
+  highlightIndex?: number | null;
 }
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
-export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
+export const AgentChat: React.FC<AgentChatProps> = ({ messages, highlightIndex = null }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -45,12 +46,21 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
           </div>
         ) : (
           <div className="chat-messages">
-            {messages.map((msg) => {
+            {messages.map((msg, idx) => {
               const isDoctor = msg.sender === 'doctor';
+              const isHighlighted = idx === highlightIndex;
               return (
                 <div
                   key={msg.id}
                   className={`chat-msg ${!isDoctor ? 'chat-msg-reverse' : ''}`}
+                  style={isHighlighted ? {
+                    border: '1px solid var(--brand)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--brand-subtle)',
+                    padding: '8px',
+                    boxShadow: '0 0 8px rgba(99, 102, 241, 0.15)',
+                    transition: 'all 0.2s ease'
+                  } : undefined}
                 >
                   {/* Avatar */}
                   <div className={`chat-avatar ${isDoctor ? 'avatar-doctor' : 'avatar-patient'}`}>
@@ -65,7 +75,23 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
                       </span>
                       <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                     </div>
-                    <p className="bubble-text">{msg.message}</p>
+                    {msg.id === 'temp_thinking' ? (
+                      <div className="precision-spinner" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--fg-secondary)', display: 'flex', flexDirection: 'column', gap: '6px', padding: '4px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 700 }}>
+                          <span style={{ color: isDoctor ? 'var(--brand)' : 'var(--fg-safe)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="status-pulse pulse" style={{ width: '8px', height: '8px', borderRadius: '50%', background: isDoctor ? 'var(--brand)' : 'var(--fg-safe)', display: 'inline-block' }} />
+                            {isDoctor ? 'Doctor Agent is responding...' : 'Patient Simulator is responding...'}
+                          </span>
+                          <span style={{ color: 'var(--fg-muted)' }}>[████████░░] 1.4s</span>
+                        </div>
+                        <div style={{ paddingLeft: '14px', display: 'flex', flexDirection: 'column', gap: '2px', color: 'var(--fg-muted)', fontSize: '10.5px' }}>
+                          <div>▸ Received: {isDoctor ? `Patient symptom intake (turn ${messages.length})` : 'Doctor clinical recommendation'}</div>
+                          <div>▸ Awaiting: {isDoctor ? 'clinical guidelines screen & tool calls' : 'persona behavior mapping'}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="bubble-text">{msg.message}</p>
+                    )}
 
                     {msg.thoughtChain && (
                       <div className="reasoning-block">
@@ -96,3 +122,4 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages }) => {
     </div>
   );
 };
+

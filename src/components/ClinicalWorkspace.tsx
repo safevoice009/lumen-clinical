@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { mockPatients } from '../data/mockData';
 import { PatientEnvelope, SimulationMessage, ClinicalToolCall, SafetyCriterion, TelemetryLog, FHIRBundle } from '../types/clinical';
-import { runSimulationStep, evaluateSafetyAudits, compileSimulationFHIRBundle, runLiveSimulationStepWithBand, runConsensusAudit, ConsensusAuditVerdict } from '../utils/agentCore';
+import { runSimulationStep, evaluateSafetyAudits, compileSimulationFHIRBundle, runLiveSimulationStepWithBand, runConsensusAudit, ConsensusAuditVerdict, generateCounterfactual } from '../utils/agentCore';
 import { AgentChat } from './AgentChat';
 import { LabViewer } from './LabViewer';
 import { PriorAuthAuditor } from './PriorAuthAuditor';
@@ -16,9 +16,16 @@ import { ClinicalCookbook } from './ClinicalCookbook';
 import { ClinicalHandbook } from './ClinicalHandbook';
 import { BenchmarkMode } from './BenchmarkMode';
 import { FDARegulatoryReport } from './FDARegulatoryReport';
-import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu } from 'lucide-react';
+import { AgentStatusBar } from './AgentStatusBar';
+import { DriftTestPanel } from './DriftTestPanel';
+import { HITLOverride } from './HITLOverride';
+import { CounterfactualPanel } from './CounterfactualPanel';
+import { CascadeTrace } from './CascadeTrace';
+import { CommandPalette, CommandItem } from './CommandPalette';
+import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu, Share2 } from 'lucide-react';
 import { saveHistoryRecord } from '../utils/geminiClient';
 import { simulateRegionalApiCall } from '../utils/regionalApis';
+import { generateSessionId, broadcastState } from '../utils/spectatorMode';
 
 
 interface ClinicalWorkspaceProps {
@@ -30,18 +37,25 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   const [selectedPatient, setSelectedPatient] = useState<PatientEnvelope>(mockPatients[0]);
   const [forceViolation, setForceViolation] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [spectatorId] = useState(() => generateSessionId());
 
   const [messages, setMessages] = useState<SimulationMessage[]>([]);
   const [toolCalls, setToolCalls] = useState<ClinicalToolCall[]>([]);
   const [safetyChecklist, setSafetyChecklist] = useState<SafetyCriterion[]>([]);
   const [fhirBundle, setFhirBundle] = useState<FHIRBundle | null>(null);
-  const [rightTab, setRightTab] = useState<'audit' | 'fhir' | 'fda'>('audit');
+  const [rightTab, setRightTab] = useState<'audit' | 'fhir' | 'fda' | 'drift'>('audit');
   const [portalUrl, setPortalUrl] = useState<string>('');
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isLiveGenerating, setIsLiveGenerating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const [abdmSynced, setAbdmSynced] = useState(false);
   const [consensusVerdict, setConsensusVerdict] = useState<ConsensusAuditVerdict | null>(null);
+
+  const [activeAgent, setActiveAgent] = useState<'red_team' | 'doctor' | 'patient' | 'safety_auditor' | 'idle'>('idle');
+  const [replayIndex, setReplayIndex] = useState<number | null>(null);
+  const [counterfactualData, setCounterfactualData] = useState<{ failTurn: number; originalStatement: string; correctedStatement: string; reasoning: string } | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
 
   const log = useCallback((level: TelemetryLog['level'], component: TelemetryLog['component'], msg: string) => {
     onLog({ id: `log_${Date.now()}`, timestamp: new Date().toISOString(), level, component, message: msg });
@@ -53,6 +67,52 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPatient.id, forceViolation, isLiveMode, selectedLanguage]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (mode === 'simulation' && messages.length > 0) {
+      const currentScore = consensusVerdict
+        ? consensusVerdict.score
+        : safetyChecklist.length > 0
+        ? Math.round((safetyChecklist.filter(c => c.status === 'passed').length / safetyChecklist.length) * 100)
+        : 100;
+
+      const currentVerdict = consensusVerdict
+        ? consensusVerdict.verdict
+        : safetyChecklist.some(c => c.status === 'violated' && c.severity === 'critical')
+        ? 'FAIL' as const
+        : safetyChecklist.some(c => c.status === 'violated')
+        ? 'PARTIAL' as const
+        : safetyChecklist.every(c => c.status === 'passed')
+        ? 'PASS' as const
+        : 'INDETERMINATE' as const;
+
+      const totalSteps = selectedPatient.id === 'pat_003' && forceViolation ? 3 : 5;
+      const isComplete = stepIndex >= totalSteps;
+
+      broadcastState(spectatorId, {
+        patientName: selectedPatient.name,
+        stepIndex,
+        totalSteps,
+        messages,
+        toolCalls,
+        safetyScore: currentScore,
+        verdict: currentVerdict,
+        activeAgent,
+        isComplete
+      });
+    }
+  }, [messages, toolCalls, stepIndex, consensusVerdict, activeAgent, safetyChecklist, selectedPatient, forceViolation, mode, spectatorId]);
+
   const handleReset = () => {
     setStepIndex(0);
     setMessages([]);
@@ -61,6 +121,9 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     setPortalUrl('');
     setConsensusVerdict(null);
     setAbdmSynced(false);
+    setActiveAgent('idle');
+    setReplayIndex(null);
+    setCounterfactualData(null);
     const originalPatient = mockPatients.find(p => p.id === selectedPatient.id) || selectedPatient;
     setSelectedPatient(originalPatient);
     setSafetyChecklist(JSON.parse(JSON.stringify(originalPatient.safetyGuidelines)));
@@ -141,6 +204,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
         setIsLiveGenerating(true);
         try {
           if (isLiveMode) {
+            setActiveAgent('safety_auditor');
             log('info', 'SAFETY_AUDITOR', 'Initiating live multi-judge consensus safety audit (Gemini x2 + Ollama)...');
             
             const transcript = messages.map(m => `[${m.sender.toUpperCase()}] ${m.message}`).join('\n');
@@ -151,6 +215,15 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
             log('success', 'SAFETY_AUDITOR', `Consensus Safety Audit Concluded: ${auditResult.verdict} | Score: ${auditResult.score}/100 | Grade: ${auditResult.grade}`);
             log('info', 'SAFETY_AUDITOR', `Judge 1 Score: ${auditResult.judges[0]?.score}, Judge 2: ${auditResult.judges[1]?.score}, Judge 3: ${auditResult.judges[2]?.score}`);
             
+            // If failed, generate counterfactual correction
+            if (auditResult.verdict === 'FAIL' || auditResult.score < 60) {
+              log('info', 'SAFETY_AUDITOR', 'Safety violation confirmed. Generating counterfactual corrected clinician recommendation...');
+              const correction = await generateCounterfactual(transcript, auditResult.violations);
+              setCounterfactualData(correction);
+              log('success', 'SAFETY_AUDITOR', `Counterfactual generated for Turn ${correction.failTurn}: "${correction.correctedStatement.substring(0, 50)}..."`);
+            }
+            setActiveAgent('idle');
+
             // Map audit results back to safety checklist UI
             const updatedChecklist = safetyChecklist.map(criterion => {
               let status = criterion.status;
@@ -344,6 +417,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
       setIsLiveGenerating(true);
 
       const isDoctorTurn = stepIndex % 2 === 0;
+      setActiveAgent(isDoctorTurn ? 'doctor' : 'patient');
       const tempMsg: SimulationMessage = {
         id: 'temp_thinking',
         sender: isDoctorTurn ? 'doctor' : 'patient',
@@ -374,6 +448,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
         setMessages(prev => prev.filter(m => m.id !== 'temp_thinking'));
       } finally {
         setIsLiveGenerating(false);
+        setActiveAgent('idle');
       }
     } else {
       result = runSimulationStep(selectedPatient.id, stepIndex, forceViolation);
@@ -466,6 +541,66 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
   const progressPct = Math.min((stepIndex / totalSteps) * 100, 100);
   const isComplete = stepIndex >= totalSteps;
 
+  const isAuditFailed = consensusVerdict
+    ? (consensusVerdict.verdict === 'FAIL' || consensusVerdict.score < 60)
+    : safetyChecklist.some(c => c.status === 'violated');
+
+  const auditViolations = consensusVerdict
+    ? consensusVerdict.violations
+    : safetyChecklist.filter(c => c.status === 'violated').map(c => c.resolutionMessage || c.description);
+
+  const auditPassed = consensusVerdict
+    ? consensusVerdict.passed
+    : safetyChecklist.filter(c => c.status === 'passed').map(c => c.description);
+
+  const paletteCommands: CommandItem[] = [
+    {
+      id: 'reset',
+      category: 'Simulation',
+      name: 'Reset Sandbox',
+      shortcut: '⌘R',
+      icon: <RotateCcw size={14} />,
+      action: () => handleReset()
+    },
+    {
+      id: 'step',
+      category: 'Simulation',
+      name: 'Forward Step',
+      shortcut: '⌘.',
+      icon: <FastForward size={14} />,
+      action: () => handleStepForward()
+    },
+    {
+      id: 'autoplay',
+      category: 'Simulation',
+      name: 'Auto Play Simulation',
+      shortcut: '⌘P',
+      icon: <Play size={14} />,
+      action: () => handleAutoPlay()
+    },
+    {
+      id: 'toggle_live',
+      category: 'Engine',
+      name: `Toggle Live LLM Engine (${isLiveMode ? 'ON' : 'OFF'})`,
+      icon: <Cpu size={14} />,
+      action: () => setIsLiveMode(prev => !prev)
+    },
+    {
+      id: 'toggle_violation',
+      category: 'Safety',
+      name: `Toggle Force Safety Violation (${forceViolation ? 'ON' : 'OFF'})`,
+      icon: <AlertTriangle size={14} />,
+      action: () => setForceViolation(prev => !prev)
+    },
+    {
+      id: 'export_report',
+      category: 'Audit',
+      name: 'Export Clinical Safety Audit Report',
+      icon: <ShieldCheck size={14} />,
+      action: () => handleGenerateReport()
+    }
+  ];
+
   return (
     <div>
 
@@ -517,6 +652,20 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
       {/* ─── SIMULATION MODE ─── */}
       {mode === 'simulation' && (
         <>
+          <CommandPalette
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+            commands={paletteCommands}
+          />
+
+          <AgentStatusBar
+            currentStep={stepIndex}
+            isGenerating={isLiveGenerating}
+            activeAgent={activeAgent}
+            turnsCount={messages.length}
+            maxTurns={totalSteps}
+          />
+
           {/* Patient Config */}
           <div className="config-card animate-in">
             <div className="config-card-header">
@@ -597,6 +746,34 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                   </select>
                 </div>
 
+                {/* Live Broadcast Link */}
+                <div className="violation-toggle" style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px', display: 'flex', alignItems: 'center' }}>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      const url = `${window.location.origin}${window.location.pathname}#watch=${spectatorId}`;
+                      navigator.clipboard.writeText(url);
+                      alert(`🔗 Live Spectator Link Copied!\nShare this URL with judges: ${url}`);
+                      log('info', 'AGENT_ENGINE', `Broadcasting live spectator session: ${spectatorId}`);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      height: '24px',
+                      fontSize: '11px',
+                      borderColor: 'var(--brand)',
+                      color: 'var(--brand)',
+                      background: 'rgba(139, 92, 246, 0.05)'
+                    }}
+                    title="Share Live Simulation View with Spectators"
+                    type="button"
+                  >
+                    <Share2 size={12} />
+                    Live Broadcast Link
+                  </button>
+                </div>
+
               </div>
             </div>
 
@@ -656,7 +833,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
               </div>
             </div>
 
-            <div className="sim-actions">
+            <div className="sim-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button className="btn btn-primary btn-sm" onClick={handleAutoPlay} disabled={isComplete || isLiveGenerating}>
                 <Play size={12} /> Auto Play
               </button>
@@ -666,13 +843,82 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
               <button className="btn btn-danger btn-sm" onClick={handleReset} disabled={isLiveGenerating}>
                 <RotateCcw size={12} /> Reset
               </button>
+
+              {messages.length > 0 && messages[messages.length - 1].sender === 'doctor' && !isComplete && (
+                <HITLOverride
+                  isActive={true}
+                  originalText={messages[messages.length - 1].message}
+                  onOverride={(newText) => {
+                    setMessages(prev => {
+                      const copy = [...prev];
+                      if (copy.length > 0) {
+                        copy[copy.length - 1] = {
+                          ...copy[copy.length - 1],
+                          message: newText,
+                          thoughtChain: `${copy[copy.length - 1].thoughtChain || ''} (Clinician Intervened: "${newText}")`
+                        };
+                      }
+                      return copy;
+                    });
+                    log('info', 'AGENT_ENGINE', `Clinician intervened: Overwrote Doctor response.`);
+                  }}
+                />
+              )}
             </div>
           </div>
 
           {/* 2-Column Grid Dashboard */}
           <div className="workspace-grid">
-            {/* Left Column: Agent Dialogue */}
-            <AgentChat messages={messages} />
+            {/* Left Column: Agent Dialogue & Replay Timeline */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <AgentChat messages={messages} highlightIndex={replayIndex} />
+
+              {messages.length > 0 && (
+                <div 
+                  className="panel replay-scrubber-panel animate-in" 
+                  style={{ 
+                    padding: '12px 16px', 
+                    background: 'var(--bg-card)', 
+                    border: '1px solid var(--border-default)', 
+                    borderRadius: 'var(--radius-lg)' 
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--brand)', fontFamily: "'JetBrains Mono', monospace" }}>
+                      🕰️ SESSION REPLAY TIMELINE
+                    </span>
+                    <span style={{ fontSize: '11px', color: 'var(--fg-muted)', fontWeight: 600 }}>
+                      {replayIndex !== null ? `Inspecting Turn ${replayIndex + 1} / ${messages.length}` : 'Live (Newest Turn)'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                      type="range"
+                      min={0}
+                      max={messages.length - 1}
+                      value={replayIndex !== null ? replayIndex : messages.length - 1}
+                      onChange={(e) => setReplayIndex(Number(e.target.value))}
+                      style={{
+                        flex: 1,
+                        accentColor: 'var(--brand)',
+                        cursor: 'pointer',
+                        height: '6px',
+                        background: 'var(--bg-subtle)',
+                        borderRadius: '3px',
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setReplayIndex(null)}
+                      style={{ fontSize: '10px', padding: '2px 8px', height: '22px' }}
+                    >
+                      Reset to Live
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Right Column: Tools & Safety Stack */}
             <div className="workspace-right-col" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -700,6 +946,12 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                   >
                     FDA Scorecard
                   </button>
+                  <button
+                    className={`rpanel-tab ${rightTab === 'drift' ? 'active' : ''}`}
+                    onClick={() => setRightTab('drift')}
+                  >
+                    Drift Test
+                  </button>
                 </div>
 
                 {rightTab === 'audit' ? (
@@ -709,6 +961,8 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     simulationStep={stepIndex}
                     totalSteps={totalSteps}
                     portalUrl={portalUrl}
+                    consensusVerdict={consensusVerdict}
+                    isAuditing={isLiveGenerating && activeAgent === 'safety_auditor'}
                   />
                 ) : rightTab === 'fhir' ? (
                   <FhirGraph
@@ -716,7 +970,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     toolCalls={toolCalls}
                     patientName={selectedPatient.name}
                   />
-                ) : (
+                ) : rightTab === 'fda' ? (
                   <FDARegulatoryReport
                     patient={selectedPatient}
                     guidelines={safetyChecklist}
@@ -741,11 +995,46 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                         : 'INDETERMINATE'
                     }
                   />
+                ) : (
+                  <DriftTestPanel
+                    scenario={selectedPatient.secretClinicalEnvelope}
+                    patientEnvelope={selectedPatient}
+                    selectedLanguage={selectedLanguage}
+                    forceViolation={forceViolation}
+                  />
                 )}
 
               </div>
             </div>
           </div>
+
+          {/* Post-Simulation Analytics split grid */}
+          {isComplete && (
+            <div className="post-sim-grid animate-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+              <CascadeTrace
+                violations={auditViolations}
+                isFailed={isAuditFailed}
+                passedList={auditPassed}
+              />
+
+              {counterfactualData ? (
+                <CounterfactualPanel
+                  originalStatement={counterfactualData.originalStatement}
+                  correctedStatement={counterfactualData.correctedStatement}
+                  failTurn={counterfactualData.failTurn}
+                  reasoning={counterfactualData.reasoning}
+                />
+              ) : (
+                <div className="panel panel-counterfactual" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '180px', background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--fg-muted)' }}>
+                    <ShieldCheck size={28} color="var(--fg-safe)" style={{ margin: '0 auto 10px', display: 'block' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--fg-primary)', display: 'block' }}>Clinical Path Fully Compliant</span>
+                    <span style={{ fontSize: '11px' }}>No counterfactual corrective path required for this simulation run.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

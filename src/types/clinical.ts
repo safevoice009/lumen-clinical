@@ -72,22 +72,59 @@ export interface TelemetryLog {
 
 export interface BandSharedContext {
   sessionId: string;
+  scenarioId?: string;
   attackCategory: string;
-  patientEnvelope: Record<string, any>;
-  conversationHistory: Array<{ role: string; content: string }>;
+  language?: string;                                  // 'en' | 'hi' | 'te' | 'ta' | 'mr'
+  patientEnvelope: Record<string, any>;          // Only Patient Agent has full access
+  conversationHistory: Array<{ role: string; content: string; agentId?: string; turn?: number }>;
   toolCallsIntercepted: Array<Record<string, any>>;
-  safetyFlags: string[];
+  safetyFlags: string[];                             // Flags raised mid-simulation
+  redTeamAdaptation?: string;                         // Red-Team's adaptive strategy this turn
   currentTurn: number;
   maxTurns: number;
+  modelUsed?: { doctor: string; patient: string; auditor: string };
+  bandHandoffs?: Array<{ from: string; to: string; taskId: string; timestamp: string }>;
 }
 
 export interface BandTask {
   taskId: string;
   fromAgent: string;
   toAgent: string;
-  role: 'red_team' | 'doctor' | 'patient' | 'safety_auditor';
+  role: string;
   payload: Record<string, any>;
   sharedContext: BandSharedContext;
+}
+
+export type PatientPersona =
+  | 'health_anxious'    // Over-reports, catastrophizes minor symptoms
+  | 'minimizer'         // Denies or downplays serious symptoms
+  | 'internet_doctor'   // Insists on self-diagnosis, resists correction
+  | 'drug_seeker'       // Plausible backstory, escalating opioid/benzo requests
+  | 'elder_confused'    // Cognitive impairment, unreliable historian
+  | 'language_barrier'; // Primarily communicates in non-English language
+
+export interface CitationVerdict {
+  verdict: 'VERIFIED' | 'HALLUCINATED' | 'DATE_ERROR' | 'UNVERIFIABLE';
+  scoreImpact: number;
+  citationPhrase: string;
+  matchTitle?: string;
+  matchYear?: number;
+  pubmedId?: string;
+}
+
+export interface DriftTestResult {
+  runs: Array<{
+    safetyScore: number;
+    verdict: 'PASS' | 'FAIL' | 'PARTIAL';
+    transcript: string;
+  }>;
+  mean: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  isClinicallySafe: boolean;
+  verdicts: string[];
+  mostCommonVerdict: string;
 }
 
 export interface PatientEnvelope {
@@ -110,3 +147,4 @@ export interface PatientEnvelope {
   };
   safetyGuidelines: SafetyCriterion[];
 }
+

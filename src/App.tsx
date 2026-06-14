@@ -5,6 +5,7 @@ import { ModelSettingsModal } from './components/ModelSettingsModal';
 import { TelemetryLog } from './types/clinical';
 import { getActiveModelConfig, ModelConfig } from './utils/geminiClient';
 import { DischargePortalView, PortalData } from './components/DischargePortalView';
+import { SpectatorDashboard } from './components/SpectatorDashboard';
 import { 
   Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale, 
   Sparkles, FileEdit, BookOpenCheck, Trophy, BookOpen, ShieldCheck,
@@ -30,8 +31,9 @@ export default function App() {
   const [isPaletteDropdownOpen, setIsPaletteDropdownOpen] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
   const [portalData, setPortalData] = useState<PortalData | null>(null);
+  const [spectatorSessionId, setSpectatorSessionId] = useState<string | null>(null);
 
-  // Parse portal data from hash URL parameter if present
+  // Parse portal data or spectator session from hash URL parameter if present
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -41,11 +43,17 @@ export default function App() {
           const decodedText = decodeURIComponent(escape(atob(base64)));
           const parsed = JSON.parse(decodedText);
           setPortalData(parsed);
+          setSpectatorSessionId(null);
         } catch (e) {
           console.error("Failed to parse portal payload from URL hash:", e);
         }
+      } else if (hash.startsWith('#watch=')) {
+        const sid = hash.replace('#watch=', '');
+        setSpectatorSessionId(sid);
+        setPortalData(null);
       } else {
         setPortalData(null);
+        setSpectatorSessionId(null);
       }
     };
 
@@ -226,6 +234,20 @@ export default function App() {
           onBack={() => {
             window.location.hash = '';
             setPortalData(null);
+          }} 
+        />
+      </div>
+    );
+  }
+
+  if (spectatorSessionId) {
+    return (
+      <div className="app-root" style={{ background: 'var(--bg-main)', minHeight: '100vh', overflowY: 'auto' }}>
+        <SpectatorDashboard 
+          sessionId={spectatorSessionId} 
+          onBack={() => {
+            window.location.hash = '';
+            setSpectatorSessionId(null);
           }} 
         />
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SafetyCriterion } from '../types/clinical';
+import { ConsensusAuditVerdict } from '../utils/agentCore';
 import QRCode from 'qrcode';
 import {
   ShieldCheck, ShieldAlert, Clock, FileDown, CheckCircle2, XCircle, Share2, X
@@ -11,6 +12,8 @@ interface PriorAuthAuditorProps {
   simulationStep: number;
   totalSteps: number;
   portalUrl?: string;
+  consensusVerdict?: ConsensusAuditVerdict | null;
+  isAuditing?: boolean;
 }
 
 const statusIcon = (status: SafetyCriterion['status']) => {
@@ -20,7 +23,7 @@ const statusIcon = (status: SafetyCriterion['status']) => {
 };
 
 export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
-  guidelines, onGenerateReport, simulationStep, totalSteps, portalUrl,
+  guidelines, onGenerateReport, simulationStep, totalSteps, portalUrl, consensusVerdict, isAuditing,
 }) => {
   const [showQr, setShowQr] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
@@ -89,20 +92,50 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
         </div>
 
         {/* Criteria */}
-        <div className="criterion-list">
-          {guidelines.map((g) => (
-            <div key={g.id} className={`criterion-item ${g.status}`}>
-              <div className="criterion-icon">{statusIcon(g.status)}</div>
-              <div className="criterion-content">
-                <p className="criterion-text">{g.description}</p>
-                {g.resolutionMessage && (
-                  <p className="criterion-resolution">→ {g.resolutionMessage}</p>
-                )}
-              </div>
-              <span className={`severity-chip ${g.severity}`}>{g.severity}</span>
+        {isAuditing ? (
+          <div 
+            style={{ 
+              fontFamily: "'JetBrains Mono', monospace", 
+              fontSize: '11px', 
+              color: 'var(--fg-secondary)', 
+              background: 'var(--bg-subtle)', 
+              border: '1px dashed var(--border-default)', 
+              borderRadius: '8px', 
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              marginTop: '16px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 700 }}>
+              <span style={{ color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="status-pulse pulse" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand)', display: 'inline-block' }} />
+                Consensus Safety Board is auditing...
+              </span>
+              <span style={{ color: 'var(--fg-muted)' }}>[██████████] 2.1s</span>
             </div>
-          ))}
-        </div>
+            <div style={{ paddingLeft: '14px', display: 'flex', flexDirection: 'column', gap: '4px', color: 'var(--fg-muted)', fontSize: '10.5px' }}>
+              <div>▸ Received: Dialogue transcript &amp; tool execution traces</div>
+              <div>▸ Awaiting: Parallel 3-judge consensus verdict (Gemini x2 + Ollama)</div>
+            </div>
+          </div>
+        ) : (
+          <div className="criterion-list">
+            {guidelines.map((g) => (
+              <div key={g.id} className={`criterion-item ${g.status}`}>
+                <div className="criterion-icon">{statusIcon(g.status)}</div>
+                <div className="criterion-content">
+                  <p className="criterion-text">{g.description}</p>
+                  {g.resolutionMessage && (
+                    <p className="criterion-resolution">→ {g.resolutionMessage}</p>
+                  )}
+                </div>
+                <span className={`severity-chip ${g.severity}`}>{g.severity}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Verdict card */}
         {isVerdictReady && (
@@ -120,6 +153,55 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'var(--fg-muted)', fontWeight: 700 }}>
               {passed}/{guidelines.length}
             </span>
+          </div>
+        )}
+
+        {/* Consensus Audit 3-Judge Panels */}
+        {consensusVerdict && consensusVerdict.judges && (
+          <div style={{ marginTop: '16px', borderTop: '1px dashed var(--border-default)', paddingTop: '16px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--brand)', display: 'block', marginBottom: '8px', fontFamily: "'JetBrains Mono', monospace" }}>
+              ⚖️ CONSENSUS AUDIT: 3-JUDGE PANEL
+            </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              {consensusVerdict.judges.map((judge, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    background: 'var(--bg-subtle)', 
+                    border: '1px solid var(--border-subtle)', 
+                    borderRadius: '6px', 
+                    padding: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
+                  <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--fg-muted)', fontFamily: "'JetBrains Mono', monospace", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={judge.name}>
+                    {judge.name}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ 
+                      fontSize: '9px', 
+                      fontWeight: 800, 
+                      padding: '2px 4px', 
+                      borderRadius: '3px',
+                      background: judge.verdict === 'PASS' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)',
+                      color: judge.verdict === 'PASS' ? 'var(--fg-safe)' : 'var(--fg-danger)'
+                    }}>
+                      {judge.verdict}
+                    </span>
+                    <span style={{ fontSize: '11px', fontWeight: 800 }}>{judge.score}/100</span>
+                  </div>
+                  {judge.violations && judge.violations.length > 0 ? (
+                    <span style={{ fontSize: '8.5px', color: 'var(--fg-danger)', lineHeight: '1.2' }} title={judge.violations.join(', ')}>
+                      ⚠️ {judge.violations[0].substring(0, 30)}...
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '8.5px', color: 'var(--fg-safe)' }}>✓ No violations</span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
