@@ -104,43 +104,46 @@ npm run dev
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    LUMEN SANDBOX                        │
-│                                                         │
-│  ┌──────────────┐    ┌──────────────┐                   │
-│  │ RED-TEAM     │    │ CLINICAL     │                   │
-│  │ ENGINE       │───▶│ SIMULATION   │                   │
-│  │ (Gemini)     │    │ MODE         │                   │
-│  └──────────────┘    └──────┬───────┘                   │
-│                             │                           │
-│           ┌─────────────────▼──────────────────┐       │
-│           │  DOCTOR AGENT (Gemini 2.0 Flash)   │       │
-│           │  • Conducts clinical consultation   │       │
-│           │  • Emits tool calls (LOINC/CPT)    │       │
-│           │  • Exposes reasoning chain          │       │
-│           └──────────────┬─────────────────────┘       │
-│                          │ tool calls intercepted       │
-│           ┌──────────────▼─────────────────────┐       │
-│           │      TOOL INTERCEPTOR               │       │
-│           │  • OrderLabTest (LOINC codes)       │       │
-│           │  • OrderImaging (CPT codes)         │       │
-│           │  • PrescribeMedication (RxNorm)     │       │
-│           └──────────────┬─────────────────────┘       │
-│                          │                             │
-│           ┌──────────────▼─────────────────────┐       │
-│           │  SAFETY AUDITOR AGENT (Gemini)      │       │
-│           │  • Evaluates dialogue transcript    │       │
-│           │  • Issues PASS/FAIL verdict         │       │
-│           │  • Score: 0-100                     │       │
-│           └──────────────┬─────────────────────┘       │
-│                          │                             │
-│           ┌──────────────▼─────────────────────┐       │
-│           │  FHIR R4 BUNDLE COMPILER            │       │
-│           │  • Patient resource                 │       │
-│           │  • Condition (ICD-10)               │       │
-│           │  • Procedure / Observation          │       │
-│           └─────────────────────────────────────┘       │
-└─────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│                    LUMEN ODYSSEUS SANDBOX                          │
+│                                                                    │
+│  ┌───────────────────────────────────────────────────────────┐    │
+│  │               BAND COORDINATION LAYER                     │    │
+│  │   Agent Registry · Task Dispatch · Shared Context Store   │    │
+│  └──────────┬──────────────────────┬──────────────────────┬──┘    │
+│             │                      │                      │       │
+│  ┌──────────▼───┐        ┌─────────▼──────┐    ┌─────────▼────┐  │
+│  │  RED-TEAM    │        │  PATIENT       │    │  SAFETY      │  │
+│  │  ADVERSARY   │        │  AGENT         │    │  AUDITOR     │  │
+│  │  (Adaptive)  │        │  (Ollama/      │    │  AGENT       │  │
+│  │  (Gemini)    │        │   Gemini)      │    │  (3-judge    │  │
+│  └──────────┬───┘        └─────────┬──────┘    │   consensus) │  │
+│             │  attack_scenario      │  patient_response  └─────────┬────┘
+│             ▼                      ▼                      │       │
+│  ┌───────────────────────────────────────────────────────┐ │      │
+│  │              DOCTOR AI AGENT                          │ │      │
+│  │  (Gemini 2.0 Flash OR Ollama local model)            │ │      │
+│  │  · Conducts consultation · Emits LOINC/CPT tools    │─┘      │
+│  │  · Multilingual support · Band context aware         │        │
+│  └────────────────────────────┬──────────────────────────┘        │
+│                               │  tool_calls_intercepted           │
+│  ┌────────────────────────────▼──────────────────────────────┐    │
+│  │  TOOL INTERCEPTOR + DISCLAIMER BURIAL DETECTOR            │    │
+│  └────────────────────────────┬──────────────────────────────┘    │
+│                               │  audit_trigger (via Band)         │
+│  ┌────────────────────────────▼──────────────────────────────┐    │
+│  │  MULTI-JUDGE SAFETY AUDIT (3 parallel judges)             │    │
+│  │  Score consensus → PASS / PARTIAL / FAIL / INDETERMINATE  │    │
+│  └────────────────────────────┬──────────────────────────────┘    │
+│                               │                                   │
+│  ┌────────────────────────────▼──────────────────────────────┐    │
+│  │  OUTPUTS                                                  │    │
+│  │  · FHIR R4 Bundle (HAPI-validated)                        │    │
+│  │  · FDA SaMD Compliance Report                             │    │
+│  │  · Benchmark Radar Chart                                  │    │
+│  │  · Session Replay + Diff                                  │    │
+│  └───────────────────────────────────────────────────────────┘    │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -155,7 +158,7 @@ npm run dev
 ### Lablab.ai Agentic AI Hackathons
 - **Category**: Healthcare + Agentic AI Pipelines
 - **Prize**: $5,000–$15,000 + enterprise incubation
-- **Angle**: Multi-agent pipeline (Doctor + Auditor + Red-Team) with real HITL and auditability
+- **Angle**: Multi-agent pipeline (Doctor + Auditor + Red-Team + Patient) orchestrated via Band Protocol coordination bus.
 
 ---
 
@@ -179,15 +182,21 @@ lumen-clinical/
 │   │   ├── AgentChat.tsx           # Doctor/Patient dialogue display
 │   │   ├── LabViewer.tsx           # Tool call interceptor UI
 │   │   ├── PriorAuthAuditor.tsx    # Safety checklist panel
-│   │   ├── FhirGraph.tsx           # FHIR bundle visualizer
-│   │   └── TelemetryConsole.tsx    # Event log console
+│   │   ├── FhirGraph.tsx           # FHIR bundle visualizer & server validator [UPDATED]
+│   │   ├── TelemetryConsole.tsx    # Event log console with Band handoffs [UPDATED]
+│   │   ├── BenchmarkMode.tsx       # 📊 SVG Radar Chart comparison bench [NEW]
+│   │   └── FDARegulatoryReport.tsx # 📋 FDA SaMD scorecard exporter [NEW]
 │   ├── utils/
-│   │   ├── geminiClient.ts         # Gemini 2.0 Flash API wrapper
-│   │   ├── redTeamEngine.ts        # Adversarial scenario generator
-│   │   ├── agentCore.ts            # Simulation engine + FHIR compiler
-│   │   └── regionalApis.ts         # Global/Regional medical API schemas [NEW]
-│   ├── types/clinical.ts           # All TypeScript types
-│   └── data/mockData.ts            # Patient envelopes + safety guidelines
+│   │   ├── geminiClient.ts         # Gemini 2.0 Flash API wrapper (adaptive adversary) [UPDATED]
+│   │   ├── redTeamEngine.ts        # Adversarial scenario generator (Disclaimer Burial) [UPDATED]
+│   │   ├── agentCore.ts            # Multi-agent simulation engine & consensus audit [UPDATED]
+│   │   ├── regionalApis.ts         # Global/Regional medical API schemas & ABDM sandbox [UPDATED]
+│   │   ├── bandClient.ts           # Band protocol agentic task handoffs wrapper [NEW]
+│   │   └── ollamaClient.ts         # Local Ollama client wrapper [NEW]
+│   ├── types/clinical.ts           # All TypeScript types (BandTask, BandSharedContext) [UPDATED]
+│   ├── data/mockData.ts            # Patient envelopes + specialty guidelines (psych/onc/ped) [UPDATED]
+│   ├── data/scenarioTranslations.ts# Multilingual translations (Hindi, Telugu, Tamil, Marathi) [NEW]
+│   └── data/communityScenarios.ts  # 50 scenarios scenario library (built-in + slots) [NEW]
 ├── GEMINI_AGENT_INSTRUCTIONS.md    # AI agent build guide
 ├── .env.example                    # Environment setup template
 └── README.md
@@ -199,7 +208,10 @@ lumen-clinical/
 
 ```bash
 # .env
-VITE_GEMINI_API_KEY=your_key_here   # Free at aistudio.google.com/app/apikey
+VITE_GEMINI_API_KEY=your_gemini_key_here    # Free at aistudio.google.com/app/apikey
+VITE_BAND_API_KEY=your_band_api_key_here    # Band API key (obtain from band.ai)
+VITE_BAND_API_BASE=https://api.band.ai/v1   # Band API base URL
+VITE_OLLAMA_BASE=http://localhost:11434      # Local Ollama base (optional)
 ```
 
 Without the API key, Lumen falls back to **5 curated adversarial scenarios** (fully functional offline).
