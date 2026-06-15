@@ -10,6 +10,7 @@ interface AgentStatusBarProps {
   modelUsed?: { doctor: string; patient: string; auditor: string };
   lastTaskId?: string;
   isHitlEscalated?: boolean;
+  isHitlAwaiting?: boolean;
 }
 
 export const AgentStatusBar: React.FC<AgentStatusBarProps> = ({
@@ -17,7 +18,8 @@ export const AgentStatusBar: React.FC<AgentStatusBarProps> = ({
   activeAgent,
   modelUsed = { doctor: 'Gemini 2.0 Flash', patient: 'Gemini 2.0 Flash', auditor: 'Consensus (3-Judge)' },
   lastTaskId,
-  isHitlEscalated
+  isHitlEscalated,
+  isHitlAwaiting
 }) => {
   const agents = [
     {
@@ -70,6 +72,31 @@ export const AgentStatusBar: React.FC<AgentStatusBarProps> = ({
           );
         })}
       </div>
+      {isHitlAwaiting && !isHitlEscalated && (
+        <div 
+          className="hitl-awaiting-badge animate-pulse" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            background: 'rgba(245, 158, 11, 0.1)', 
+            border: '1px solid #F59E0B', 
+            borderRadius: '8px', 
+            padding: '10px 14px',
+            fontSize: '11px',
+            fontWeight: 800,
+            color: '#F59E0B',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            boxShadow: '0 0 10px rgba(245, 158, 11, 0.2)',
+            whiteSpace: 'nowrap',
+            height: 'fit-content'
+          }}
+        >
+          <ShieldAlert size={14} />
+          <span>Awaiting Human Review</span>
+        </div>
+      )}
       {isHitlEscalated && (
         <div 
           className="hitl-escalated-badge" 

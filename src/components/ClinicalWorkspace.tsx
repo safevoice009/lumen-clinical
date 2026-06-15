@@ -60,6 +60,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   const [isHitlModalOpen, setIsHitlModalOpen] = useState(false);
   const [hitlSignedDetails, setHitlSignedDetails] = useState<{ reviewerName: string; npi: string; justification: string; timestamp: string } | null>(null);
   const [isHitlEscalated, setIsHitlEscalated] = useState(false);
+  const [isHitlAwaiting, setIsHitlAwaiting] = useState(false);
   const [doctorModel, setDoctorModel] = useState(() => localStorage.getItem('lumen_doctor_model') || 'gemini');
   const [auditorModel, setAuditorModel] = useState(() => localStorage.getItem('lumen_auditor_model') || 'consensus');
 
@@ -134,6 +135,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     setIsHitlModalOpen(false);
     setHitlSignedDetails(null);
     setIsHitlEscalated(false);
+    setIsHitlAwaiting(false);
     const originalPatient = mockPatients.find(p => p.id === selectedPatient.id) || selectedPatient;
     setSelectedPatient(originalPatient);
     setSafetyChecklist(JSON.parse(JSON.stringify(originalPatient.safetyGuidelines)));
@@ -149,6 +151,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     };
     setHitlSignedDetails(details);
     setIsHitlEscalated(true);
+    setIsHitlAwaiting(false);
     setIsHitlModalOpen(false);
     
     log('success', 'SAFETY_AUDITOR', `[HITL] Override signed by ${reviewerName} (NPI: ${npi}). Justification: ${justification}`);
@@ -173,6 +176,11 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
       }
       return c;
     }));
+  };
+
+  const triggerHitlEscalation = () => {
+    setIsHitlModalOpen(true);
+    setIsHitlAwaiting(true);
   };
 
   const handleAbdmPrefill = async () => {
@@ -763,7 +771,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
       name: 'Escalate to Human Clinical Review',
       icon: <AlertTriangle size={14} />,
       action: () => {
-        if (isAuditFailed) setIsHitlModalOpen(true);
+        if (isAuditFailed) triggerHitlEscalation();
         else alert('No active safety violation to escalate.');
       }
     }
@@ -845,6 +853,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
             turnsCount={messages.length}
             maxTurns={totalSteps}
             isHitlEscalated={isHitlEscalated}
+            isHitlAwaiting={isHitlAwaiting}
             modelUsed={{
               doctor: (() => {
                 const docModelRaw = localStorage.getItem('lumen_doctor_model') || 'gemini';
@@ -1245,7 +1254,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     portalUrl={portalUrl}
                     consensusVerdict={consensusVerdict}
                     isAuditing={isLiveGenerating && activeAgent === 'safety_auditor'}
-                    onEscalateToHumanReview={() => setIsHitlModalOpen(true)}
+                    onEscalateToHumanReview={triggerHitlEscalation}
                     hitlSignedDetails={hitlSignedDetails}
                   />
                 ) : rightTab === 'fhir' ? (

@@ -26,6 +26,77 @@ export const HITLEscalation: React.FC<HITLEscalationProps> = ({
   const [justification, setJustification] = useState('');
   const [error, setError] = useState('');
 
+  const getRecommendedSpecialty = (patientId: string) => {
+    if (patientId.includes('psy')) return 'Psychiatry Specialist';
+    if (patientId.includes('onc')) return 'Oncology Specialist';
+    if (patientId.includes('ped')) return 'Pediatrics Specialist';
+    return 'General Clinical Safety Specialist';
+  };
+
+  const generatePacketText = () => {
+    const specialty = getRecommendedSpecialty(patient.id);
+    const date = new Date().toLocaleString();
+    const transcriptText = messages.map(m => `[${m.sender.toUpperCase()} - ${m.senderName}]: ${m.message}`).join('\n');
+    const violationsText = violations.map((v, i) => `${i + 1}. ${v}`).join('\n');
+    
+    return `================================================================
+CLINICAL ESCALATION & HUMAN REVIEW REQUEST PACKET
+================================================================
+Generated: ${date}
+Escalation ID: ESC-${patient.id.toUpperCase()}-${Date.now().toString().slice(-4)}
+Status: AWAITING HUMAN REVIEW
+Recommended Review Specialty: ${specialty}
+
+----------------------------------------------------------------
+1. PATIENT DEMOGRAPHICS
+----------------------------------------------------------------
+Name: ${patient.name}
+Age / Gender: ${patient.age} / ${patient.gender}
+DOB: ${patient.dob || 'Unknown'}
+Insurance Provider: ${patient.insuranceProvider}
+Target Procedure CPT: ${patient.targetProcedureCpt || 'N/A'}
+
+----------------------------------------------------------------
+2. CLINICAL SAFETY AUDIT FINDINGS
+----------------------------------------------------------------
+Initial Audit Score: ${score}/100
+Verdict: ${verdict}
+Critical Safety Violations Identified:
+${violationsText || 'None'}
+
+----------------------------------------------------------------
+3. INTERCEPTED CONSULTATION TRANSCRIPT
+----------------------------------------------------------------
+${transcriptText}
+
+================================================================
+PHYSICIAN OVERRIDE SECTION (To be signed by clinical reviewer)
+================================================================
+I have reviewed the clinical safety violations listed above and the
+consultation transcript. I hereby authorize the override of the
+safety recommendations due to appropriate clinical justification.
+
+Reviewer Physician Name: _____________________________________
+NPI Number (10-digit):   _____________________________________
+Signature:               _____________________________________
+Date:                    _____________________________________
+Justification:
+________________________________________________________________
+________________________________________________________________
+================================================================`;
+  };
+
+  const handleDownloadPacket = () => {
+    const text = generatePacketText();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Lumen_Escalation_Packet_${patient.name.replace(/\s+/g, '_')}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSign = () => {
     if (!reviewerName.trim()) {
       setError('Please provide the Reviewer Physician Name.');
@@ -124,9 +195,30 @@ export const HITLEscalation: React.FC<HITLEscalationProps> = ({
         >
           {/* Section 1: Demographics */}
           <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '16px' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 700, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={14} /> PATIENT DEMOGRAPHICS
-            </h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FileText size={14} /> PATIENT DEMOGRAPHICS
+              </h4>
+              <button
+                onClick={handleDownloadPacket}
+                style={{
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid #3B82F6',
+                  color: '#60A5FA',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Download formatted Human Review request packet text file"
+              >
+                <FileText size={12} /> Download Review Request Packet
+              </button>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', fontSize: '12.5px' }}>
               <div><span style={{ color: 'var(--fg-muted)' }}>Name:</span> <strong>{patient.name}</strong></div>
               <div><span style={{ color: 'var(--fg-muted)' }}>DOB:</span> <strong>{patient.dob || 'Unknown'}</strong></div>
@@ -134,6 +226,9 @@ export const HITLEscalation: React.FC<HITLEscalationProps> = ({
               <div><span style={{ color: 'var(--fg-muted)' }}>Insurance:</span> <strong>{patient.insuranceProvider}</strong></div>
               <div><span style={{ color: 'var(--fg-muted)' }}>Target CPT:</span> <strong>{patient.targetProcedureCpt || 'N/A'}</strong></div>
               <div><span style={{ color: 'var(--fg-muted)' }}>Escalation ID:</span> <strong style={{ fontFamily: 'monospace' }}>ESC-{patient.id.toUpperCase()}-{Date.now().toString().slice(-4)}</strong></div>
+              <div style={{ gridColumn: 'span 3', borderTop: '1px dashed var(--border-subtle)', paddingTop: '8px', marginTop: '4px' }}>
+                <span style={{ color: 'var(--fg-muted)' }}>Recommended Specialty Reviewer:</span> <strong style={{ color: 'var(--brand)' }}>{getRecommendedSpecialty(patient.id)}</strong>
+              </div>
             </div>
           </div>
 
