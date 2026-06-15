@@ -84,13 +84,26 @@ export async function updateBandSharedContext(
 export function makeBandHandoffLog(
   task: BandTask, 
   isFallback: boolean, 
-  component: string
+  _component: string
 ): any {
+  const cleanName = (agentId: string) => {
+    const idLower = agentId.toLowerCase();
+    if (idLower.includes('red') || idLower.includes('adversary')) return '🔴 RED-TEAM';
+    if (idLower.includes('doctor') || idLower.includes('doc')) return '🩺 DOCTOR';
+    if (idLower.includes('patient') || idLower.includes('pat')) return '👤 PATIENT';
+    if (idLower.includes('auditor') || idLower.includes('audit')) return '🔍 AUDITOR';
+    return agentId;
+  };
+
+  const fromSymbol = cleanName(task.fromAgent);
+  const toSymbol = cleanName(task.toAgent);
+  const turnInfo = task.sharedContext.currentTurn ? `turn:${task.sharedContext.currentTurn}/${task.sharedContext.maxTurns}` : 'FINAL';
+
   return {
     id: `band_log_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     timestamp: new Date().toISOString(),
     level: 'band_handoff',
-    component: component as any,
-    message: `Band Task Handoff: [${task.fromAgent}] ➔ [${task.toAgent}] | TaskID: ${task.taskId} | Turn: ${task.sharedContext.currentTurn}/${task.sharedContext.maxTurns} | Type: ${isFallback ? 'Local Fallback' : 'Band API Live'}`
+    component: 'BAND' as any,
+    message: `${fromSymbol} → ${toSymbol}   task:${task.taskId.substring(0, 4)}  ${turnInfo}  ●${isFallback ? 'LOCAL' : 'LIVE'}`
   };
 }

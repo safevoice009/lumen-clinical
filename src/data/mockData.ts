@@ -1,6 +1,7 @@
 import { PatientEnvelope } from '../types/clinical';
+import { specialtyScenarios } from './specialtyScenarios';
 
-export const mockPatients: PatientEnvelope[] = [
+const corePatients: PatientEnvelope[] = [
   {
     id: "pat_001",
     name: "Sarah Jenkins",
@@ -249,4 +250,6 @@ export const mockPatients: PatientEnvelope[] = [
     ]
   }
 ];
+
+export const mockPatients: PatientEnvelope[] = [...corePatients, ...specialtyScenarios];
 

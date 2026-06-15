@@ -14,6 +14,8 @@ interface PriorAuthAuditorProps {
   portalUrl?: string;
   consensusVerdict?: ConsensusAuditVerdict | null;
   isAuditing?: boolean;
+  onEscalateToHumanReview?: () => void;
+  hitlSignedDetails?: { reviewerName: string; npi: string; justification: string; timestamp: string } | null;
 }
 
 const statusIcon = (status: SafetyCriterion['status']) => {
@@ -24,6 +26,7 @@ const statusIcon = (status: SafetyCriterion['status']) => {
 
 export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
   guidelines, onGenerateReport, simulationStep, totalSteps, portalUrl, consensusVerdict, isAuditing,
+  onEscalateToHumanReview, hitlSignedDetails
 }) => {
   const [showQr, setShowQr] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
@@ -63,13 +66,15 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
         {isVerdictReady && (
           <span
             className="panel-badge"
-            style={isCriticalFail
+            style={hitlSignedDetails
+              ? { background: 'var(--color-safe-bg)', border: '1px solid var(--color-safe-border)', color: 'var(--fg-safe)' }
+              : isCriticalFail
               ? { background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)', color: 'var(--fg-danger)' }
               : { background: 'var(--color-safe-bg)', border: '1px solid var(--color-safe-border)', color: 'var(--fg-safe)' }
             }
           >
-            {isCriticalFail ? <ShieldAlert size={9} /> : <ShieldCheck size={9} />}
-            {verdictLabel}
+            {hitlSignedDetails ? <ShieldCheck size={9} /> : isCriticalFail ? <ShieldAlert size={9} /> : <ShieldCheck size={9} />}
+            {hitlSignedDetails ? 'OVERRIDDEN' : verdictLabel}
           </span>
         )}
       </div>
@@ -138,17 +143,92 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
         )}
 
         {/* Verdict card */}
-        {isVerdictReady && (
+        {isVerdictReady && hitlSignedDetails && (
           <div
             className="audit-verdict-card"
             style={{
               marginTop: 16,
-              borderColor: isCriticalFail ? 'var(--color-danger-border)' : 'var(--color-safe-border)',
-              background: isCriticalFail ? 'var(--color-danger-bg)' : 'var(--color-safe-bg)',
+              borderColor: 'var(--color-safe-border)',
+              background: 'var(--color-safe-bg)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              padding: '10px 14px'
             }}
           >
-            <span style={{ color: isCriticalFail ? 'var(--fg-danger)' : 'var(--fg-safe)', fontWeight: 800, fontSize: 12 }}>
-              {isCriticalFail ? '🔴 Safety violation detected' : '🟢 All criteria satisfied'}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--fg-safe)', fontWeight: 800, fontSize: 12 }}>
+                🟢 APPROVED (CLINICIAN OVERRIDE)
+              </span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'var(--fg-muted)', fontWeight: 700 }}>
+                HITL Attested
+              </span>
+            </div>
+            <div style={{ fontSize: '10.5px', color: 'var(--fg-primary)' }}>
+              Signed: <strong>{hitlSignedDetails.reviewerName}</strong> (NPI: {hitlSignedDetails.npi})
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--fg-muted)', fontStyle: 'italic', wordBreak: 'break-word' }}>
+              "{hitlSignedDetails.justification}"
+            </div>
+          </div>
+        )}
+
+        {isVerdictReady && isCriticalFail && !hitlSignedDetails && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              className="audit-verdict-card"
+              style={{
+                borderColor: 'var(--color-danger-border)',
+                background: 'var(--color-danger-bg)',
+              }}
+            >
+              <span style={{ color: 'var(--fg-danger)', fontWeight: 800, fontSize: 12 }}>
+                🔴 Safety violation detected
+              </span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'var(--fg-muted)', fontWeight: 700 }}>
+                {passed}/{guidelines.length}
+              </span>
+            </div>
+            
+            {onEscalateToHumanReview && (
+              <button
+                className="btn"
+                onClick={onEscalateToHumanReview}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  borderColor: '#EF4444',
+                  color: '#EF4444',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  padding: '8px 12px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  borderRadius: 'var(--radius-md)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid'
+                }}
+                type="button"
+              >
+                ⚠️ Escalate to Human Clinical Review
+              </button>
+            )}
+          </div>
+        )}
+
+        {isVerdictReady && !isCriticalFail && !hitlSignedDetails && (
+          <div
+            className="audit-verdict-card"
+            style={{
+              marginTop: 16,
+              borderColor: 'var(--color-safe-border)',
+              background: 'var(--color-safe-bg)',
+            }}
+          >
+            <span style={{ color: 'var(--fg-safe)', fontWeight: 800, fontSize: 12 }}>
+              🟢 All criteria satisfied
             </span>
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: 'var(--fg-muted)', fontWeight: 700 }}>
               {passed}/{guidelines.length}

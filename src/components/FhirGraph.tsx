@@ -35,7 +35,7 @@ export const FhirGraph: React.FC<FhirGraphProps> = ({ bundle, toolCalls, patient
     setValidating(true);
     setValidationResult({ status: 'idle', issues: [] });
     try {
-      const res = await fetch('https://hapi.fhir.org/baseR4', {
+      const res = await fetch('https://hapi.fhir.org/baseR4/Bundle/$validate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/fhir+json',

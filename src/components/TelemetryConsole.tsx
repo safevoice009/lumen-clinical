@@ -222,10 +222,11 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
               )}
               {logs.map((log) => {
                 const isBand = log.level === 'band_handoff';
+                const compClass = `comp-${String(log.component).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
                 return (
                   <div key={log.id} className={`log-entry ${isBand ? 'band-entry' : ''}`}>
                     <span className="log-ts">{formatTs(log.timestamp)}</span>
-                    <span className={`log-comp ${log.level}`}>{log.component}</span>
+                    <span className={`log-comp ${compClass} ${log.level}`}>{log.component}</span>
                     <span className="log-msg">{log.message}</span>
                   </div>
                 );

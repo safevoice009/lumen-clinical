@@ -1599,13 +1599,30 @@ code, pre, .mono {
 }
 .log-entry:hover { background: var(--bg-card-hover); }
 .log-ts   { color: var(--fg-subtle); flex-shrink: 0; font-size: 9px; padding-top: 1px; }
-.log-comp { flex-shrink: 0; width: 110px; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
+.log-comp {
+  flex-shrink: 0;
+  width: 110px;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-align: center;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  display: inline-block;
+  margin-right: 4px;
+}
+.log-comp.comp-band { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.25); }
+.log-comp.comp-tool { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.log-comp.comp-flag { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.25); }
+.log-comp.comp-audit { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.25); }
+
 .log-comp.info    { color: var(--fg-safe); }
 .log-comp.success { color: var(--fg-brand); }
 .log-comp.warn    { color: var(--fg-warn); }
 .log-comp.error   { color: var(--fg-danger); }
-.log-comp.warn    { color: var(--fg-warn); }
-.log-msg  { flex: 1; color: var(--fg-muted); font-size: 10px; }
+.log-msg  { flex: 1; color: var(--fg-primary); font-size: 10px; font-family: 'JetBrains Mono', monospace; }
 
 /* ================================================================
    RED-TEAM LAB
@@ -6389,6 +6406,21 @@ code, pre, .mono {
     grid-template-columns: 1fr;
   }
 }
+@keyframes pulse-border-purple {
+  0% {
+    border-color: var(--brand);
+    box-shadow: 0 0 6px rgba(139, 92, 246, 0.15);
+  }
+  50% {
+    border-color: rgba(139, 92, 246, 0.75);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.4);
+  }
+  100% {
+    border-color: var(--brand);
+    box-shadow: 0 0 6px rgba(139, 92, 246, 0.15);
+  }
+}
+
 .agent-status-card {
   background: var(--bg-card);
   border: 1px solid var(--border-default);
@@ -6405,6 +6437,7 @@ code, pre, .mono {
   border-color: var(--brand);
   box-shadow: 0 0 12px rgba(139, 92, 246, 0.15);
   background: rgba(139, 92, 246, 0.03);
+  animation: pulse-border-purple 1.5s ease-in-out infinite;
 }
 .agent-status-card .card-top {
   display: flex;
