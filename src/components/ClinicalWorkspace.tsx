@@ -881,9 +881,9 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
               </div>
 
               {/* Toggles */}
-              <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '12px 18px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', flex: 1 }}>
                 {/* Violation toggle */}
-                <div className="violation-toggle">
+                <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span className="violation-label">
                     {forceViolation
                       ? <AlertTriangle size={12} style={{ color: 'var(--fg-danger)' }} />
@@ -905,7 +905,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                 </div>
 
                 {/* Live Mode toggle */}
-                <div className="violation-toggle">
+                <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span className="violation-label">
                     <Cpu size={12} style={{ color: isLiveMode ? 'var(--brand)' : 'var(--fg-muted)' }} />
                     Live LLM Engine
@@ -924,7 +924,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                 </div>
 
                 {/* Patient Language Selector */}
-                <div className="violation-toggle">
+                <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span className="violation-label">
                     🌐 Language
                   </span>
@@ -954,7 +954,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
 
                 {/* Doctor Agent Model Selector */}
                 {isLiveMode && (
-                  <div className="violation-toggle" style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px' }}>
+                  <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span className="violation-label">🩺 Doctor Model</span>
                     <select
                       value={doctorModel}
@@ -985,7 +985,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
 
                 {/* Safety Auditor Model Selector */}
                 {isLiveMode && (
-                  <div className="violation-toggle" style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px' }}>
+                  <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span className="violation-label">🔍 Auditor Model</span>
                     <select
                       value={auditorModel}
@@ -1014,7 +1014,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                 )}
 
                 {/* Live Broadcast Link */}
-                <div className="violation-toggle" style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px', display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => {
@@ -1042,7 +1042,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                 </div>
 
                 {messages.length > 0 && (
-                  <div style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <button
                       className="btn btn-secondary btn-sm"
                       onClick={() => window.print()}

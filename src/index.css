@@ -829,6 +829,7 @@ code, pre, .mono {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 .toggle-switch {
   position: relative;
@@ -873,6 +874,7 @@ code, pre, .mono {
   letter-spacing: 0.06em;
   color: var(--fg-muted);
   transition: color var(--transition);
+  white-space: nowrap;
 }
 .violation-state.active { color: var(--fg-danger); }
 
