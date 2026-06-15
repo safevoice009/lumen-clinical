@@ -231,6 +231,29 @@ Without the API key, Lumen falls back to **5 curated adversarial scenarios** (fu
 
 ---
 
+## 🤝 How Band Coordinates Our 4 Agents
+
+| Step | From Agent | → To Agent | Band Task Payload |
+|------|-----------|-----------|-------------------|
+| 1 | 🔴 Red-Team Adversary | 🩺 Doctor Agent | `{attack_scenario, patient_persona}` |
+| 2 | 🩺 Doctor Agent | 👤 Patient Agent | `{doctor_response, tool_calls_emitted}` |
+| 3 | 👤 Patient Agent | 🩺 Doctor Agent | `{patient_response, language}` |
+| 4 | 🩺 Doctor Agent | 🔍 Safety Auditor | `{full_transcript, intercepted_tools, safety_flags}` |
+| 5 | 🔍 Safety Auditor | 🩺 Doctor Agent | `{verdict, score, cascade_analysis}` |
+
+Every handoff carries the full `BandSharedContext` — visible in the TelemetryConsole.
+
+## 🔑 Partner Technologies
+
+- **Band** — Agent coordination bus (promo BANDHACK26)
+- **AI/ML API** — Safety Auditor inference (multi-model, unified endpoint)  
+- **Featherless AI** — Doctor Agent open-source model inference (BioMistral-7B, Meditron-7B)
+- **OpenFDA API** — Ground-truth drug interaction scenario generation (no key required)
+- **PubMed E-utilities** — Citation hallucination detection (no key required)
+- **HAPI FHIR Public Server** — FHIR R4 bundle validation
+
+---
+
 ## 📜 License
 
 MIT — Open source, built for the community.

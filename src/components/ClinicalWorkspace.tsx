@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { mockPatients } from '../data/mockData';
-import { PatientEnvelope, SimulationMessage, ClinicalToolCall, SafetyCriterion, TelemetryLog, FHIRBundle } from '../types/clinical';
+import { PatientEnvelope, SimulationMessage, ClinicalToolCall, SafetyCriterion, TelemetryLog, FHIRBundle, BandSharedContext } from '../types/clinical';
 import { runSimulationStep, evaluateSafetyAudits, compileSimulationFHIRBundle, runLiveSimulationStepWithBand, runSafetyAudit, ConsensusAuditVerdict, generateCounterfactual } from '../utils/agentCore';
-import { registerAgentWithBand, dispatchTaskToBand, makeBandHandoffLog } from '../utils/bandClient';
+import { dispatchBandTask, syncBandContext, getBandAgentId, makeBandHandoffLog } from '../utils/bandClient';
 import { AgentChat } from './AgentChat';
 import { LabViewer } from './LabViewer';
 import { PriorAuthAuditor } from './PriorAuthAuditor';
@@ -40,10 +40,16 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   const [forceViolation, setForceViolation] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [spectatorId] = useState(() => generateSessionId());
-
+  const [sessionId, setSessionId] = useState(() => `session_${mockPatients[0].id}_${Date.now()}`);
   const [messages, setMessages] = useState<SimulationMessage[]>([]);
   const [toolCalls, setToolCalls] = useState<ClinicalToolCall[]>([]);
   const [safetyChecklist, setSafetyChecklist] = useState<SafetyCriterion[]>([]);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      setSessionId(`session_${selectedPatient.id}_${Date.now()}`);
+    }
+  }, [selectedPatient, messages.length]);
   const [fhirBundle, setFhirBundle] = useState<FHIRBundle | null>(null);
   const [rightTab, setRightTab] = useState<'audit' | 'fhir' | 'fda' | 'drift'>('audit');
   const [portalUrl, setPortalUrl] = useState<string>('');
@@ -239,7 +245,9 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
       forceViolation,
       historyMsgs,
       activeTools,
-      selectedLanguage
+      selectedLanguage,
+      selectedPatient.id === 'pat_005' ? 'drug_seeker' : undefined,
+      sessionId
     );
   };
 
@@ -264,36 +272,60 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
             
             // Band Dispatch 1: DOCTOR_AGENT -> SAFETY_AUDITOR (sending transcript)
             try {
-              const docAgentId = await registerAgentWithBand('DOCTOR_AGENT', 'doctor');
-              const auditorAgentId = await registerAgentWithBand('SAFETY_AUDITOR', 'auditor');
-              
-              const bandContext = {
-                sessionId: spectatorId,
-                attackCategory: selectedPatient.id === 'pat_003' ? 'safety_screen_skip' : 'general_consultation',
-                patientEnvelope: {
-                  id: selectedPatient.id,
-                  name: selectedPatient.name,
-                  age: selectedPatient.age,
-                  gender: selectedPatient.gender,
-                  insuranceProvider: selectedPatient.insuranceProvider
-                },
-                conversationHistory: messages.map(m => ({ role: m.sender, content: m.message })),
-                toolCallsIntercepted: toolCalls.map(t => ({ toolName: t.toolName, code: t.code, parameter: t.parameter, status: t.status })),
+              const bandContext: BandSharedContext = {
+                sessionId: sessionId,
+                attackCategory: selectedPatient.id.startsWith('pat_psy_') ? 'psychiatry_vulnerability' :
+                                selectedPatient.id.startsWith('pat_onc_') ? 'oncology_vulnerability' :
+                                selectedPatient.id.startsWith('pat_ped_') ? 'pediatrics_vulnerability' :
+                                selectedPatient.id === 'pat_003' ? 'safety_screen_skip' : 'general_consultation',
+                specialtyTrack: selectedPatient.id.startsWith('pat_psy_') ? 'psychiatry' :
+                                selectedPatient.id.startsWith('pat_onc_') ? 'oncology' :
+                                selectedPatient.id.startsWith('pat_ped_') ? 'pediatrics' : 'general',
+                language: selectedLanguage,
+                patientPersona: selectedPatient.id === 'pat_005' ? 'drug_seeker' : 'health_anxious',
+                conversationHistory: messages.map((m, idx) => ({
+                  turn: Math.floor(idx / 2) + 1,
+                  role: m.sender === 'doctor' ? 'doctor_agent' : 'patient_agent',
+                  content: m.message,
+                  agentId: m.sender === 'doctor' ? 'doctor_agent' : 'patient_agent',
+                  model: m.sender === 'doctor' ? (localStorage.getItem('lumen_doctor_model') || 'gemini-2.0-flash') : 'Gemini 2.0 Flash',
+                  latencyMs: 0
+                })),
+                toolCallsIntercepted: toolCalls.map(t => ({
+                  turn: 1,
+                  toolName: t.toolName as any,
+                  code: t.code,
+                  codeName: t.parameter,
+                  flagged: false
+                })),
                 safetyFlags: [],
-                currentTurn: stepIndex,
-                maxTurns: totalSteps
+                redTeamAdaptation: '',
+                currentTurn: stepIndex + 1,
+                maxTurns: totalSteps,
+                modelConfig: {
+                  doctor: localStorage.getItem('lumen_doctor_model') || 'gemini-2.0-flash',
+                  patient: 'gemini-2.0-flash',
+                  auditor: localStorage.getItem('lumen_auditor_model') || 'consensus'
+                },
+                bandHandoffs: [],
+                isLocalFallback: true
               };
 
-              const docToAuditTask = await dispatchTaskToBand({
-                fromAgent: docAgentId,
-                toAgent: auditorAgentId,
-                role: 'auditor',
-                payload: { transcript, toolsTrace },
-                sharedContext: bandContext
-              });
+              await syncBandContext(sessionId, bandContext);
 
-              const isFallbackDocToAudit = docToAuditTask.taskId.startsWith('fallback-');
-              onLog(makeBandHandoffLog(docToAuditTask, isFallbackDocToAudit, 'DOCTOR_AGENT'));
+              const { taskId, isLocal } = await dispatchBandTask(
+                'doctor_agent',
+                'safety_auditor',
+                { full_transcript: bandContext.conversationHistory, tool_calls: bandContext.toolCallsIntercepted },
+                bandContext
+              );
+
+              onLog(makeBandHandoffLog({
+                fromAgent: getBandAgentId('doctor_agent') || 'doctor_agent',
+                toAgent: getBandAgentId('safety_auditor') || 'safety_auditor',
+                taskId,
+                sharedContext: bandContext
+              }, isLocal, 'DOCTOR_AGENT'));
             } catch (bandErr) {
               console.warn('Band auditor handoff failed:', bandErr);
             }
@@ -304,36 +336,58 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
 
             // Band Dispatch 2: SAFETY_AUDITOR -> DOCTOR_AGENT (sending verdict)
             try {
-              const docAgentId = await registerAgentWithBand('DOCTOR_AGENT', 'doctor');
-              const auditorAgentId = await registerAgentWithBand('SAFETY_AUDITOR', 'auditor');
-              
-              const bandContext = {
-                sessionId: spectatorId,
-                attackCategory: selectedPatient.id === 'pat_003' ? 'safety_screen_skip' : 'general_consultation',
-                patientEnvelope: {
-                  id: selectedPatient.id,
-                  name: selectedPatient.name,
-                  age: selectedPatient.age,
-                  gender: selectedPatient.gender,
-                  insuranceProvider: selectedPatient.insuranceProvider
-                },
-                conversationHistory: messages.map(m => ({ role: m.sender, content: m.message })),
-                toolCallsIntercepted: toolCalls.map(t => ({ toolName: t.toolName, code: t.code, parameter: t.parameter, status: t.status })),
+              const bandContext: BandSharedContext = {
+                sessionId: sessionId,
+                attackCategory: selectedPatient.id.startsWith('pat_psy_') ? 'psychiatry_vulnerability' :
+                                selectedPatient.id.startsWith('pat_onc_') ? 'oncology_vulnerability' :
+                                selectedPatient.id.startsWith('pat_ped_') ? 'pediatrics_vulnerability' :
+                                selectedPatient.id === 'pat_003' ? 'safety_screen_skip' : 'general_consultation',
+                specialtyTrack: selectedPatient.id.startsWith('pat_psy_') ? 'psychiatry' :
+                                selectedPatient.id.startsWith('pat_onc_') ? 'oncology' :
+                                selectedPatient.id.startsWith('pat_ped_') ? 'pediatrics' : 'general',
+                language: selectedLanguage,
+                patientPersona: selectedPatient.id === 'pat_005' ? 'drug_seeker' : 'health_anxious',
+                conversationHistory: messages.map((m, idx) => ({
+                  turn: Math.floor(idx / 2) + 1,
+                  role: m.sender === 'doctor' ? 'doctor_agent' : 'patient_agent',
+                  content: m.message,
+                  agentId: m.sender === 'doctor' ? 'doctor_agent' : 'patient_agent',
+                  model: m.sender === 'doctor' ? (localStorage.getItem('lumen_doctor_model') || 'gemini-2.0-flash') : 'Gemini 2.0 Flash',
+                  latencyMs: 0
+                })),
+                toolCallsIntercepted: toolCalls.map(t => ({
+                  turn: 1,
+                  toolName: t.toolName as any,
+                  code: t.code,
+                  codeName: t.parameter,
+                  flagged: false
+                })),
                 safetyFlags: [],
+                redTeamAdaptation: '',
                 currentTurn: stepIndex + 1,
-                maxTurns: totalSteps
+                maxTurns: totalSteps,
+                modelConfig: {
+                  doctor: localStorage.getItem('lumen_doctor_model') || 'gemini-2.0-flash',
+                  patient: 'gemini-2.0-flash',
+                  auditor: localStorage.getItem('lumen_auditor_model') || 'consensus'
+                },
+                bandHandoffs: [],
+                isLocalFallback: true
               };
 
-              const auditToDocTask = await dispatchTaskToBand({
-                fromAgent: auditorAgentId,
-                toAgent: docAgentId,
-                role: 'doctor',
-                payload: { verdict: auditResult.verdict, score: auditResult.score, violations: auditResult.violations },
-                sharedContext: bandContext
-              });
+              const { taskId, isLocal } = await dispatchBandTask(
+                'safety_auditor',
+                'doctor_agent',
+                { verdict: auditResult.verdict, score: auditResult.score, explanation: auditResult.explanation },
+                bandContext
+              );
 
-              const isFallbackAuditToDoc = auditToDocTask.taskId.startsWith('fallback-');
-              onLog(makeBandHandoffLog(auditToDocTask, isFallbackAuditToDoc, 'SAFETY_AUDITOR'));
+              onLog(makeBandHandoffLog({
+                fromAgent: getBandAgentId('safety_auditor') || 'safety_auditor',
+                toAgent: getBandAgentId('doctor_agent') || 'doctor_agent',
+                taskId,
+                sharedContext: bandContext
+              }, isLocal, 'SAFETY_AUDITOR'));
             } catch (bandErr) {
               console.warn('Band audit result handoff failed:', bandErr);
             }
@@ -1308,6 +1362,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                 violations={auditViolations}
                 isFailed={isAuditFailed}
                 passedList={auditPassed}
+                cascadeAnalysis={consensusVerdict?.cascadeAnalysis}
               />
 
               {counterfactualData ? (

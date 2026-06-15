@@ -70,20 +70,90 @@ export interface TelemetryLog {
   payload?: any;
 }
 
+export interface ConversationTurn {
+  turn:    number;
+  role:    string;
+  content: string;
+  agentId: string;
+  model:   string;
+  latencyMs: number;
+}
+
+export interface ToolCall {
+  turn:      number;
+  toolName:  'OrderLabTest' | 'OrderImaging' | 'PrescribeMedication' | 'ReferToSpecialist';
+  code:      string;   // LOINC / CPT / RxNorm
+  codeName:  string;
+  flagged:   boolean;
+  flagReason?: string;
+}
+
+export interface SafetyFlag {
+  turn:     number;
+  category: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  detail:   string;
+}
+
+export interface BandHandoff {
+  from:      string;
+  to:        string;
+  taskId:    string;
+  turn:      number;
+  timestamp: string;
+  isLocal:   boolean;
+}
+
 export interface BandSharedContext {
-  sessionId: string;
-  scenarioId?: string;
-  attackCategory: string;
-  language?: string;                                  // 'en' | 'hi' | 'te' | 'ta' | 'mr'
-  patientEnvelope: Record<string, any>;          // Only Patient Agent has full access
-  conversationHistory: Array<{ role: string; content: string; agentId?: string; turn?: number }>;
-  toolCallsIntercepted: Array<Record<string, any>>;
-  safetyFlags: string[];                             // Flags raised mid-simulation
-  redTeamAdaptation?: string;                         // Red-Team's adaptive strategy this turn
-  currentTurn: number;
-  maxTurns: number;
-  modelUsed?: { doctor: string; patient: string; auditor: string };
-  bandHandoffs?: Array<{ from: string; to: string; taskId: string; timestamp: string }>;
+  sessionId:           string;
+  scenarioId?:         string;
+  attackCategory:      string;   // e.g. 'Contraindication Bypass'
+  specialtyTrack?:     string;   // 'general' | 'psychiatry' | 'oncology' | 'pediatrics'
+  language?:           string;   // 'en' | 'hi' | 'te' | 'ta' | 'mr'
+  patientPersona?:     string;   // 'minimizer' | 'drug_seeker' | 'health_anxious' | ...
+  patientEnvelope?:    Record<string, any>; // Only Patient Agent has full access
+  conversationHistory: Array<{
+    role: string;
+    content: string;
+    agentId?: string;
+    turn?: number;
+    model?: string;
+    latencyMs?: number;
+  }>;
+  toolCallsIntercepted: Array<{
+    turn?: number;
+    toolName: 'OrderLabTest' | 'OrderImaging' | 'PrescribeMedication' | 'ReferToSpecialist' | string;
+    code: string;
+    parameter?: string;
+    vocab?: string;
+    status?: string;
+    codeName?: string;
+    flagged?: boolean;
+    flagReason?: string;
+  }>;
+  safetyFlags:          any[];  // compatible with string[] and SafetyFlag[]
+  redTeamAdaptation?:    string;  // Current Red-Team strategy this turn
+  currentTurn:          number;
+  maxTurns:             number;
+  modelUsed?: {
+    doctor:   string;
+    patient:  string;
+    auditor:  string;
+  };
+  modelConfig?: {
+    doctor:   string;
+    patient:  string;
+    auditor:  string;
+  };
+  bandHandoffs?: Array<{
+    from:      string;
+    to:        string;
+    taskId:    string;
+    turn?:     number;
+    timestamp: string;
+    isLocal?:  boolean;
+  }>;
+  isLocalFallback?: boolean;
 }
 
 export interface BandTask {

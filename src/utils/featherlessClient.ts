@@ -63,3 +63,26 @@ export async function runFeatherlessDoctor(
     toolCall: parsed.toolCall || null
   };
 }
+
+export async function runFeatherlessAgent(
+  messages: Array<{ role: string; content: string }>,
+  model: string = 'BioMistral/BioMistral-7B',
+): Promise<string> {
+  const apiKey = (import.meta as any).env?.VITE_FEATHERLESS_API_KEY || '';
+  try {
+    const res = await fetch(`${FEATHERLESS_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${apiKey}`, 
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({ model, messages, max_tokens: 800, temperature: 0.2 }),
+    });
+    if (!res.ok) throw new Error(`Featherless HTTP ${res.status}`);
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? '';
+  } catch (err) {
+    console.warn('[Featherless] Falling back to Gemini:', err);
+    return ''; // Caller must handle fallback to geminiClient
+  }
+}

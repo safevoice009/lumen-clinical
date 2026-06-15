@@ -8,7 +8,10 @@ interface TelemetryConsoleProps {
 }
 
 function formatTs(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const d = new Date(iso);
+  const timeStr = d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const ms = String(d.getMilliseconds()).padStart(3, '0');
+  return `${timeStr}.${ms}`;
 }
 
 export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClear }) => {
@@ -144,7 +147,7 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
     <div className="telemetry-shell">
       <div
         className="telemetry-drawer"
-        style={{ height: open ? '260px' : '54px' }}
+        style={{ height: open ? '260px' : '60px' }}
       >
         {/* Header / Toggle */}
         <div className="telemetry-header" onClick={handleHeaderClick}>
@@ -221,13 +224,41 @@ export const TelemetryConsole: React.FC<TelemetryConsoleProps> = ({ logs, onClea
                 </div>
               )}
               {logs.map((log) => {
-                const isBand = log.level === 'band_handoff';
+                const isBand = log.level === 'band_handoff' || String(log.component) === 'BAND';
                 const compClass = `comp-${String(log.component).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+                
+                // Determine text color based on event type, component, and message contents
+                let customColor = 'var(--fg-primary)';
+                if (isBand) {
+                  customColor = '#22d3ee'; // cyan-400
+                } else if (String(log.component) === 'TOOL_INTERCEPTOR' || String(log.component) === 'LAB_INTERCEPTOR') {
+                  customColor = '#60a5fa'; // blue-400
+                } else if (log.message.includes('Citation') || log.message.includes('citation') || String(log.level) === 'citation_check' || String(log.component) === 'CITATION') {
+                  customColor = '#a78bfa'; // violet-400
+                } else if (String(log.level) === 'drift_sample' || String(log.component) === 'DRIFT') {
+                  customColor = '#fb923c'; // orange-400
+                } else if (log.message.includes('Safety Check Passed') || log.message.includes('PASS') || log.level === 'success') {
+                  customColor = '#34d399'; // emerald-400
+                } else if (log.message.includes('violated') || log.message.includes('FAIL') || log.level === 'error') {
+                  customColor = '#f87171'; // red-400
+                } else if (log.message.includes('PARTIAL') || log.level === 'warn') {
+                  customColor = '#fbbf24'; // amber-400
+                }
+
                 return (
-                  <div key={log.id} className={`log-entry ${isBand ? 'band-entry' : ''}`}>
-                    <span className="log-ts">{formatTs(log.timestamp)}</span>
-                    <span className={`log-comp ${compClass} ${log.level}`}>{log.component}</span>
-                    <span className="log-msg">{log.message}</span>
+                  <div 
+                    key={log.id} 
+                    className={`log-entry ${isBand ? 'band-entry' : ''}`}
+                    style={{ 
+                      fontFamily: "'JetBrains Mono', 'IBM Plex Mono', monospace", 
+                      fontSize: '11px', 
+                      color: customColor,
+                      lineHeight: '1.4'
+                    }}
+                  >
+                    <span className="log-ts" style={{ color: 'var(--fg-muted)', marginRight: '8px' }}>{formatTs(log.timestamp)}</span>
+                    <span className={`log-comp ${compClass} ${log.level}`} style={{ marginRight: '8px', fontWeight: 600 }}>[{log.component}]</span>
+                    <span className="log-msg" style={{ wordBreak: 'break-all' }}>{log.message}</span>
                   </div>
                 );
               })}

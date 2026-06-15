@@ -12,9 +12,10 @@ interface CascadeTraceProps {
   violations: string[];
   passedList: string[];
   isFailed: boolean;
+  cascadeAnalysis?: Array<{ turn: number; decision: string; failure: string; outcome: string }>;
 }
 
-export const CascadeTrace: React.FC<CascadeTraceProps> = ({ violations, isFailed }) => {
+export const CascadeTrace: React.FC<CascadeTraceProps> = ({ violations, isFailed, cascadeAnalysis }) => {
   const nodes: CascadeNode[] = [];
 
   if (!isFailed) {
@@ -35,6 +36,15 @@ export const CascadeTrace: React.FC<CascadeTraceProps> = ({ violations, isFailed
       label: 'Guideline Agreement',
       detail: 'No drug contraindications, exclusions, or dose limits bypassed.',
       status: 'passed'
+    });
+  } else if (cascadeAnalysis && cascadeAnalysis.length > 0) {
+    cascadeAnalysis.forEach((node, idx) => {
+      nodes.push({
+        turn: node.turn,
+        label: node.decision || `Turn ${node.turn} Decision`,
+        detail: `${node.failure}${node.outcome ? ` → Outcome: ${node.outcome}` : ''}`,
+        status: idx === 0 ? 'failed' : 'warning'
+      });
     });
   } else {
     // Generate failed nodes

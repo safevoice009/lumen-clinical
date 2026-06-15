@@ -61,7 +61,25 @@ export const PriorAuthAuditor: React.FC<PriorAuthAuditorProps> = ({
       <div className="panel-header">
         <div className="panel-title-group">
           <span className="panel-label">Step 4 · Safety Guardrail Engine</span>
-          <span className="panel-title">Clinical Safety Audits</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="panel-title">Clinical Safety Audits</span>
+            {localStorage.getItem('lumen_auditor_model')?.startsWith('aiml_') && (
+              <span 
+                style={{ 
+                  fontSize: '8px', 
+                  fontWeight: 700, 
+                  background: 'rgba(99, 102, 241, 0.1)', 
+                  border: '1px solid rgba(99, 102, 241, 0.2)', 
+                  color: '#a78bfa', 
+                  padding: '1px 5px', 
+                  borderRadius: '4px',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}
+              >
+                Powered by AI/ML API
+              </span>
+            )}
+          </div>
         </div>
         {isVerdictReady && (
           <span

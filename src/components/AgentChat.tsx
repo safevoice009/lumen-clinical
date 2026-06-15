@@ -69,9 +69,24 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages, highlightIndex =
 
                   {/* Bubble */}
                   <div className={`chat-bubble ${isDoctor ? 'bubble-doctor' : 'bubble-patient'}`}>
-                    <div className="bubble-meta">
+                    <div className="bubble-meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span className="bubble-name">
                         {isDoctor ? 'Clinical AI Doctor' : msg.senderName}
+                      </span>
+                      <span 
+                        style={{ 
+                          fontSize: '8px', 
+                          fontWeight: 700, 
+                          padding: '1px 4px', 
+                          borderRadius: '4px', 
+                          background: isDoctor ? 'rgba(139, 92, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
+                          border: isDoctor ? '1px solid rgba(139, 92, 246, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
+                          color: isDoctor ? '#a78bfa' : '#34d399',
+                          textTransform: 'uppercase',
+                          fontFamily: "'JetBrains Mono', monospace"
+                        }}
+                      >
+                        {isDoctor ? (localStorage.getItem('lumen_doctor_model') === 'biomistral' ? 'BioMistral-7B' : localStorage.getItem('lumen_doctor_model') === 'med42' ? 'Med42-8B' : localStorage.getItem('lumen_doctor_model') === 'ollama' ? 'Mistral-7B' : 'Gemini 2.0') : 'Gemini 2.0'}
                       </span>
                       <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                     </div>
