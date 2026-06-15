@@ -22,7 +22,7 @@ import { HITLOverride } from './HITLOverride';
 import { CounterfactualPanel } from './CounterfactualPanel';
 import { CascadeTrace } from './CascadeTrace';
 import { CommandPalette, CommandItem } from './CommandPalette';
-import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu, Share2 } from 'lucide-react';
+import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu, Share2, FileText } from 'lucide-react';
 import { saveHistoryRecord } from '../utils/geminiClient';
 import { simulateRegionalApiCall } from '../utils/regionalApis';
 import { generateSessionId, broadcastState } from '../utils/spectatorMode';
@@ -773,6 +773,30 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     Live Broadcast Link
                   </button>
                 </div>
+
+                {messages.length > 0 && (
+                  <div style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: '16px', display: 'flex', alignItems: 'center' }}>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => window.print()}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        height: '24px',
+                        fontSize: '11px',
+                        borderColor: 'var(--fg-safe)',
+                        color: 'var(--fg-safe)',
+                        background: 'rgba(16, 185, 129, 0.05)'
+                      }}
+                      title="Export Safety Audit Report to PDF / Print"
+                      type="button"
+                    >
+                      <FileText size={12} />
+                      Export Safety Passport
+                    </button>
+                  </div>
+                )}
 
               </div>
             </div>

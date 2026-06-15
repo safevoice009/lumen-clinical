@@ -117,6 +117,16 @@ export async function executeModelRequest(
     }
 
     const data = await res.json();
+    
+    // Parse usage metadata for token HUD
+    const promptTokens = data.usageMetadata?.promptTokenCount || 0;
+    const completionTokens = data.usageMetadata?.candidatesTokenCount || 0;
+    if (promptTokens > 0 || completionTokens > 0) {
+      window.dispatchEvent(new CustomEvent('lumen_tokens_consumed', {
+        detail: { source: 'gemini', promptTokens, completionTokens }
+      }));
+    }
+
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
@@ -179,9 +189,29 @@ export async function executeModelRequest(
   }
 
   const data = await res.json();
+  
+  // Parse usage metadata for token HUD
   if (source === 'ollama') {
+    const promptTokens = data.prompt_eval_count || 0;
+    const completionTokens = data.eval_count || 0;
+    if (promptTokens > 0 || completionTokens > 0) {
+      window.dispatchEvent(new CustomEvent('lumen_tokens_consumed', {
+        detail: { source: 'ollama', promptTokens, completionTokens }
+      }));
+    }
     return data.message?.content || '';
   } else {
+    let promptTokens = 0;
+    let completionTokens = 0;
+    if (data.usage) {
+      promptTokens = data.usage.prompt_tokens || 0;
+      completionTokens = data.usage.completion_tokens || 0;
+    }
+    if (promptTokens > 0 || completionTokens > 0) {
+      window.dispatchEvent(new CustomEvent('lumen_tokens_consumed', {
+        detail: { source: source === 'openvino' ? 'openvino' : 'custom', promptTokens, completionTokens }
+      }));
+    }
     return data.choices?.[0]?.message?.content || '';
   }
 }

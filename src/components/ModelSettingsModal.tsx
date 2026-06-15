@@ -74,7 +74,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai') => {
+  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai' | 'featherless') => {
     if (onLog) {
       onLog('info', 'GATEWAY', `Loading settings preset for: ${preset.toUpperCase()}`);
     }
@@ -106,6 +106,20 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
         apiKey: '',
         modelName: 'gpt-4o-mini',
       });
+    } else if (preset === 'featherless') {
+      setConfig({
+        source: 'custom',
+        endpoint: 'https://api.featherless.ai/v1',
+        apiKey: '',
+        modelName: 'meta-llama/Meta-Llama-3-70B-Instruct',
+      });
+      if (onLog) {
+        onLog('info', 'GATEWAY', 'Featherless AI preset loaded. Please paste your API Key below.');
+      }
+      setTimeout(() => {
+        const input = document.getElementById('api-key-input') as HTMLInputElement;
+        if (input) input.focus();
+      }, 150);
     }
     setTestResult({ status: 'idle', message: '' });
   };
@@ -202,12 +216,21 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
               </button>
               <button 
                 type="button"
-                className={`preset-btn ${config.source === 'custom' ? 'active' : ''}`}
+                className={`preset-btn ${config.source === 'custom' && !config.endpoint.includes('featherless') ? 'active' : ''}`}
                 onClick={() => handlePreset('openai')}
               >
                 <span className="preset-source">Cloud API</span>
                 <strong className="preset-name">OpenAI GPT-4o</strong>
                 <span className="preset-url">api.openai.com</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'custom' && config.endpoint.includes('featherless') ? 'active' : ''}`}
+                onClick={() => handlePreset('featherless')}
+              >
+                <span className="preset-source">Cloud API</span>
+                <strong className="preset-name">Featherless AI</strong>
+                <span className="preset-url">api.featherless.ai</span>
               </button>
             </div>
           </div>

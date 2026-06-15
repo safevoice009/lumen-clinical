@@ -27,6 +27,30 @@ export default function App() {
     return 'classic';
   });
 
+  const [passcode, setPasscode] = useState('');
+  const [passcodeError, setPasscodeError] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    const requiredPasscode = (import.meta as any).env?.VITE_ACCESS_PASSCODE || '';
+    if (!requiredPasscode) return true; // unlocked by default if passcode not configured
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lumen_unlocked') === 'true';
+    }
+    return false;
+  });
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    const requiredPasscode = (import.meta as any).env?.VITE_ACCESS_PASSCODE || '';
+    if (passcode === requiredPasscode) {
+      localStorage.setItem('lumen_unlocked', 'true');
+      setIsUnlocked(true);
+      setPasscodeError(false);
+    } else {
+      setPasscodeError(true);
+      setPasscode('');
+    }
+  };
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPaletteDropdownOpen, setIsPaletteDropdownOpen] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelConfig>(getActiveModelConfig());
@@ -225,6 +249,115 @@ export default function App() {
       setMode('leaderboard');
     }
   };
+
+  if (!isUnlocked) {
+    return (
+      <div 
+        className="app-root" 
+        style={{ 
+          background: 'var(--bg-main)', 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '20px',
+          fontFamily: 'system-ui, sans-serif',
+          color: 'var(--fg-primary)'
+        }}
+      >
+        <div 
+          className="animate-slide-up"
+          style={{ 
+            background: 'var(--bg-card)', 
+            border: '1px solid var(--border-default)', 
+            borderRadius: '16px', 
+            padding: '30px', 
+            maxWidth: '420px', 
+            width: '100%',
+            boxShadow: 'var(--shadow-lg)',
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <div 
+              style={{ 
+                background: 'var(--brand-subtle)', 
+                color: 'var(--brand)', 
+                width: '60px', 
+                height: '60px', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}
+            >
+              <Lock size={28} />
+            </div>
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: 'var(--fg-primary)' }}>
+            Restricted Clinical Sandbox
+          </h2>
+          <p style={{ fontSize: '13px', color: 'var(--fg-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>
+            Lumen Clinical Workspace is protected to prevent unauthorized API credit consumption. Please enter your HIPAA Clinical Access Code.
+          </p>
+
+          <form onSubmit={handleUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ position: 'relative' }}>
+              <input 
+                type="password" 
+                placeholder="Enter Access Passcode..." 
+                value={passcode}
+                onChange={e => { setPasscode(e.target.value); setPasscodeError(false); }}
+                autoFocus
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: passcodeError ? '1px solid var(--fg-danger)' : '1px solid var(--border-default)', 
+                  background: 'var(--bg-input)', 
+                  color: 'var(--fg-primary)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  textAlign: 'center'
+                }}
+              />
+            </div>
+            
+            {passcodeError && (
+              <span style={{ fontSize: '11px', color: 'var(--fg-danger)', display: 'block' }}>
+                ✗ Invalid passcode. Access denied.
+              </span>
+            )}
+
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                fontSize: '14px', 
+                fontWeight: 600, 
+                borderRadius: '8px', 
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              <ShieldCheck size={16} />
+              Unlock Workstation
+            </button>
+          </form>
+
+          <div style={{ marginTop: '24px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px', fontSize: '11px', color: 'var(--fg-muted)', lineHeight: '1.4' }}>
+            <strong>Clinician Safeguard:</strong> This passcode verifies your credentials for auditing evaluation simulations.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (portalData) {
     return (

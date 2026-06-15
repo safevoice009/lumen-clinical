@@ -6508,3 +6508,96 @@ code, pre, .mono {
   50% { transform: scale(1.3); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+.hud-pulse-dot {
+  animation: pulse-active 1.8s infinite ease-in-out;
+}
+
+/* ── Clinical Safety Passport PDF Print Styles ── */
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide interactive navigation, footers, telemetry consoles, grids, and buttons */
+  .app-nav, 
+  .app-hero, 
+  .telemetry-shell, 
+  .sim-controls, 
+  .violation-toggle,
+  .patient-grid, 
+  .right-panel-tabs,
+  .tbar-actions,
+  .tbar-clear,
+  .btn,
+  .theme-toggle,
+  .palette-toggle-container,
+  .mobile-menu-toggle,
+  .app-footer,
+  .modal-overlay,
+  .replay-scrubber-panel,
+  .hitl-override-container,
+  button,
+  input,
+  select,
+  textarea {
+    display: none !important;
+  }
+
+  /* Expand workspace containers to full print width */
+  .app-root, 
+  .workspace, 
+  main, 
+  .workspace-grid {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Render printable text in deep black for high contrast */
+  h1, h2, h3, h4, h5, h6, p, span, div, strong, li, td, th {
+    color: #000000 !important;
+  }
+
+  /* Make panels resemble bordered medical charts */
+  .panel, .card {
+    background: #ffffff !important;
+    border: 1px solid #cccccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 20px !important;
+    padding: 15px !important;
+  }
+
+  /* Restructure 2-column dashboard into sequential page layout */
+  .workspace-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  /* Color highlights for clinical safety flags */
+  .passed {
+    color: #27ae60 !important;
+    font-weight: bold;
+  }
+
+  .violated, .failed {
+    color: #c0392b !important;
+    font-weight: bold;
+  }
+
+  /* Force page breaks before analytics summaries */
+  .post-sim-grid {
+    page-break-before: always;
+  }
+}
