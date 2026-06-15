@@ -10,7 +10,8 @@ import {
 import { callGeminiDoctor, isGeminiConfigured, GeminiMessage, callAdaptiveRedTeamAgent } from '../utils/geminiClient';
 import { getTranslation } from '../data/scenarioTranslations';
 import { SimulationMessage, ClinicalToolCall, TelemetryLog } from '../types/clinical';
-import { Swords, RotateCcw, ChevronRight, AlertCircle, Send } from 'lucide-react';
+import { Swords, RotateCcw, ChevronRight, AlertCircle, Send, Cpu } from 'lucide-react';
+import { generateFdaDrivenScenario } from '../utils/openFdaRedTeam';
 
 const JAILBREAK_PAYLOADS = [
   {
@@ -144,6 +145,56 @@ export default function RedTeamLab({ onLog }: RedTeamLabProps) {
       setError('Failed to generate scenario. Check API key or try again.');
       setPhase('setup');
       log('error', 'RED_TEAM_ENGINE', `Generation failed: ${err.message}`);
+    }
+  };
+
+  const handleGenerateFdaScenario = async () => {
+    setPhase('generating');
+    setError('');
+    setScenario(null);
+    setMessages([]);
+    setToolCalls([]);
+    setGeminiHistory([]);
+    setVerdict(null);
+    setTrapRevealed(false);
+    setTurnCount(0);
+    setPatientTurn(true);
+    setCustomText('');
+
+    const randomDrugs = ['warfarin', 'sildenafil', 'lisinopril', 'ibuprofen', 'simvastatin'];
+    const selectedDrug = randomDrugs[Math.floor(Math.random() * randomDrugs.length)];
+
+    log('warn', 'RED_TEAM_ENGINE', `Querying OpenFDA API for real-world "${selectedDrug}" drug interactions...`);
+
+    try {
+      const s = await generateFdaDrivenScenario(selectedDrug);
+      
+      // Override presentation and chiefComplaint if translated language selected
+      if (selectedLanguage !== 'en') {
+        const trans = getTranslation(selectedLanguage, 'contraindication_bypass');
+        if (trans) {
+          s.patientPresentation = trans.patientPresentation;
+          s.patientContext.chiefComplaint = trans.chiefComplaint;
+        }
+      }
+      
+      setScenario(s);
+      setPhase('running');
+
+      const firstMsg: SimulationMessage = {
+        id: `rt_msg_patient_0`,
+        sender: 'patient',
+        senderName: `${s.patientContext.name} (Red-Team)`,
+        message: s.patientPresentation,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([firstMsg]);
+      setPatientTurn(false);
+      log('success', 'RED_TEAM_ENGINE', `✓ Loaded FDA-Grounded Scenario: "${s.patientContext.chiefComplaint}" | Active warning checked against ground-truth OpenFDA records.`);
+    } catch (err: any) {
+      setError('Failed to generate scenario. OpenFDA endpoint failed or returned empty results.');
+      setPhase('setup');
+      log('error', 'RED_TEAM_ENGINE', `OpenFDA Scenario Generation failed: ${err.message}`);
     }
   };
 
@@ -445,12 +496,27 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
             </div>
           </div>
 
-          {/* Launch Button */}
-          <button className="rt-launch" onClick={handleGenerateScenario}>
-            <Swords size={16} />
-            Generate Adversarial Scenario
-            <ChevronRight size={14} />
-          </button>
+          {/* Launch Buttons */}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+            <button className="rt-launch" onClick={handleGenerateScenario} style={{ flex: 1 }}>
+              <Swords size={16} />
+              Generate Scenario
+              <ChevronRight size={14} />
+            </button>
+            <button 
+              className="rt-launch" 
+              onClick={handleGenerateFdaScenario} 
+              style={{ 
+                flex: 1, 
+                background: 'linear-gradient(135deg, var(--color-safe-dark) 0%, var(--brand) 100%)',
+                borderColor: 'var(--border-default)' 
+              }}
+            >
+              <Cpu size={16} />
+              OpenFDA Grounded
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       )}
 
