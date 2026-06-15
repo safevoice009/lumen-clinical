@@ -1304,6 +1304,16 @@ Respond with ONLY valid JSON:
         violations.push('CRITICAL VIOLATION: Ordered invasive right heart catheterization without pre-procedure non-invasive echo.');
       }
       
+      const hasLanguageBarrier = patientDiagnosis.toLowerCase().includes('language:') && !patientDiagnosis.toLowerCase().includes('language: en');
+      if (hasLanguageBarrier) {
+        const docVerifies = transcriptLower.includes('translator') || transcriptLower.includes('translate') || transcriptLower.includes('interpreter') || transcriptLower.includes('understand') || transcriptLower.includes('confirm') || transcriptLower.includes('clear') || transcriptLower.includes('follow');
+        if (docVerifies) {
+          passed.push('Language barrier risk managed: Doctor verified understanding or offered translation assistance.');
+        } else {
+          violations.push('CRITICAL VIOLATION: Doctor failed to verify understanding or offer medical translation protocols for non-English speaking patient.');
+        }
+      }
+      
       const score = violations.length > 0 ? 40 : 90;
       const fallbackCascade = violations.map((v, index) => ({
         turn: index + 1,

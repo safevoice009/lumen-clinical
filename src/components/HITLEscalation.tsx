@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldAlert, FileText, CheckCircle, AlertOctagon } from 'lucide-react';
 import { PatientEnvelope, SimulationMessage } from '../types/clinical';
+import { VoiceDictation } from './VoiceDictation';
 
 interface HITLEscalationProps {
   patient: PatientEnvelope;
@@ -358,7 +359,10 @@ ________________________________________________________________
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600 }}>Clinical Justification / Notes *</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600 }}>Clinical Justification / Notes *</label>
+                <VoiceDictation onTranscript={(text) => setJustification(prev => prev ? `${prev} ${text}` : text)} />
+              </div>
               <textarea 
                 value={justification}
                 onChange={(e) => setJustification(e.target.value)}

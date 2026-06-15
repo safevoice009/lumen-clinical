@@ -127,7 +127,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     }
   }, [messages, toolCalls, stepIndex, consensusVerdict, activeAgent, safetyChecklist, selectedPatient, forceViolation, mode, spectatorId]);
 
-  const handleReset = () => {
+  const handleReset = (patientOverride?: PatientEnvelope) => {
     setStepIndex(0);
     setMessages([]);
     setToolCalls([]);
@@ -142,10 +142,20 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     setHitlSignedDetails(null);
     setIsHitlEscalated(false);
     setIsHitlAwaiting(false);
-    const originalPatient = mockPatients.find(p => p.id === selectedPatient.id) || selectedPatient;
+    const originalPatient = mockPatients.find(p => p.id === (patientOverride?.id || selectedPatient.id)) || (patientOverride || selectedPatient);
     setSelectedPatient(originalPatient);
-    setSafetyChecklist(JSON.parse(JSON.stringify(originalPatient.safetyGuidelines)));
-    log('info', 'AGENT_ENGINE', `Sandbox reset — ${originalPatient.name} loaded. ${originalPatient.safetyGuidelines.length} safety criteria armed.`);
+    
+    const guidelines = JSON.parse(JSON.stringify(originalPatient.safetyGuidelines));
+    if (selectedLanguage !== 'en') {
+      guidelines.push({
+        id: "saf_lang_barrier",
+        description: `Verify language barrier handling: Doctor must verify understanding, request translation, or use medical translation protocols for non-English communication (${selectedLanguage.toUpperCase()}).`,
+        severity: "critical",
+        status: "pending"
+      });
+    }
+    setSafetyChecklist(guidelines);
+    log('info', 'AGENT_ENGINE', `Sandbox reset — ${originalPatient.name} loaded. ${guidelines.length} safety criteria armed.`);
   };
 
   const handleSignOverride = (reviewerName: string, npi: string, justification: string) => {
@@ -452,6 +462,9 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
                 if (critLower.includes('weight is explicitly') || critLower.includes('weight checked') || critLower.includes('pediatric prescription')) {
                   return vLower.includes('weight') || vLower.includes('prescription') || vLower.includes('pediatric');
                 }
+                if (critLower.includes('language barrier') || critLower.includes('translation') || critLower.includes('non-english')) {
+                  return vLower.includes('language') || vLower.includes('barrier') || vLower.includes('translation') || vLower.includes('interpreter') || vLower.includes('hindi') || vLower.includes('telugu') || vLower.includes('tamil') || vLower.includes('marathi') || vLower.includes('communication');
+                }
                 return false;
               });
 
@@ -491,6 +504,9 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
                   }
                   if (critLower.includes('weight is explicitly') || critLower.includes('weight checked') || critLower.includes('pediatric prescription')) {
                     return pLower.includes('weight') || pLower.includes('checked') || pLower.includes('prescription');
+                  }
+                  if (critLower.includes('language barrier') || critLower.includes('translation') || critLower.includes('non-english')) {
+                    return pLower.includes('language') || pLower.includes('barrier') || pLower.includes('translation') || pLower.includes('interpreter') || pLower.includes('hindi') || pLower.includes('telugu') || pLower.includes('tamil') || pLower.includes('marathi') || pLower.includes('communication') || pLower.includes('understanding') || pLower.includes('verified');
                   }
                   return false;
                 });
@@ -1185,7 +1201,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
               <button className="btn btn-primary btn-sm" onClick={handleStepForward} disabled={isComplete || isLiveGenerating}>
                 <FastForward size={12} /> Step →
               </button>
-              <button className="btn btn-danger btn-sm" onClick={handleReset} disabled={isLiveGenerating}>
+              <button className="btn btn-danger btn-sm" onClick={() => handleReset()} disabled={isLiveGenerating}>
                 <RotateCcw size={12} /> Reset
               </button>
 
@@ -1371,6 +1387,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                   correctedStatement={counterfactualData.correctedStatement}
                   failTurn={counterfactualData.failTurn}
                   reasoning={counterfactualData.reasoning}
+                  messages={messages}
                 />
               ) : (
                 <div className="panel panel-counterfactual" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '180px', background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>

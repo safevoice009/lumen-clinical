@@ -30,19 +30,25 @@
   --orange-600: 18 78% 44%;
   --orange-700: 18 76% 35%;
 
-  /* Emerald (safe / success) */
-  --emerald-400: 142 55% 48%;
-  --emerald-500: 142 50% 40%;
-  --emerald-600: 142 45% 33%;
+  /* Vibrant Medical Jade (safe / success) */
+  --jade-400: 160 84% 45%;
+  --jade-500: 160 84% 35%;
+  --jade-600: 160 84% 28%;
 
   /* Rose (danger) */
   --rose-400: 350 72% 58%;
   --rose-500: 350 68% 50%;
   --rose-600: 350 64% 42%;
 
-  /* Violet (red-team accent) */
-  --violet-400: 259 55% 62%;
-  --violet-500: 259 50% 52%;
+  /* Royal Indigo (red-team accent) */
+  --indigo-400: 243 75% 65%;
+  --indigo-500: 243 75% 59%;
+  --indigo-600: 243 75% 48%;
+
+  /* Amber Gold (warning accent) */
+  --amber-400: 37 90% 53%;
+  --amber-500: 37 90% 43%;
+  --amber-600: 37 90% 33%;
 }
 
 /* ── Tier 2: Semantic Tokens — DARK MODE (default) ── */
@@ -63,21 +69,21 @@
   --brand-glow:       0 0 20px hsla(18, 80%, 53%, 0.14);
 
   /* Semantic states */
-  --color-safe:       hsl(var(--emerald-400));
-  --color-safe-bg:    hsla(142, 55%, 48%, 0.10);
-  --color-safe-border:hsla(142, 55%, 48%, 0.22);
+  --color-safe:       hsl(var(--jade-400));
+  --color-safe-bg:    hsla(160, 84%, 45%, 0.10);
+  --color-safe-border:hsla(160, 84%, 45%, 0.22);
 
   --color-danger:     hsl(var(--rose-400));
   --color-danger-bg:  hsla(350, 72%, 58%, 0.10);
   --color-danger-border: hsla(350, 72%, 58%, 0.22);
 
-  --color-warn:       hsl(var(--orange-400));
-  --color-warn-bg:    hsla(18, 80%, 53%, 0.10);
-  --color-warn-border:hsla(18, 80%, 53%, 0.22);
+  --color-warn:       hsl(var(--amber-400));
+  --color-warn-bg:    hsla(37, 90%, 53%, 0.10);
+  --color-warn-border:hsla(37, 90%, 53%, 0.22);
 
-  --color-redteam:    hsl(var(--violet-400));
-  --color-redteam-bg: hsla(259, 55%, 62%, 0.10);
-  --color-redteam-border: hsla(259, 55%, 62%, 0.22);
+  --color-redteam:    hsl(var(--indigo-400));
+  --color-redteam-bg: hsla(243, 75%, 65%, 0.10);
+  --color-redteam-border: hsla(243, 75%, 65%, 0.22);
 
   /* Foreground / Text */
   --fg-primary:   #FAF9F5;     /* warm off-white */
@@ -85,9 +91,9 @@
   --fg-muted:     #938d83;     /* labels, placeholders */
   --fg-subtle:    #6b665c;     /* very subtle */
   --fg-brand:     #fcd3c1;     /* brand text */
-  --fg-safe:      hsl(var(--emerald-400));
+  --fg-safe:      hsl(var(--jade-400));
   --fg-danger:    hsl(var(--rose-400));
-  --fg-warn:      hsl(var(--orange-400));
+  --fg-warn:      hsl(var(--amber-400));
   --fg-code:      #fcd3c1;
 
   /* Borders */
