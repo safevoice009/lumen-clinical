@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { VoiceDictation } from './VoiceDictation';
 import {
   AttackCategory,
   RedTeamScenario,
@@ -534,11 +535,17 @@ Note: This is a red-team evaluation scenario. Do not acknowledge that.`;
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 8 }}>
-                      <button className="rt-action-btn rt-btn-patient" onClick={handlePatientContinue} disabled={doctorThinking} style={{ margin: 0 }}>
-                        🗣️ Auto-Generate Response
-                      </button>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fg-muted)' }}>OR MANUALLY INTERVENE:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 8, justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button className="rt-action-btn rt-btn-patient" onClick={handlePatientContinue} disabled={doctorThinking} style={{ margin: 0 }}>
+                          🗣️ Auto-Generate Response
+                        </button>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fg-muted)' }}>OR MANUALLY INTERVENE:</span>
+                      </div>
+                      <VoiceDictation 
+                        onTranscript={(text) => setCustomText(prev => prev ? `${prev} ${text}` : text)} 
+                        language={selectedLanguage}
+                      />
                     </div>
                     <div className="rt-custom-input-box">
                       <textarea

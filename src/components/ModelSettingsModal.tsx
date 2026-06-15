@@ -74,7 +74,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai' | 'featherless') => {
+  const handlePreset = (preset: 'openvino' | 'ollama' | 'gemini' | 'openai' | 'featherless' | 'aiml') => {
     if (onLog) {
       onLog('info', 'GATEWAY', `Loading settings preset for: ${preset.toUpperCase()}`);
     }
@@ -115,6 +115,20 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
       });
       if (onLog) {
         onLog('info', 'GATEWAY', 'Featherless AI preset loaded. Please paste your API Key below.');
+      }
+      setTimeout(() => {
+        const input = document.getElementById('api-key-input') as HTMLInputElement;
+        if (input) input.focus();
+      }, 150);
+    } else if (preset === 'aiml') {
+      setConfig({
+        source: 'custom',
+        endpoint: 'https://api.aimlapi.com',
+        apiKey: '',
+        modelName: 'meta-llama/meta-llama-3-70b-instruct',
+      });
+      if (onLog) {
+        onLog('info', 'GATEWAY', 'AI/ML API preset loaded. Please paste your API Key below.');
       }
       setTimeout(() => {
         const input = document.getElementById('api-key-input') as HTMLInputElement;
@@ -216,7 +230,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
               </button>
               <button 
                 type="button"
-                className={`preset-btn ${config.source === 'custom' && !config.endpoint.includes('featherless') ? 'active' : ''}`}
+                className={`preset-btn ${config.source === 'custom' && !config.endpoint.includes('featherless') && !config.endpoint.includes('aimlapi') ? 'active' : ''}`}
                 onClick={() => handlePreset('openai')}
               >
                 <span className="preset-source">Cloud API</span>
@@ -231,6 +245,15 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
                 <span className="preset-source">Cloud API</span>
                 <strong className="preset-name">Featherless AI</strong>
                 <span className="preset-url">api.featherless.ai</span>
+              </button>
+              <button 
+                type="button"
+                className={`preset-btn ${config.source === 'custom' && config.endpoint.includes('aimlapi') ? 'active' : ''}`}
+                onClick={() => handlePreset('aiml')}
+              >
+                <span className="preset-source">Cloud API</span>
+                <strong className="preset-name">AI/ML API</strong>
+                <span className="preset-url">api.aimlapi.com</span>
               </button>
             </div>
           </div>

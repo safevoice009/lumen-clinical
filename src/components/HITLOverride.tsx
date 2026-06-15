@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { VoiceDictation } from './VoiceDictation';
 import { Edit3, Check, X } from 'lucide-react';
 
 interface HITLOverrideProps {
@@ -17,7 +18,10 @@ export const HITLOverride: React.FC<HITLOverrideProps> = ({ onOverride, original
     <div className="hitl-override-container animate-fade-in" style={{ display: 'inline-block', marginTop: '6px' }}>
       {editing ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '10px', width: '320px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand)' }}>✏️ CLINICIAN INTERVENE / OVERRIDE</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand)' }}>✏️ CLINICIAN INTERVENE</span>
+            <VoiceDictation onTranscript={(dictated) => setText(prev => prev ? `${prev} ${dictated}` : dictated)} />
+          </div>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
