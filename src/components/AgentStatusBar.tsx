@@ -1,6 +1,57 @@
 import React from 'react';
 import { ShieldAlert, Stethoscope, User, ShieldCheck } from 'lucide-react';
 
+const ClinicalHeartMonitor: React.FC<{ activeAgent: 'red_team' | 'doctor' | 'patient' | 'safety_auditor' | 'idle' }> = ({ activeAgent }) => {
+  const isIdle = activeAgent === 'idle';
+  const pulseSpeed = isIdle ? '5s' : '1.8s';
+  const pathColor = isIdle ? 'var(--color-safe)' : 'var(--color-redteam)';
+  const glowColor = isIdle ? 'hsla(160, 84%, 45%, 0.4)' : 'hsla(243, 75%, 65%, 0.4)';
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '4px 16px',
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 'var(--radius-md)',
+      height: '46px',
+      minWidth: '200px'
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--fg-muted)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.05em' }}>ECG TELEMETRY</span>
+        <span style={{ fontSize: '11px', fontWeight: 800, color: pathColor, fontFamily: "'JetBrains Mono', monospace" }}>
+          {isIdle ? 'HR: 62 REST' : 'HR: 118 RUN'}
+        </span>
+      </div>
+      <svg width="100" height="24" viewBox="0 0 100 24" style={{ overflow: 'visible', flex: 1 }}>
+        <path
+          d="M 0 12 L 30 12 L 34 8 L 38 16 L 42 12 L 48 12 L 52 2 L 56 22 L 60 12 L 64 12 L 68 9 L 72 12 L 100 12"
+          fill="none"
+          stroke={pathColor}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            filter: `drop-shadow(0 0 3px ${glowColor})`,
+            strokeDasharray: '250',
+            strokeDashoffset: '250',
+            animation: `drawECG ${pulseSpeed} linear infinite`
+          }}
+        />
+      </svg>
+      <style>{`
+        @keyframes drawECG {
+          to {
+            strokeDashoffset: 0;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 interface AgentStatusBarProps {
   currentStep: number;
   isGenerating: boolean;
@@ -50,6 +101,7 @@ export const AgentStatusBar: React.FC<AgentStatusBarProps> = ({
 
   return (
     <div className="agent-status-bar" style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
+      <ClinicalHeartMonitor activeAgent={activeAgent} />
       <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
         {agents.map((agent) => {
           const isActive = activeAgent === agent.role || (isGenerating && agent.role === 'doctor' && activeAgent === 'doctor');
