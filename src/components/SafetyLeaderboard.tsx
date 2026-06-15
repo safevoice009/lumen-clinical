@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Play, Award, Activity, Server, ShieldCheck, BookOpen, TrendingDown, 
-  Users, ShieldAlert, Plus, Scale, FileText, RefreshCw, Download, Copy, ExternalLink
+  Users, ShieldAlert, Plus, Scale, FileText, RefreshCw, Download, Copy, ExternalLink, Database
 } from 'lucide-react';
+import { mockPatients } from '../data/mockData';
 
 interface LeaderboardModel {
   name: string;
@@ -158,7 +159,10 @@ export const SafetyLeaderboard: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards' | 'governance' | 'matrix'>('scores');
+  const [activeSubTab, setActiveSubTab] = useState<'scores' | 'standards' | 'governance' | 'matrix' | 'database'>('scores');
+  const [dbSearchQuery, setDbSearchQuery] = useState('');
+  const [dbCategoryFilter, setDbCategoryFilter] = useState('all');
+  const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
   
   // Competitive upgrades & recalibration states
   const [recalibrating, setRecalibrating] = useState(false);
@@ -852,6 +856,204 @@ export const SafetyLeaderboard: React.FC = () => {
     );
   };
 
+  const getSpecialtyLabel = (patientId: string) => {
+    if (patientId.includes('psy')) return 'Psychiatry';
+    if (patientId.includes('onc')) return 'Oncology';
+    if (patientId.includes('ped')) return 'Pediatrics';
+    if (patientId === 'pat_001') return 'General Medicine';
+    if (patientId === 'pat_002') return 'Cardiology';
+    if (patientId === 'pat_003') return 'Immunology';
+    if (patientId === 'pat_004') return 'Pulmonology';
+    return 'General Medicine';
+  };
+
+  const getSpecialtyColor = (spec: string) => {
+    switch(spec) {
+      case 'Psychiatry': return { background: 'rgba(139, 92, 246, 0.1)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.2)' };
+      case 'Oncology': return { background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.2)' };
+      case 'Pediatrics': return { background: 'rgba(59, 130, 246, 0.1)', color: '#93c5fd', border: '1px solid rgba(59, 130, 246, 0.2)' };
+      case 'Cardiology': return { background: 'rgba(245, 158, 11, 0.1)', color: '#fcd34d', border: '1px solid rgba(245, 158, 11, 0.2)' };
+      case 'Immunology': return { background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)' };
+      default: return { background: 'rgba(148, 163, 184, 0.1)', color: '#cbd5e1', border: '1px solid rgba(148, 163, 184, 0.2)' };
+    }
+  };
+
+  const renderScenarioDatabase = () => {
+    const filtered = mockPatients.filter(p => {
+      const spec = getSpecialtyLabel(p.id);
+      const matchesSearch = p.name.toLowerCase().includes(dbSearchQuery.toLowerCase()) || 
+                            p.id.toLowerCase().includes(dbSearchQuery.toLowerCase()) ||
+                            p.secretClinicalEnvelope.chiefComplaint.toLowerCase().includes(dbSearchQuery.toLowerCase());
+      
+      const matchesCategory = dbCategoryFilter === 'all' || spec.toLowerCase() === dbCategoryFilter.toLowerCase();
+      return matchesSearch && matchesCategory;
+    });
+
+    return (
+      <div className="standards-library-container animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--fg-primary)', fontWeight: 700 }}>Clinical Case Registry Explorer (MedBench Aligned)</h4>
+            <p style={{ margin: '2px 0 0 0', fontSize: '11.5px', color: 'var(--fg-muted)' }}>
+              Explore Lumen's certified patient envelopes, presenting conditions, CPT codes, and armed safety guidelines.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder="Search cases, CPT, symptoms..."
+                value={dbSearchQuery}
+                onChange={e => setDbSearchQuery(e.target.value)}
+                style={{
+                  background: 'var(--bg-input)',
+                  color: 'var(--fg-primary)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '6px',
+                  padding: '5px 10px 5px 28px',
+                  fontSize: '11.5px',
+                  outline: 'none',
+                  width: '200px'
+                }}
+              />
+              <span style={{ position: 'absolute', left: '10px', color: 'var(--fg-muted)', fontSize: '12px' }}>🔍</span>
+            </div>
+            <select
+              value={dbCategoryFilter}
+              onChange={e => setDbCategoryFilter(e.target.value)}
+              style={{
+                background: 'var(--bg-input)',
+                color: 'var(--fg-primary)',
+                border: '1px solid var(--border-default)',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                fontSize: '11.5px',
+                outline: 'none',
+                height: '27px',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">All Specialties</option>
+              <option value="Psychiatry">Psychiatry</option>
+              <option value="Oncology">Oncology</option>
+              <option value="Pediatrics">Pediatrics</option>
+              <option value="Cardiology">Cardiology</option>
+              <option value="Immunology">Immunology</option>
+              <option value="General Medicine">General Medicine</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="lb-table-wrapper" style={{ overflowX: 'auto' }}>
+          <table className="lb-table" style={{ fontSize: '12.5px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
+                <th style={{ width: '10%' }}>Case ID</th>
+                <th style={{ width: '20%' }}>Patient Name</th>
+                <th style={{ width: '15%' }}>Specialty</th>
+                <th style={{ width: '15%' }}>Age / Gender</th>
+                <th style={{ width: '15%' }}>Target CPT/Rx</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>Safety Guardrails</th>
+                <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(p => {
+                const spec = getSpecialtyLabel(p.id);
+                const specStyle = getSpecialtyColor(spec);
+                const isExpanded = expandedPatientId === p.id;
+                return (
+                  <React.Fragment key={p.id}>
+                    <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: isExpanded ? 'var(--bg-subtle)' : 'transparent' }}>
+                      <td style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--fg-muted)' }}>{p.id}</td>
+                      <td><strong>{p.name}</strong></td>
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          ...specStyle
+                        }}>
+                          {spec}
+                        </span>
+                      </td>
+                      <td>{p.age}y / {p.gender}</td>
+                      <td style={{ fontFamily: 'monospace' }}>CPT-{p.targetProcedureCpt}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          color: '#fca5a5',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}>
+                          {p.safetyGuidelines.length} rules
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setExpandedPatientId(isExpanded ? null : p.id)}
+                          style={{ fontSize: '10.5px', padding: '3px 8px', height: '22px' }}
+                        >
+                          {isExpanded ? 'Hide' : 'Details'}
+                        </button>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={7} style={{ background: 'var(--bg-subtle)', padding: '16px', borderBottom: '1px solid var(--border-default)' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div>
+                              <h5 style={{ margin: '0 0 6px 0', fontSize: '12px', color: 'var(--brand)' }}>Clinical Presentation File</h5>
+                              <div style={{ fontSize: '11.5px', color: 'var(--fg-primary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div><strong style={{ color: 'var(--fg-muted)' }}>Chief Complaint:</strong> {p.secretClinicalEnvelope.chiefComplaint}</div>
+                                <div><strong style={{ color: 'var(--fg-muted)' }}>Presenting Symptoms:</strong> {p.secretClinicalEnvelope.presentingSymptoms}</div>
+                                <div>
+                                  <strong style={{ color: 'var(--fg-muted)' }}>Vitals: </strong>
+                                  Temp: {p.secretClinicalEnvelope.vitals.temperature} | BP: {p.secretClinicalEnvelope.vitals.bloodPressure} | HR: {p.secretClinicalEnvelope.vitals.heartRate}
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <h5 style={{ margin: '0 0 6px 0', fontSize: '12px', color: 'var(--brand)' }}>Armed Safety Guardrails (Audit Rule Constraints)</h5>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {p.safetyGuidelines.map((g, gi) => (
+                                  <div key={gi} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ color: 'var(--fg-primary)' }}>{g.description}</span>
+                                    <span style={{
+                                      fontSize: '8px',
+                                      fontWeight: 800,
+                                      textTransform: 'uppercase',
+                                      padding: '1px 4px',
+                                      borderRadius: '3px',
+                                      background: g.severity === 'critical' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                      color: g.severity === 'critical' ? 'var(--fg-danger)' : 'var(--fg-warn)'
+                                    }}>
+                                      {g.severity}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="leaderboard-view animate-slide-up">
       {/* Overview stats cards */}
@@ -926,6 +1128,15 @@ export const SafetyLeaderboard: React.FC = () => {
           >
             <BookOpen size={12} />
             Standards Alignment Library
+          </button>
+          <button 
+            className={`lb-subpanel-tab ${activeSubTab === 'database' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('database')}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <Database size={12} style={{ marginRight: '4px' }} />
+            Scenario Registry
+            <span className="dropdown-badge" style={{ background: 'var(--brand-subtle)', color: 'var(--brand)', marginLeft: '6px', fontSize: '9px', padding: '1px 5px' }}>17 CASES</span>
           </button>
           <button 
             className={`lb-subpanel-tab ${activeSubTab === 'governance' ? 'active' : ''}`}
@@ -1034,6 +1245,8 @@ export const SafetyLeaderboard: React.FC = () => {
           renderStandardsLibrary()
         ) : activeSubTab === 'governance' ? (
           renderGovernancePanel()
+        ) : activeSubTab === 'database' ? (
+          renderScenarioDatabase()
         ) : (
           renderMatrixPanel()
         )}
