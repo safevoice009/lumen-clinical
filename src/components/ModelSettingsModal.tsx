@@ -28,6 +28,9 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
     return 'classic';
   });
 
+  const [customGeminiKey, setCustomGeminiKey] = useState(() => localStorage.getItem('lumen_custom_gemini_key') || '');
+  const [customAimlKey, setCustomAimlKey] = useState(() => localStorage.getItem('lumen_custom_aiml_key') || '');
+
   const handleDiscoverModels = async () => {
     setDiscovering(true);
     setDiscoveryError('');
@@ -65,6 +68,8 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
       setDiscoveredModels([]);
       setDiscoveryError('');
       setPalette(localStorage.getItem('lumen-palette') || 'classic');
+      setCustomGeminiKey(localStorage.getItem('lumen_custom_gemini_key') || '');
+      setCustomAimlKey(localStorage.getItem('lumen_custom_aiml_key') || '');
       try {
         const stored = localStorage.getItem('lumen_session_history');
         if (stored) setHistory(JSON.parse(stored));
@@ -170,6 +175,8 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
   const handleSave = () => {
     saveModelConfig(config);
     localStorage.setItem('lumen-palette', palette);
+    localStorage.setItem('lumen_custom_gemini_key', customGeminiKey);
+    localStorage.setItem('lumen_custom_aiml_key', customAimlKey);
     if (onLog) {
       onLog('success', 'GATEWAY', `Gateway bound to local model server (${config.source.toUpperCase()}) on model "${config.modelName}".`);
     }
@@ -342,6 +349,77 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({ isOpen, 
                 />
               </div>
             )}
+
+            {/* Custom API Keys */}
+            <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom Cloud API Keys (Optional overrides)</span>
+              
+              <div className="form-group-row" style={{ display: 'flex', gap: '12px' }}>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label htmlFor="custom-gemini-key">Google Gemini API Key</label>
+                  <input
+                    id="custom-gemini-key"
+                    type="password"
+                    placeholder="Paste your Gemini API key..."
+                    value={customGeminiKey}
+                    onChange={e => setCustomGeminiKey(e.target.value)}
+                  />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label htmlFor="custom-aiml-key">AI/ML API Key</label>
+                  <input
+                    id="custom-aiml-key"
+                    type="password"
+                    placeholder="Paste your AI/ML API key..."
+                    value={customAimlKey}
+                    onChange={e => setCustomAimlKey(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Offline Runbook & Local Hardware Presets */}
+          <div className="settings-section" style={{ marginTop: '16px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <Cpu size={14} className="text-primary" />
+              <label className="section-label" style={{ margin: 0 }}>Offline Model Runbook &amp; Setup (Pop!_OS / Linux)</label>
+            </div>
+            
+            <p style={{ fontSize: '11px', color: 'var(--fg-secondary)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
+              To run the multi-agent system smoothly entirely on-device, download and launch local models via Ollama. Pop!_OS supports full GPU acceleration natively.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-input)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '10px' }}>
+              <div>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--fg-primary)', display: 'block', marginBottom: '2px' }}>
+                  1. INSTALL OLLAMA ENGINE:
+                </span>
+                <code style={{ fontSize: '10px', color: 'var(--fg-secondary)', background: 'var(--bg-card)', padding: '2px 6px', borderRadius: '4px', display: 'block', fontFamily: 'JetBrains Mono' }}>
+                  curl -fsSL https://ollama.com/install.sh | sh
+                </code>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--fg-primary)', display: 'block', marginBottom: '2px' }}>
+                  2. PULL CORE AGENT PRESETS:
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <code style={{ fontSize: '10px', color: 'var(--fg-secondary)', background: 'var(--bg-card)', padding: '2px 6px', borderRadius: '4px', display: 'block', fontFamily: 'JetBrains Mono' }}>
+                    ollama pull medgemma:4b <span style={{ color: 'var(--fg-muted)' }}># 🩺 Doctor Agent (Multimodal)</span>
+                  </code>
+                  <code style={{ fontSize: '10px', color: 'var(--fg-secondary)', background: 'var(--bg-card)', padding: '2px 6px', borderRadius: '4px', display: 'block', fontFamily: 'JetBrains Mono' }}>
+                    ollama pull qwen2.5-coder:1.5b <span style={{ color: 'var(--fg-muted)' }}># 👤 Patient / Red-Team / Auditor (Structured JSON)</span>
+                  </code>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '6px' }}>
+                <span style={{ fontSize: '9.5px', color: 'var(--fg-muted)', display: 'block', lineHeight: '1.3' }}>
+                  💡 <strong>Hardware Fit:</strong> MedGemma (4B) and Qwen-Coder (1.5B) run concurrently in ~4.5 GB of RAM/VRAM. Pop!_OS auto-allocates CUDA/ROCm resources. Direct API queries to <code>http://localhost:11434</code>.
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Workstation Aesthetics Panel */}

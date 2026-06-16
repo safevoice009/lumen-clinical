@@ -36,7 +36,38 @@ export async function callPatientAgent(
   lastDoctorMessage: string,
   redTeamInstruction?: string
 ): Promise<string> {
-  const config = getActiveModelConfig();
+  const selectedModel = localStorage.getItem('lumen_patient_model') || 'gemini';
+  let config = getActiveModelConfig();
+  if (selectedModel === 'ollama') {
+    config = {
+      source: 'ollama',
+      endpoint: (import.meta as any).env?.VITE_OLLAMA_BASE || 'http://localhost:11434',
+      apiKey: '',
+      modelName: 'mistral'
+    };
+  } else if (selectedModel === 'qwen_coder_15b') {
+    config = {
+      source: 'ollama',
+      endpoint: (import.meta as any).env?.VITE_OLLAMA_BASE || 'http://localhost:11434',
+      apiKey: '',
+      modelName: 'qwen2.5-coder:1.5b'
+    };
+  } else if (selectedModel === 'qwen_coder_05b') {
+    config = {
+      source: 'ollama',
+      endpoint: (import.meta as any).env?.VITE_OLLAMA_BASE || 'http://localhost:11434',
+      apiKey: '',
+      modelName: 'qwen2.5-coder:0.5b'
+    };
+  } else if (selectedModel === 'openvino') {
+    config = {
+      source: 'openvino',
+      endpoint: 'http://127.0.0.1:8000',
+      apiKey: '',
+      modelName: 'qwen'
+    };
+  }
+
   let systemPrompt = PATIENT_SYSTEM_PROMPT(envelope, persona, language);
   
   if (redTeamInstruction) {

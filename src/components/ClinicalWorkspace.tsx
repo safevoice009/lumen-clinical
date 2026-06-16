@@ -25,6 +25,7 @@ import { DpoStudio } from './DpoStudio';
 import { CascadeTrace } from './CascadeTrace';
 import { CommandPalette, CommandItem } from './CommandPalette';
 import { HITLEscalation } from './HITLEscalation';
+import { MultimodalBoard } from './MultimodalBoard';
 import { Play, FastForward, RotateCcw, AlertTriangle, ShieldCheck, Cpu, Share2, FileText, Stethoscope } from 'lucide-react';
 import { saveHistoryRecord } from '../utils/geminiClient';
 import { simulateRegionalApiCall } from '../utils/regionalApis';
@@ -52,7 +53,7 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
     }
   }, [selectedPatient, messages.length]);
   const [fhirBundle, setFhirBundle] = useState<FHIRBundle | null>(null);
-  const [rightTab, setRightTab] = useState<'audit' | 'fhir' | 'fda' | 'drift' | 'alignment'>('audit');
+  const [rightTab, setRightTab] = useState<'audit' | 'fhir' | 'fda' | 'drift' | 'alignment' | 'multimodal'>('audit');
   const [portalUrl, setPortalUrl] = useState<string>('');
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isLiveGenerating, setIsLiveGenerating] = useState(false);
@@ -69,6 +70,8 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   const [isHitlEscalated, setIsHitlEscalated] = useState(false);
   const [isHitlAwaiting, setIsHitlAwaiting] = useState(false);
   const [doctorModel, setDoctorModel] = useState(() => localStorage.getItem('lumen_doctor_model') || 'gemini');
+  const [patientModel, setPatientModel] = useState(() => localStorage.getItem('lumen_patient_model') || 'gemini');
+  const [redteamModel, setRedteamModel] = useState(() => localStorage.getItem('lumen_redteam_model') || 'gemini');
   const [auditorModel, setAuditorModel] = useState(() => localStorage.getItem('lumen_auditor_model') || 'consensus');
   const [complianceRegion, setComplianceRegion] = useState<'US_FDA' | 'UK_NHS' | 'IN_ABDM' | 'WHO_GLOBAL'>('US_FDA');
   const [dpoPairs, setDpoPairs] = useState<any[]>([]);
@@ -1130,7 +1133,73 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                       <option value="gemini">Gemini 2.0</option>
                       <option value="biomistral">BioMistral-7B (Featherless)</option>
                       <option value="med42">Llama-3-Med42-8B (Featherless)</option>
+                      <option value="medgemma_ollama">MedGemma-4B (Ollama Local)</option>
                       <option value="ollama">Mistral-7B (Ollama Local)</option>
+                      <option value="openvino">Intel OpenVINO</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Patient Agent Model Selector */}
+                {isLiveMode && (
+                  <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="violation-label">👤 Patient Model</span>
+                    <select
+                      value={patientModel}
+                      onChange={e => {
+                        localStorage.setItem('lumen_patient_model', e.target.value);
+                        setPatientModel(e.target.value);
+                      }}
+                      style={{
+                        background: 'var(--bg-input)',
+                        color: 'var(--fg-primary)',
+                        border: '1px solid var(--border-default)',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        outline: 'none',
+                        height: '22px'
+                      }}
+                    >
+                      <option value="gemini">Gemini 2.0</option>
+                      <option value="qwen_coder_15b">Qwen-Coder 1.5B (Ollama)</option>
+                      <option value="qwen_coder_05b">Qwen-Coder 0.5B (Ollama)</option>
+                      <option value="ollama">Mistral-7B (Ollama)</option>
+                      <option value="openvino">Intel OpenVINO</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Red-Team Agent Model Selector */}
+                {isLiveMode && (
+                  <div className="violation-toggle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="violation-label">🔴 Red-Team Model</span>
+                    <select
+                      value={redteamModel}
+                      onChange={e => {
+                        localStorage.setItem('lumen_redteam_model', e.target.value);
+                        setRedteamModel(e.target.value);
+                      }}
+                      style={{
+                        background: 'var(--bg-input)',
+                        color: 'var(--fg-primary)',
+                        border: '1px solid var(--border-default)',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        outline: 'none',
+                        height: '22px'
+                      }}
+                    >
+                      <option value="gemini">Gemini 2.0</option>
+                      <option value="qwen_coder_15b">Qwen-Coder 1.5B (Ollama)</option>
+                      <option value="qwen_coder_05b">Qwen-Coder 0.5B (Ollama)</option>
+                      <option value="ollama">Mistral-7B (Ollama)</option>
+                      <option value="openvino">Intel OpenVINO</option>
                     </select>
                   </div>
                 )}
@@ -1161,6 +1230,9 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                       <option value="consensus">Consensus (3-Judge Local)</option>
                       <option value="aiml_gemini">Gemini 2.0 (AI/ML API)</option>
                       <option value="aiml_claude">Claude 3.5 (AI/ML API)</option>
+                      <option value="qwen_coder_15b">Qwen-Coder 1.5B (Ollama)</option>
+                      <option value="qwen_coder_05b">Qwen-Coder 0.5B (Ollama)</option>
+                      <option value="openvino">Intel OpenVINO</option>
                     </select>
                   </div>
                 )}
@@ -1427,6 +1499,12 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                   >
                     DPO Studio
                   </button>
+                  <button
+                    className={`rpanel-tab ${rightTab === 'multimodal' ? 'active' : ''}`}
+                    onClick={() => setRightTab('multimodal')}
+                  >
+                    Multimodal Board
+                  </button>
                 </div>
 
                 {rightTab === 'audit' ? (
@@ -1479,7 +1557,7 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                     selectedLanguage={selectedLanguage}
                     forceViolation={forceViolation}
                   />
-                ) : (
+                ) : rightTab === 'alignment' ? (
                   <DpoStudio
                     pairs={dpoPairs}
                     onUpdatePair={(id, updatedChosen) => {
@@ -1489,6 +1567,8 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
                       setDpoPairs(prev => prev.filter(p => p.id !== id));
                     }}
                   />
+                ) : (
+                  <MultimodalBoard />
                 )}
 
               </div>

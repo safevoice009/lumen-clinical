@@ -1,7 +1,7 @@
 // Model-Agnostic API Client for Lumen Clinical Safety Evaluator & Workstation
 // Supports Gemini (Google AI Studio), Ollama, and OpenVINO / OpenAI-compatible local model servers.
 
-export const GEMINI_API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+export const GEMINI_API_KEY = typeof window !== 'undefined' ? (localStorage.getItem('lumen_custom_gemini_key') || (import.meta as any).env?.VITE_GEMINI_API_KEY || '') : ((import.meta as any).env?.VITE_GEMINI_API_KEY || '');
 export const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 export const DOCTOR_MODEL = 'gemini-2.0-flash';
 
@@ -88,7 +88,7 @@ export async function executeModelRequest(
   const { source, endpoint, apiKey, modelName } = config;
 
   if (source === 'gemini') {
-    const key = apiKey || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+    const key = apiKey || (typeof window !== 'undefined' ? localStorage.getItem('lumen_custom_gemini_key') : '') || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
     if (!key) throw new Error('NO_API_KEY');
 
     const url = `${endpoint}/${modelName}:generateContent?key=${key}`;

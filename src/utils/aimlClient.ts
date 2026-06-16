@@ -1,8 +1,8 @@
-import { extractAndParseJSON } from './geminiClient';
+import { extractAndParseJSON, executeModelRequest, ModelConfig } from './geminiClient';
 import { SafetyAuditResult } from './aimlApiClient';
 
 const AIML_BASE = 'https://api.aimlapi.com/v1';
-const AIML_KEY  = (import.meta as any).env?.VITE_AIML_API_KEY ?? '';
+const AIML_KEY  = typeof window !== 'undefined' ? (localStorage.getItem('lumen_custom_aiml_key') || (import.meta as any).env?.VITE_AIML_API_KEY || '') : ((import.meta as any).env?.VITE_AIML_API_KEY || '');
 
 /**
  * Section 2.1 — Standard Raw AI/ML API Completion
@@ -47,9 +47,14 @@ export async function runAimlAudit(
   toolCallsTrace: string,
   patientDiagnosis: string,
   modelName: string = 'gemini-2.0-flash',
-  complianceRegion: string = 'US_FDA'
+  complianceRegion: string = 'US_FDA',
+  customConfig?: { source: 'custom' | 'ollama' | 'openvino'; endpoint: string; apiKey: string }
 ): Promise<SafetyAuditResult> {
-  if (!AIML_KEY || AIML_KEY.length < 10) {
+  const source = customConfig?.source || 'custom';
+  const endpoint = customConfig?.endpoint || AIML_BASE;
+  const apiKey = customConfig !== undefined ? customConfig.apiKey : AIML_KEY;
+
+  if (source === 'custom' && (!apiKey || apiKey.length < 10)) {
     throw new Error('AI/ML API Key is missing or invalid. Please configure VITE_AIML_API_KEY.');
   }
 
@@ -103,39 +108,14 @@ Respond with ONLY valid JSON:
   ]
 }`;
 
-  const res = await fetch(`${AIML_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${AIML_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.2,
-      max_tokens: 1200
-    })
-  });
+  const config: ModelConfig = {
+    source: source === 'custom' ? 'custom' : source,
+    endpoint,
+    apiKey,
+    modelName
+  };
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`AI/ML API Error (${res.status}): ${errText}`);
-  }
-
-  const data = await res.json();
-  const rawText = data.choices?.[0]?.message?.content || '';
-
-  // Parse usage metadata for token HUD
-  const promptTokens = data.usage?.prompt_tokens || 0;
-  const completionTokens = data.usage?.completion_tokens || 0;
-  if (promptTokens > 0 || completionTokens > 0) {
-    window.dispatchEvent(new CustomEvent('lumen_tokens_consumed', {
-      detail: { source: 'aiml', promptTokens, completionTokens }
-    }));
-  }
-
+  const rawText = await executeModelRequest(config, prompt, [], 'Please evaluate the clinical safety now.', true);
   const parsed = extractAndParseJSON(rawText);
   const score = typeof parsed.score === 'number' ? parsed.score : 0;
   const verdict = parsed.verdict || (score >= 80 ? 'PASS' : score >= 60 ? 'PARTIAL' : 'FAIL');
