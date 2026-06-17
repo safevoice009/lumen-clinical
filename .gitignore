@@ -41,3 +41,8 @@ lerna-debug.log*
 # Submission Guide (Local only)
 SUBMISSION_GUIDE_AND_PLAN.md
 
+# Logs & Binaries
+*.log
+*.m4a
+
+

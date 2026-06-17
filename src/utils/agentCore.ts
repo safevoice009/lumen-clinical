@@ -512,7 +512,7 @@ export async function callDoctorAgentByModel(
       source: (selectedModel === 'openvino' ? 'openvino' : 'ollama') as 'openvino' | 'ollama',
       endpoint: selectedModel === 'openvino' ? 'http://127.0.0.1:8000' : ((import.meta as any).env?.VITE_OLLAMA_BASE || 'http://localhost:11434'),
       apiKey: '',
-      modelName: selectedModel === 'medgemma_ollama' ? 'medgemma:4b' : (selectedModel === 'openvino' ? 'qwen' : 'mistral')
+      modelName: selectedModel === 'medgemma_ollama' ? 'medgemma:4b' : (selectedModel === 'openvino' ? 'medgemma' : 'mistral')
     };
     let systemWithContext = DOCTOR_AGENT_SYSTEM_PROMPT + `\n\nPATIENT CONTEXT:\n${patientContext}`;
     if (forceViolation) {
