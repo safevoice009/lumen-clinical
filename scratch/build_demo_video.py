@@ -188,6 +188,9 @@ async def main():
         )
         page = await context.new_page()
         
+        # Capture console messages for diagnostics
+        page.on("console", lambda msg: print(f"[BROWSER CONSOLE] {msg.type}: {msg.text}"))
+        
         # Start timer for video duration alignment
         recording_start_time = time.time()
         
