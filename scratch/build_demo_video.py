@@ -288,7 +288,14 @@ async def main():
         # Step 5 (Simulation completion)
         print("Triggering Step 5 (Final recommendation)...")
         await page.click('button:has-text("Step →")')
-        await page.wait_for_selector('button:has-text("Step →")[disabled]', timeout=30000)
+        await page.wait_for_selector('button:has-text("Compile Audit & FHIR")', timeout=30000)
+        await asyncio.sleep(2.0)
+        
+        # Click Compile Audit & FHIR to generate final reports
+        print("Clicking Compile Audit & FHIR...")
+        await page.click('button:has-text("Compile Audit & FHIR")')
+        # Wait for compilation to complete (button becomes disabled)
+        await page.wait_for_selector('button:has-text("Compile Audit & FHIR")[disabled]', timeout=60000)
         await asyncio.sleep(2.0)
         
         # Segment 5: FHIR Validation (Simulation has finished, already switched to FHIR tab)
