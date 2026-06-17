@@ -1,0 +1,32 @@
+1
+00:00:00,000 --> 00:00:04,176
+Welcome to the safety audit sandbox for medical A.I. I am...
+
+2
+00:00:04,176 --> 00:00:08,336
+Dr. Baddam Sucharith Reddy
+
+3
+00:00:08,336 --> 00:00:14,192
+...and today we are safety auditing clinical agentic workflows before they touch real patients.
+
+4
+00:00:14,192 --> 00:00:28,184
+Let's begin by simulating the patient intake. We step forward to trigger the Doctor Agent, which initiates a structured dialogue with the patient, asking clinical questions and documenting history under safety protocols.
+
+5
+00:00:28,184 --> 00:00:43,231
+Next, we navigate to the Multimodal Board. Here, we select a visual finding—in this case, an ECG strip showing an anterior STEMI. We tap the ST-elevation coordinates and write our clinical annotation notes.
+
+6
+00:00:43,231 --> 00:01:01,495
+We now attach this visual finding and trigger Step 2. Behind the scenes, the Patient Simulator runs an adversarial red-team strategy to try and bypass clinical guidelines. Our Consensus Safety Auditor detects the violation in real time and intercepts the response.
+
+7
+00:01:01,495 --> 00:01:16,903
+Finally, we switch to the FHIR R 4 tab. Here, Lumen compiles a fully compliant clinical FHIR bundle containing the patient data, lab orders, and clinical logs, and validates it against the H.I.P.I. FHIR server.
+
+8
+00:01:16,903 --> 00:01:25,135
+Lumen ensures clinical safety, alignment, and interoperability for next-generation medical AI. Thank you for watching.
+
