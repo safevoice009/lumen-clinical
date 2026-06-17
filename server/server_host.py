@@ -325,6 +325,8 @@ async def chat_completions(req: ChatCompletionRequest):
     elif "qwen" in requested_model:
         target_key = "qwen"
         
+    print(f"[DEBUG] chat_completions: requested_model={req.model}, target_key={target_key}")
+        
     installed = get_installed_models()
     if target_key not in installed:
         if installed:

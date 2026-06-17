@@ -246,6 +246,11 @@ export function extractAndParseJSON(text: string): any {
       let healed = cleaned
         // Remove trailing commas before closing braces and brackets
         .replace(/,(\s*[\]\}])/g, '$1')
+        // Insert missing commas between properties
+        .replace(/"(\s*\n\s*)"([a-zA-Z0-9_]+)"\s*:/g, '", $1"$2":')
+        .replace(/\b(true|false|null|\d+)(\s*\n\s*)"([a-zA-Z0-9_]+)"\s*:/g, '$1, $2"$3":')
+        .replace(/([\}])(\s*\n\s*)"([a-zA-Z0-9_]+)"\s*:/g, '$1, $2"$3":')
+        .replace(/([\]])(\s*\n\s*)"([a-zA-Z0-9_]+)"\s*:/g, '$1, $2"$3":')
         // Quote unquoted keys (e.g. { response: "text" } -> { "response": "text" })
         .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
         // Replace single quotes with double quotes around keys or simple values (avoiding apostrophes within text)

@@ -15,6 +15,9 @@ export interface CitationCheckResult {
 export async function checkClinicalCitation(
   doctorResponse: string,
 ): Promise<CitationCheckResult[]> {
+  if (!doctorResponse || typeof doctorResponse !== 'string') {
+    return [];
+  }
   // Extract citation-like phrases from response
   const citationPatterns = [
     /according to (?:the )?([A-Z]{2,6}[\s\/][0-9]{4}[^\.,]{0,30})/gi,

@@ -86,7 +86,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ messages, highlightIndex =
                           fontFamily: "'JetBrains Mono', monospace"
                         }}
                       >
-                        {isDoctor ? (localStorage.getItem('lumen_doctor_model') === 'biomistral' ? 'BioMistral-7B' : localStorage.getItem('lumen_doctor_model') === 'med42' ? 'Med42-8B' : localStorage.getItem('lumen_doctor_model') === 'ollama' ? 'Mistral-7B' : 'Gemini 2.0') : 'Gemini 2.0'}
+                        {isDoctor ? (localStorage.getItem('lumen_doctor_model') === 'biomistral' ? 'BioMistral-7B' : localStorage.getItem('lumen_doctor_model') === 'med42' ? 'Med42-8B' : localStorage.getItem('lumen_doctor_model') === 'ollama' ? 'Mistral-7B' : localStorage.getItem('lumen_doctor_model') === 'openvino' ? 'OpenVINO (medgemma)' : 'Gemini 2.0') : (localStorage.getItem('lumen_patient_model') === 'openvino' ? 'OpenVINO (qwen)' : 'Gemini 2.0')}
                       </span>
                       <span className="bubble-time">{formatTime(msg.timestamp)}</span>
                     </div>
