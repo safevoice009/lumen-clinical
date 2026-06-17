@@ -7,13 +7,15 @@ from playwright.async_api import async_playwright
 
 # Define voiceover text segments
 VOICEOVERS = {
-    "intro_1": "Welcome to the safety audit sandbox for medical A.I. I am...",
-    "intro_2": "...and today we are safety auditing clinical agentic workflows before they touch real patients.",
-    "step_1": "Let's begin by simulating the patient intake. We step forward to trigger the Doctor Agent, which initiates a structured dialogue with the patient, asking clinical questions and documenting history under safety protocols.",
-    "multimodal": "Next, we navigate to the Multimodal Board. Here, we select a visual finding—in this case, an ECG strip showing an anterior STEMI. We tap the ST-elevation coordinates and write our clinical annotation notes.",
-    "step_2": "We now attach this visual finding and trigger Step 2. Behind the scenes, the Patient Simulator runs an adversarial red-team strategy to try and bypass clinical guidelines. Our Consensus Safety Auditor detects the violation in real time and intercepts the response.",
-    "fhir": "Finally, we switch to the FHIR R 4 tab. Here, Lumen compiles a fully compliant clinical FHIR bundle containing the patient data, lab orders, and clinical logs, and validates it against the H.I.P.I. FHIR server.",
-    "outro": "Lumen ensures clinical safety, alignment, and interoperability for next-generation medical AI. Thank you for watching."
+    "intro_1": "Welcome to Lumen Odysseus, the first multi-agent clinical AI safety certification workstation.",
+    "intro_2": "Today, we are safety auditing clinical agentic workflows before they touch real patients in hospital environments. Let's explore how Lumen provides pre-deployment stress testing and safety gates.",
+    "step_1": "Let's begin in the Clinical Workspace. We select the Appendicitis consultation scenario for Sarah Jenkins, where the AI must recognize localized peritoneal signs and order diagnostic imaging. We step forward to trigger the Doctor Agent, which initiates a structured consultation dialogue, asking critical clinical questions and documenting the patient intake under safety protocols.",
+    "multimodal": "Next, we navigate to the Multimodal Board. Clinicians can upload and review visual medical findings. We select an E.C.G. strip showing an acute anterior S.T.E.M.I., click the S.T.-elevation coordinates to flag them, and document our clinician notes. We then attach this visual finding to the active E.H.R. case sheet.",
+    "step_2": "We now attach this visual finding and trigger Step 2. Behind the scenes, the Adversarial Red-Team Simulator runs a patient strategy to try and bypass clinical guidelines. Our safety auditor monitors the agent-to-agent communication via the Band network, detects emergency violations, and flags them in the telemetry console in real time.",
+    "drift": "We also integrate advanced clinician tools. We can run a Drift Test to evaluate clinical L.L.M. reasoning drift across medical knowledge bases. This lets us verify prior authorization compliance and ensure standard guidelines like L.O.I.N.C. and RxNorm codes are mapped correctly.",
+    "leaderboard": "Lumen features a comprehensive Safety Leaderboard and Benchmark Mode. Here, hospitals can compare safety audit scores across local and cloud L.L.M.s, including BioMistral, clinical fine-tunes, and Gemini, ensuring only safety-certified models are routed to production environments.",
+    "fhir": "Finally, we return to the Clinical Workspace to compile our safety audit. Every simulation failure compiles into a standards-compliant F.H.I.R. R 4 audit bundle containing full interoperability logs. We validate this bundle against the H.I.P.I. F.H.I.R. server.",
+    "outro": "Lumen Odysseus provides the pre-deployment safety gate clinical A.I. deserves, protecting patient lives from model errors. Open source, clinician-led, and powered by Band. Thank you for watching."
 }
 
 def run_cmd(cmd):
@@ -33,9 +35,21 @@ def get_duration(file_path):
 async def generate_speech(text, output_path, voice="en-US-AndrewMultilingualNeural"):
     print(f"Generating TTS for: '{text}' -> {output_path}")
     cmd = ["edge-tts", "--voice", voice, "--text", text, "--write-media", output_path]
-    # Run using asyncio for edge-tts
-    proc = await asyncio.create_subprocess_exec(*cmd)
-    await proc.communicate()
+    
+    # Simple retry logic with linear backoff to handle transient Edge-TTS network/SSL issues
+    for attempt in range(5):
+        try:
+            proc = await asyncio.create_subprocess_exec(*cmd)
+            await proc.communicate()
+            if proc.returncode == 0:
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+                    return
+            print(f"Attempt {attempt+1} returned code {proc.returncode}. Retrying...")
+        except Exception as e:
+            print(f"Attempt {attempt+1} generated error: {e}. Retrying...")
+        await asyncio.sleep(2.0 * (attempt + 1))
+    
+    raise RuntimeError(f"Failed to generate speech after 5 attempts for: {text}")
 
 async def zoom_to_element(page, selector, scale=1.5):
     print(f"Zooming to {selector} at scale {scale}...")
@@ -46,7 +60,6 @@ async def zoom_to_element(page, selector, scale=1.5):
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 2;
         
-        // Add a nice transition style if not present
         if (!document.getElementById('zoom-style')) {
             const style = document.createElement('style');
             style.id = 'zoom-style';
@@ -118,7 +131,7 @@ async def main():
     current_time += durations["intro_1"]
     
     # User Voice
-    srt_content += add_srt_entry(2, current_time, durations["user_voice"], "Dr. Baddam Sucharith Reddy")
+    srt_content += add_srt_entry(2, current_time, durations["user_voice"], "I am Dr. Baddam Sucharith Reddy")
     current_time += durations["user_voice"]
     
     # Intro Part 2
@@ -137,12 +150,20 @@ async def main():
     srt_content += add_srt_entry(6, current_time, durations["step_2"], VOICEOVERS["step_2"])
     current_time += durations["step_2"]
     
+    # Drift
+    srt_content += add_srt_entry(7, current_time, durations["drift"], VOICEOVERS["drift"])
+    current_time += durations["drift"]
+    
+    # Leaderboard
+    srt_content += add_srt_entry(8, current_time, durations["leaderboard"], VOICEOVERS["leaderboard"])
+    current_time += durations["leaderboard"]
+    
     # FHIR Validation
-    srt_content += add_srt_entry(7, current_time, durations["fhir"], VOICEOVERS["fhir"])
+    srt_content += add_srt_entry(9, current_time, durations["fhir"], VOICEOVERS["fhir"])
     current_time += durations["fhir"]
     
     # Outro
-    srt_content += add_srt_entry(8, current_time, durations["outro"], VOICEOVERS["outro"])
+    srt_content += add_srt_entry(10, current_time, durations["outro"], VOICEOVERS["outro"])
     
     srt_path = "demo_assets/subtitles.srt"
     with open(srt_path, "w") as f:
@@ -150,7 +171,6 @@ async def main():
     print(f"Subtitles saved to {srt_path}")
     
     # 3. Concatenate Audio Tracks
-    # Filter complex to resample and merge mono/stereo files correctly
     concat_cmd = [
         "ffmpeg", "-y",
         "-i", audio_paths["intro_1"],
@@ -159,6 +179,8 @@ async def main():
         "-i", audio_paths["step_1"],
         "-i", audio_paths["multimodal"],
         "-i", audio_paths["step_2"],
+        "-i", audio_paths["drift"],
+        "-i", audio_paths["leaderboard"],
         "-i", audio_paths["fhir"],
         "-i", audio_paths["outro"],
         "-filter_complex",
@@ -170,7 +192,9 @@ async def main():
         "[5:a]aresample=44100[a5];"
         "[6:a]aresample=44100[a6];"
         "[7:a]aresample=44100[a7];"
-        "[a0][a1][a2][a3][a4][a5][a6][a7]concat=n=8:v=0:a=1[outa]",
+        "[8:a]aresample=44100[a8];"
+        "[9:a]aresample=44100[a9];"
+        "[a0][a1][a2][a3][a4][a5][a6][a7][a8][a9]concat=n=10:v=0:a=1[outa]",
         "-map", "[outa]", "recordings/full_audio.mp3"
     ]
     run_cmd(concat_cmd)
@@ -187,11 +211,8 @@ async def main():
             record_video_size={"width": 1920, "height": 1080}
         )
         page = await context.new_page()
-        
-        # Capture console messages for diagnostics
         page.on("console", lambda msg: print(f"[BROWSER CONSOLE] {msg.type}: {msg.text}"))
         
-        # Start timer for video duration alignment
         recording_start_time = time.time()
         
         # Open URL and login
@@ -205,20 +226,34 @@ async def main():
             await page.click('button:has-text("Unlock Workstation")')
             await page.wait_for_timeout(2000)
             
-        # Segment 1: Intro sequence (~10 seconds)
+        # Segment 1: Switch to Light Mode immediately
+        print("Segment 1: Switching to Light Mode...")
+        is_dark = await page.evaluate("() => document.documentElement.getAttribute('data-theme') !== 'light'")
+        if is_dark:
+            theme_btn = page.locator('button[title="Switch to light mode"]')
+            if await theme_btn.count() > 0:
+                await theme_btn.click()
+                print("Clicked light mode button")
+            else:
+                await page.evaluate("() => { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('lumen-theme', 'light'); }")
+                print("Applied light mode via DOM")
+            await page.wait_for_timeout(1000)
+            
         print("Segment 1: Unlocked dashboard presentation...")
         await asyncio.sleep(max(1.0, intro_total - (time.time() - recording_start_time)))
         
-        # Segment 2: Step 1 (Clinical Intake)
+        # Segment 2: Select Sarah Jenkins & Step 1 (Clinical Intake)
+        print("Segment 2: Selecting Sarah Jenkins scenario...")
+        await page.click('button.patient-card:has-text("Sarah Jenkins")')
+        await page.wait_for_timeout(1000)
+        
         print("Segment 2: Triggering Step 1...")
         await zoom_to_element(page, ".panel-chat", scale=1.4)
         step_1_start_time = time.time()
         await page.click('button:has-text("Step →")')
-        # Wait for Step 1 completion
         await page.wait_for_selector('button:has-text("Step →"):not([disabled])', timeout=30000)
         step_1_inference_time = time.time() - step_1_start_time
         print(f"Step 1 inference took {step_1_inference_time:.2f}s")
-        # Keep showing dialogue for remaining duration of step_1 audio
         await asyncio.sleep(max(1.0, durations["step_1"] - step_1_inference_time - 1.2))
         
         # Segment 3: Multimodal Board & Annotations
@@ -226,26 +261,20 @@ async def main():
         await zoom_out(page)
         multimodal_start_time = time.time()
         
-        # Open Board
         await page.click('button:has-text("Multimodal Board")')
         await asyncio.sleep(1.0)
-        # Click ECG Strip
         await page.click('button:has-text("ECG Strip")')
         await asyncio.sleep(1.0)
-        # Click coordinates
+        
         img_locator = page.locator('img[alt="ECG Strip: Anterior STEMI (ST-Elevation)"]')
         box = await img_locator.bounding_box()
         if box:
             await img_locator.click(position={"x": box["width"] * 0.6, "y": box["height"] * 0.4})
         await asyncio.sleep(1.0)
         
-        # Zoom in on the board coordinates and annotations
         await zoom_to_element(page, ".multimodal-grid", scale=1.3)
-        
-        # Write notes
         await page.fill('textarea[id="clinician-notes"]', "Dr. Baddam Sucharith Reddy notes significant ST-elevation in leads V2-V4 indicating acute anterior myocardial infarction.")
         await asyncio.sleep(1.5)
-        # Attach finding
         await page.click('button:has-text("Attach Visual Finding")')
         await asyncio.sleep(1.0)
         
@@ -261,69 +290,106 @@ async def main():
         step_2_inference_time = time.time() - step_2_start_time
         print(f"Step 2 safety audit inference took {step_2_inference_time:.2f}s")
         
-        # Zoom in to chat agent dialogue and telemetry logs
         await zoom_to_element(page, ".panel-chat", scale=1.4)
         await asyncio.sleep(max(1.0, durations["step_2"] - step_2_inference_time - 1.2))
         
-        # Intermediate step sequences to get to completed FHIR bundle
-        print("Progressing simulation to completion to generate FHIR Bundle...")
+        # Segment 5: Drift Test Tab Walkthrough
+        print("Segment 5: Opening Drift Test Tab...")
         await zoom_out(page)
+        drift_start_time = time.time()
         
-        # Step 3
-        print("Triggering Step 3 (Doctor tool dispatch)...")
-        await page.click('button:has-text("Step →")')
-        await page.wait_for_selector('button:has-text("Step →"):not([disabled])', timeout=30000)
-        await asyncio.sleep(1.0)
+        await page.click('button:has-text("Drift Test")')
+        await page.wait_for_timeout(1000)
+        await page.click('button:has-text("Execute Drift Test")')
+        await zoom_to_element(page, ".panel-drift", scale=1.3)
         
-        # Execute Lab tool if dispatched
+        drift_elapsed = time.time() - drift_start_time
+        await asyncio.sleep(max(1.0, durations["drift"] - drift_elapsed - 1.2))
+        
+        # Segment 6: Safety Leaderboard Walkthrough
+        print("Segment 6: Opening Safety Leaderboard...")
+        await zoom_out(page)
+        leaderboard_start_time = time.time()
+        
+        await page.click('button:has-text("Standards")')
+        await page.wait_for_timeout(1000)
+        await page.click('button:has-text("Safety Leaderboard")')
+        await page.wait_for_timeout(1500)
+        
+        await page.evaluate("window.scrollTo(0, 400)")
+        await page.wait_for_timeout(2000)
+        await page.evaluate("window.scrollTo(0, 100)")
+        
+        leaderboard_elapsed = time.time() - leaderboard_start_time
+        await asyncio.sleep(max(1.0, durations["leaderboard"] - leaderboard_elapsed - 1.2))
+        
+        # Segment 7: Return to Simulation & Progress Steps
+        print("Segment 7: Returning to Simulation...")
+        await page.evaluate("window.scrollTo(0, 0)")
+        await page.click('button:has-text("Sandbox")')
+        await page.wait_for_timeout(1000)
+        await page.click('button:has-text("Clinical Simulation")')
+        await page.wait_for_timeout(2000)
+        
+        fhir_start_time = time.time()
+        
+        # Progress Steps to completion using a robust tool-execution aware loop
+        for i in range(8):
+            # Check if Compile Audit & FHIR is visible
+            compile_btn = page.locator('button:has-text("Compile Audit & FHIR")')
+            if await compile_btn.count() > 0:
+                print("Compile Audit & FHIR button is visible!")
+                break
+                
+            # Proactively click any Execute Lab button that is blocking the simulation
+            execute_btn = page.locator('button:has-text("Execute Lab")')
+            if await execute_btn.count() > 0:
+                print("Clicking Execute Lab to unblock tool call...")
+                await execute_btn.first.click()
+                await asyncio.sleep(2.0)
+                continue
+                
+            # Click Step ->
+            step_btn = page.locator('button:has-text("Step →")')
+            if await step_btn.count() > 0:
+                is_disabled = await step_btn.get_attribute("disabled") is not None
+                if not is_disabled:
+                    print(f"Clicking Step → button...")
+                    await step_btn.click()
+                    await asyncio.sleep(2.5)
+                else:
+                    print("Step → is disabled. Waiting for page state to settle...")
+                    await asyncio.sleep(2.0)
+            else:
+                await asyncio.sleep(1.0)
+                
+        # Proactively check and click any remaining Execute Lab button (like CPT 44970 on Step 5) before compiling
         execute_btn = page.locator('button:has-text("Execute Lab")')
         if await execute_btn.count() > 0:
-            print("Clicking 'Execute Lab' to complete tool call...")
+            print("Clicking final Execute Lab to unblock compile button...")
             await execute_btn.first.click()
-            await asyncio.sleep(2.0)
-            
-        # Step 4
-        print("Triggering Step 4...")
-        await page.click('button:has-text("Step →")')
-        await page.wait_for_selector('button:has-text("Step →"):not([disabled])', timeout=30000)
-        await asyncio.sleep(1.5)
-        
-        # Step 5 (Simulation completion)
-        print("Triggering Step 5 (Final recommendation)...")
-        await page.click('button:has-text("Step →")')
-        await page.wait_for_selector('button:has-text("Compile Audit & FHIR")', timeout=30000)
-        await asyncio.sleep(2.0)
-        
-        # Execute any pending tool calls before compilation
-        exec_buttons = page.locator('button:has-text("Execute Lab")')
-        if await exec_buttons.count() > 0:
-            print("Clicking pending Execute Lab button to resolve tool call...")
-            await exec_buttons.first.click()
-            await asyncio.sleep(2.0)
+            await asyncio.sleep(2.5)
             
         # Click Compile Audit & FHIR to generate final reports
         print("Clicking Compile Audit & FHIR...")
         await page.click('button:has-text("Compile Audit & FHIR")')
-        
-        # Wait for compilation to complete (button becomes disabled and text changes back to Step →)
         await page.wait_for_selector('button:has-text("Step →")[disabled]', timeout=30000)
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(1.5)
         
-        # Segment 5: FHIR Validation (Simulation has finished, already switched to FHIR tab)
-        print("Segment 5: FHIR Validation...")
-        await zoom_to_element(page, ".fhir-panel", scale=1.3)
+        await page.click('button:has-text("FHIR R4")')
+        await page.wait_for_timeout(1000)
         await page.click('button:has-text("Validate Bundle")')
+        await zoom_to_element(page, ".fhir-panel", scale=1.3)
         
-        # Wait for validation response (8s)
-        await asyncio.sleep(8.0)
+        fhir_elapsed = time.time() - fhir_start_time
+        await asyncio.sleep(max(1.0, durations["fhir"] - fhir_elapsed - 1.2))
         
-        # Segment 6: Outro
-        print("Segment 6: Outro sequence...")
+        # Segment 8: Outro
+        print("Segment 8: Outro sequence...")
         await zoom_out(page)
         await page.click('button:has-text("Safety Audit")')
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(max(1.0, durations["outro"] - 1.2))
         
-        # Align video length to match the audio exactly
         elapsed_video_time = time.time() - recording_start_time
         print(f"Elapsed recording time: {elapsed_video_time:.2f}s (Target audio: {total_audio_duration:.2f}s)")
         if elapsed_video_time < total_audio_duration:
@@ -331,24 +397,19 @@ async def main():
             print(f"Padding video recording with {alignment_sleep:.2f}s of static end-frame...")
             await asyncio.sleep(alignment_sleep)
             
-        # Close browser to save raw video
         await context.close()
         video_path = await page.video.path()
         print(f"Raw video saved at: {video_path}")
-        
-        # Copy raw video for post processing
         run_cmd(["cp", video_path, "recordings/raw_video.webm"])
         await browser.close()
 
-    # 5. Final Compilation (Combine Video, Audio, and burn Subtitles)
-    # Burn subtitles with style using libass subtitles filter
-    print("Compiling final video with audio and subtitles...")
+    # 5. Final Compilation (Combine Video, Audio, NO burned subtitles)
+    print("Compiling final video with audio (and no burned-in subtitles)...")
     final_output_path = "demo_assets/product_demo.mp4"
     compile_cmd = [
         "ffmpeg", "-y",
         "-i", "recordings/raw_video.webm",
         "-i", "recordings/full_audio.mp3",
-        "-vf", "subtitles=demo_assets/subtitles.srt:force_style='Fontname=Inter,Fontsize=18,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=45'",
         "-c:v", "libx264",
         "-c:a", "aac",
         "-map", "0:v",
