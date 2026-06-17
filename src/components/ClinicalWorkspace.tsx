@@ -1375,11 +1375,11 @@ Lumen Safety Protocol v2.0 · Pre-Deployment Clinical AI Audit`;
             </div>
 
             <div className="sim-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button className="btn btn-primary btn-sm" onClick={handleAutoPlay} disabled={isComplete || isLiveGenerating}>
+              <button className="btn btn-primary btn-sm" onClick={handleAutoPlay} disabled={(isComplete && fhirBundle !== null) || isLiveGenerating}>
                 <Play size={12} /> Auto Play
               </button>
-              <button className="btn btn-primary btn-sm" onClick={handleStepForward} disabled={isComplete || isLiveGenerating}>
-                <FastForward size={12} /> Step →
+              <button className="btn btn-primary btn-sm" onClick={handleStepForward} disabled={(isComplete && fhirBundle !== null) || isLiveGenerating}>
+                <FastForward size={12} /> {isComplete && !fhirBundle ? 'Compile Audit & FHIR' : 'Step →'}
               </button>
               <button className="btn btn-danger btn-sm" onClick={() => handleReset()} disabled={isLiveGenerating}>
                 <RotateCcw size={12} /> Reset
