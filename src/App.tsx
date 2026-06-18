@@ -29,14 +29,7 @@ export default function App() {
 
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    const requiredPasscode = (import.meta as any).env?.VITE_ACCESS_PASSCODE || '';
-    if (!requiredPasscode) return true; // unlocked by default if passcode not configured
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('lumen_unlocked') === 'true';
-    }
-    return false;
-  });
+  const [isUnlocked, setIsUnlocked] = useState(true);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
