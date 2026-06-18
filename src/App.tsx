@@ -337,26 +337,49 @@ export default function App() {
               </span>
             )}
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                marginTop: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <ShieldCheck size={16} />
-              Unlock Workstation
-            </button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasscode('LUMEN2026');
+                  localStorage.setItem('lumen_unlocked', 'true');
+                  setIsUnlocked(true);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--bg-subtle)',
+                  color: 'var(--fg-secondary)',
+                  cursor: 'pointer'
+                }}
+              >
+                Autofill Demo Code
+              </button>
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{
+                  flex: 1.2,
+                  padding: '12px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <ShieldCheck size={16} />
+                Unlock Workstation
+              </button>
+            </div>
           </form>
 
           <div style={{ marginTop: '24px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px', fontSize: '11px', color: 'var(--fg-muted)', lineHeight: '1.4' }}>
