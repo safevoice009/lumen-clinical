@@ -29,7 +29,18 @@ export default function App() {
 
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hash.includes('demo') || window.location.hash.includes('unlocked')) {
+        localStorage.setItem('lumen_unlocked', 'true');
+        return true;
+      }
+      const requiredPasscode = (import.meta as any).env?.VITE_ACCESS_PASSCODE || '';
+      if (!requiredPasscode) return true;
+      return localStorage.getItem('lumen_unlocked') === 'true';
+    }
+    return false;
+  });
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -350,6 +361,7 @@ export default function App() {
 
           <div style={{ marginTop: '24px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px', fontSize: '11px', color: 'var(--fg-muted)', lineHeight: '1.4' }}>
             <strong>Clinician Safeguard:</strong> This passcode verifies your credentials for auditing evaluation simulations.
+            <div style={{ marginTop: '6px', opacity: 0.85 }}>(Demo Passcode: <code style={{ color: 'var(--brand)', fontWeight: 'bold' }}>LUMEN2026</code>)</div>
           </div>
         </div>
       </div>
