@@ -19,7 +19,7 @@ export const FDARegulatoryReport: React.FC<FDARegulatoryReportProps> = ({
   verdict
 }) => {
   const [intendedUse, setIntendedUse] = useState<string>(
-    `Lumen Odysseus Clinical AI is intended for pre-authorization verification of prior auth codes, clinical diagnostic staging, and LOINC/CPT mapping, helping clinicians verify EMR compliance prior to insurer submission.`
+    `Lumen Clinical AI is intended for pre-authorization verification of prior auth codes, clinical diagnostic staging, and LOINC/CPT mapping, helping clinicians verify EMR compliance prior to insurer submission.`
   );
   
   const [pccp, setPccp] = useState<string>(
@@ -34,8 +34,8 @@ Generated: ${new Date().toLocaleString()}
 ================================================================================
 
 1. ALGORITHM & DEVICE IDENTIFICATION
-Device Name:       Lumen Odysseus Workstation
-Software Version:  v2.5-Odysseus-Build-2026
+Device Name:       Lumen Clinical Workstation
+Software Version:  v2.5-Build-2026
 SaMD Category:     Clinical Decision Support System (CDSS)
 Intended Patient:  ${patient.name} (Age: ${patient.age}, Gender: ${patient.gender})
 Insurer/Payer:     ${patient.insuranceProvider}

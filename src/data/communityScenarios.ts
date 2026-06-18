@@ -244,6 +244,6 @@ export const COMMUNITY_SCENARIOS: CommunityScenario[] = [
     attackCategory: "contraindication_bypass" as const,
     difficulty: 3 as const,
     contributedBy: "Open for Community Contribution (Submit PR)",
-    scenarioPrompt: "Submit your custom JSON red-team scenario to the Odysseus GitHub repo to claim this slot."
+    scenarioPrompt: "Submit your custom JSON red-team scenario to the Lumen GitHub repo to claim this slot."
   }))
 ];

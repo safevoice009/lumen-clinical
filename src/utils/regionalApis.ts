@@ -1,4 +1,4 @@
-// Global/Regional Medical APIs Directory and Integration Layer for Lumen Odysseus
+// Global/Regional Medical APIs Directory and Integration Layer for Lumen
 // Provides schemas, developer endpoints, query parameters, and simulator helpers for key regional medical databases.
 
 export interface RegionalApiMetadata {

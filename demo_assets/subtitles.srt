@@ -1,40 +1,40 @@
 1
-00:00:00,000 --> 00:00:07,152
-Welcome to Lumen Odysseus, the first multi-agent clinical AI safety certification workstation.
+00:00:00,000 --> 00:00:06,288
+Welcome to Lumen, the first multi-agent clinical AI safety certification workstation.
 
 2
-00:00:07,152 --> 00:00:11,312
+00:00:06,288 --> 00:00:10,448
 I am Dr. Baddam Sucharith Reddy
 
 3
-00:00:11,312 --> 00:00:23,768
-Today, we are safety auditing clinical agentic workflows before they touch real patients in hospital environments. Let's explore how Lumen provides pre-deployment stress testing and safety gates.
+00:00:10,448 --> 00:00:38,888
+As a clinician, I developed Lumen using AI-assisted development through the Antigravity IDE. Today, we are safety auditing clinical agentic workflows before they touch real patients. Lumen fulfills the hackathon's multi-agent eligibility criteria using the Band SDK to coordinate three active agents: the Doctor Agent, the Patient Agent, and the Adversarial Red-Team Simulator, validating safety in the healthcare domain.
 
 4
-00:00:23,768 --> 00:00:48,584
-Let's begin in the Clinical Workspace. We select the Appendicitis consultation scenario for Sarah Jenkins, where the AI must recognize localized peritoneal signs and order diagnostic imaging. We step forward to trigger the Doctor Agent, which initiates a structured consultation dialogue, asking critical clinical questions and documenting the patient intake under safety protocols.
+00:00:38,888 --> 00:01:02,480
+Let's begin in the Clinical Workspace. We select the Appendicitis consultation scenario for Sarah Jenkins, where the AI must recognize localized peritoneal signs and order diagnostic imaging. The Doctor Agent initiates a structured consultation dialogue, asking critical clinical questions and documenting the patient intake under strict safety protocols.
 
 5
-00:00:48,584 --> 00:01:10,448
-Next, we navigate to the Multimodal Board. Clinicians can upload and review visual medical findings. We select an E.C.G. strip showing an acute anterior S.T.E.M.I., click the S.T.-elevation coordinates to flag them, and document our clinician notes. We then attach this visual finding to the active E.H.R. case sheet.
+00:01:02,480 --> 00:01:21,439
+Next, we navigate to the Multimodal Board. Clinicians can upload visual medical findings like this E.C.G. scan. We select the S.T.-elevation coordinates to flag the pathology, document our clinician findings, and attach it to the E.H.R. case sheet for complete diagnostic context.
 
 6
-00:01:10,448 --> 00:01:32,936
-We now attach this visual finding and trigger Step 2. Behind the scenes, the Adversarial Red-Team Simulator runs a patient strategy to try and bypass clinical guidelines. Our safety auditor monitors the agent-to-agent communication via the Band network, detects emergency violations, and flags them in the telemetry console in real time.
+00:01:21,439 --> 00:01:41,647
+We now trigger Step 2. Behind the scenes, the Adversarial Red-Team Simulator runs a patient strategy to try and bypass clinical guidelines. Our safety auditor monitors the agent-to-agent communication via the Band network, detects emergency violations, and flags them in the telemetry console in real time.
 
 7
-00:01:32,936 --> 00:01:52,016
-We also integrate advanced clinician tools. We can run a Drift Test to evaluate clinical L.L.M. reasoning drift across medical knowledge bases. This lets us verify prior authorization compliance and ensure standard guidelines like L.O.I.N.C. and RxNorm codes are mapped correctly.
+00:01:41,647 --> 00:02:00,415
+We also integrate advanced clinician tools. We run a Drift Test to evaluate clinical L.L.M. reasoning drift across medical knowledge bases. This lets us verify prior authorization compliance and ensure standard guidelines like L.O.I.N.C. and RxNorm codes are mapped correctly.
 
 8
-00:01:52,016 --> 00:02:11,575
+00:02:00,415 --> 00:02:19,951
 Lumen features a comprehensive Safety Leaderboard and Benchmark Mode. Here, hospitals can compare safety audit scores across local and cloud L.L.M.s, including BioMistral, clinical fine-tunes, and Gemini, ensuring only safety-certified models are routed to production environments.
 
 9
-00:02:11,575 --> 00:02:30,751
-Finally, we return to the Clinical Workspace to compile our safety audit. Every simulation failure compiles into a standards-compliant F.H.I.R. R 4 audit bundle containing full interoperability logs. We validate this bundle against the H.I.P.I. F.H.I.R. server.
+00:02:19,951 --> 00:02:38,864
+Finally, we return to the Clinical Workspace to compile our safety audit. Every simulation failure compiles into a standards-compliant F.H.I.R. R 4 audit bundle containing full interoperability logs. We validate this bundle against the H.A.P.I. F.H.I.R. server.
 
 10
-00:02:30,751 --> 00:02:42,967
-Lumen Odysseus provides the pre-deployment safety gate clinical A.I. deserves, protecting patient lives from model errors. Open source, clinician-led, and powered by Band. Thank you for watching.
+00:02:38,864 --> 00:02:56,816
+Lumen provides the pre-deployment safety gate clinical A.I. deserves, protecting patient lives from model errors. We credit the open-source community, including the Band SDK, H.A.P.I. FHIR, medSpacy, PyHealth, and OMOP. Thank you for watching.
 

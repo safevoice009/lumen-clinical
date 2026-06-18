@@ -27,22 +27,22 @@ export const ClinicalHandbook: React.FC = () => {
   const sections: HandbookSection[] = [
     {
       id: 'architecture',
-      title: 'System Architecture & Odysseus Flow',
+      title: 'System Architecture & Clinical Flow',
       category: 'core',
       icon: <Cpu size={15} />,
-      tags: ['architecture', 'odysseus', 'agentic loop', 'local inference', 'privacy'],
+      tags: ['architecture', 'clinical', 'agentic loop', 'local inference', 'privacy'],
       content: (
         <div className="handbook-content-pane">
           <div className="section-header-badge">Core Engine</div>
-          <h2>System Architecture &amp; Odysseus Flow</h2>
+          <h2>System Architecture &amp; Clinical Flow</h2>
           <p className="lead-text">
-            Lumen Odysseus is designed as a local-first, privacy-preserving clinical decision-support and safety-auditing sandbox. Inspired by the agentic architecture of the open-source *Odysseus* project, Lumen runs multi-agent clinical simulations locally within the clinic or hospital firewall.
+            Lumen is designed as a local-first, privacy-preserving clinical decision-support and safety-auditing sandbox. Inspired by modern agentic architectures, Lumen runs multi-agent clinical simulations locally within the clinic or hospital firewall.
           </p>
 
           <div className="handbook-info-card">
             <h4>🔒 Zero-PHI Privacy Standard</h4>
             <p>
-              Unlike traditional cloud-based health AI APIs, Lumen Odysseus never uploads raw Protected Health Information (PHI). If an external API is configured, records are automatically anonymized, HIPAA-scrubbed, and client-side encrypted before transfer.
+              Unlike traditional cloud-based health AI APIs, Lumen never uploads raw Protected Health Information (PHI). If an external API is configured, records are automatically anonymized, HIPAA-scrubbed, and client-side encrypted before transfer.
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export const ClinicalHandbook: React.FC = () => {
           </div>
 
           <div className="handbook-diagram-box">
-            <div className="diagram-title">Lumen Odysseus Agent Interaction Topology</div>
+            <div className="diagram-title">Lumen Agent Interaction Topology</div>
             <pre className="ascii-diagram">
 {`+-----------------------+              +-------------------------+
 |     Patient Agent     | <=========>  |       Doctor Agent      |
@@ -235,7 +235,7 @@ export const ClinicalHandbook: React.FC = () => {
           <div className="section-header-badge">Interoperability</div>
           <h2>Coded Interoperability Standards</h2>
           <p className="lead-text">
-            Lumen Odysseus maps unstructured dialogue and outputs into industry-standard medical ontologies. This ensures compatibility with electronic health records (EHRs) worldwide.
+            Lumen maps unstructured dialogue and outputs into industry-standard medical ontologies. This ensures compatibility with electronic health records (EHRs) worldwide.
           </p>
 
           <div className="vocab-grid">
@@ -368,19 +368,19 @@ export const ClinicalHandbook: React.FC = () => {
       title: 'Open Source Integration Guide',
       category: 'global',
       icon: <Terminal size={15} />,
-      tags: ['open-source', 'odysseus', 'omop', 'pyhealth', 'medspacy', 'ollama', 'docker', 'hapi fhir'],
+      tags: ['open-source', 'omop', 'pyhealth', 'medspacy', 'ollama', 'docker', 'hapi fhir'],
       content: (
         <div className="handbook-content-pane">
           <div className="section-header-badge">Integrations</div>
           <h2>Open Source Integration Guide</h2>
           <p className="lead-text">
-            Lumen Odysseus leverages industry-leading open-source healthcare tools and clinical AI projects to ensure standardized testing. Below is the setup guide for clinical research labs.
+            Lumen leverages industry-leading open-source healthcare tools and clinical AI projects to ensure standardized testing. Below is the setup guide for clinical research labs.
           </p>
 
           <div className="os-links-grid">
-            <a href="https://github.com/pewdiepie-archdaemon/odysseus" target="_blank" rel="noopener noreferrer" className="os-link-card">
-              <h5>Odysseus AI Repository <ExternalLink size={11} /></h5>
-              <p>The original local-first agent design framework, providing base configurations for terminal routing and model consensus.</p>
+            <a href="https://github.com/safevoice009/lumen-clinical" target="_blank" rel="noopener noreferrer" className="os-link-card">
+              <h5>Lumen GitHub Repository <ExternalLink size={11} /></h5>
+              <p>The local-first agent safety evaluation workspace code repository, built for safety benchmarks and simulations.</p>
             </a>
             <a href="https://ohdsi.org/data-standardization/" target="_blank" rel="noopener noreferrer" className="os-link-card">
               <h5>OMOP Common Data Model <ExternalLink size={11} /></h5>
@@ -612,7 +612,7 @@ const FHIR_BUNDLE_SAMPLE = `{
         ],
         "source": {
           "observer": {
-            "display": "Lumen Odysseus Server Node"
+            "display": "Lumen Server Node"
           }
         },
         "entity": [
