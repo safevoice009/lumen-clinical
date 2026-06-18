@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Lumen Clinical Pitch Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #070b13;
+      color: #e2e8f0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .slide-deck {
+      display: flex;
+      flex-direction: column;
+    }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 90px 120px;
+      page-break-after: always;
+      background: radial-gradient(circle at 80% 20%, #0c1527 0%, #070b13 70%);
+      border-bottom: 2px solid #1e293b;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #070b13;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+    }
+    .logo-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: -1px;
+      color: #ffffff;
+    }
+    .slide-num {
+      font-family: 'JetBrains Mono', monospace;
+      color: #475569;
+      font-size: 22px;
+    }
+    .content-body {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 10;
+      margin-top: -20px;
+    }
+    h1 {
+      font-size: 76px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -2px;
+    }
+    h1 span {
+      background: linear-gradient(to right, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    h2 {
+      font-size: 52px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 30px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+    h2 span {
+      background: linear-gradient(to right, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      font-size: 30px;
+      color: #94a3b8;
+      line-height: 1.5;
+      max-width: 1200px;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      color: #475569;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      z-index: 10;
+      border-top: 1px solid rgba(148, 163, 184, 0.05);
+      padding-top: 24px;
+    }
+    .footer-left { display: flex; gap: 45px; }
+    .accent-dot { color: #00f2fe; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      border-radius: 16px;
+      padding: 45px;
+      position: relative;
+      box-shadow: 0 10px 30px -15px rgba(0,0,0,0.7);
+    }
+    .card h3 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .card h3::before {
+      content: "";
+      width: 6px;
+      height: 28px;
+      background: linear-gradient(to bottom, #00f2fe, #4facfe);
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .card p {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .card-accent {
+      border-color: rgba(0, 242, 254, 0.25);
+      background: rgba(0, 242, 254, 0.015);
+    }
+    .bullet-list {
+      list-style: none;
+    }
+    .bullet-list li {
+      font-size: 26px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      position: relative;
+      padding-left: 45px;
+      color: #cbd5e1;
+    }
+    .bullet-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #00f2fe;
+      font-weight: bold;
+    }
+    .badge {
+      display: inline-block;
+      padding: 8px 18px;
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      color: #00f2fe;
+      border-radius: 9999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .diagram-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: relative;
+      height: 450px;
+    }
+    .node {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: #0b1329;
+      border: 2px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-align: center;
+      padding: 15px;
+      z-index: 5;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
+    }
+    .node.active {
+      border-color: #00f2fe;
+      box-shadow: 0 0 35px rgba(0, 242, 254, 0.25);
+      color: #ffffff;
+      background: #0f1e3d;
+    }
+    .node-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    .node-label {
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .connection-line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, #1e293b, #00f2fe, #1e293b);
+      z-index: 1;
+      width: 80%;
+      top: 50%;
+    }
+    .table-container {
+      background: rgba(30, 41, 59, 0.2);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      border-radius: 16px;
+      padding: 10px;
+    }
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 20px;
+    }
+    .metrics-table th {
+      text-align: left;
+      padding: 24px;
+      border-bottom: 2px solid #1e293b;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .metrics-table td {
+      padding: 24px;
+      border-bottom: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    .metrics-table tr:last-child td {
+      border-bottom: none;
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      color: #94a3b8;
+    }
+    .logo-badge-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #070b13;
+      font-size: 14px;
+    }
+    
+    @media print {
+      body {
+        background-color: #070b13 !important;
+      }
+      .slide {
+        page-break-after: always;
+        border: none;
+        box-shadow: none;
+        width: 1920px;
+        height: 1080px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-deck">
+    
+    <!-- Slide 1: Cover -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">01/07</div>
+      </div>
+      <div class="content-body">
+        <div class="badge">pre-deployment safety workstation</div>
+        <h1>Stress-Testing <span>Clinical AI</span><br>Before it Reaches Patients</h1>
+        <p class="subtitle">An open-source adversarial red-teaming sandbox and safety certification framework designed by a clinician, for robust clinical LLM deployments.</p>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>lablab.ai Band of Agents Hackathon 2026</span>
+          <span class="accent-dot">•</span>
+          <span>DoraHacks Bio & Health Global Grants</span>
+        </div>
+        <div>Built with Antigravity IDE</div>
+      </div>
+    </div>
+
+    <!-- Slide 2: The Problem -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">02/07</div>
+      </div>
+      <div class="content-body">
+        <h2>The Pre-Deployment <span>Safety Gap</span></h2>
+        <div class="grid-2">
+          <ul class="bullet-list">
+            <li><strong>Static Benchmarks Fail</strong>: Standard medical QA datasets (MedQA) evaluate recall, not interactive safety behaviors or guideline compliance.</li>
+            <li><strong>High-Stakes Vulnerabilities</strong>: Medical LLMs are prone to adversarial manipulation—such as drug-seeking behaviors and contraindication bypasses.</li>
+            <li><strong>Lack of Regulatory Auditing</strong>: FDA's SaMD guidelines mandate performance documentation, but no automated testing infrastructure exists.</li>
+            <li><strong>Privacy Constraints</strong>: Clinicians cannot deploy clinical evaluation tools that leak protected health information (PHI) to third-party clouds.</li>
+          </ul>
+          <div class="card card-accent">
+            <h3>The Risk is Real</h3>
+            <p>A single AI dosing error or missed emergency indicator directly impacts patient lives. Clinical models must be certified under pressure before production deployment.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Pre-Deployment Safety</span>
+          <span class="accent-dot">•</span>
+          <span>Regulatory Compliance</span>
+        </div>
+        <div>02/07</div>
+      </div>
+    </div>
+
+    <!-- Slide 3: The Solution (Multi-Agent Sandbox) -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">03/07</div>
+      </div>
+      <div class="content-body">
+        <h2>Multi-Agent <span>Adversarial Sandbox</span></h2>
+        <p class="subtitle" style="margin-bottom: 40px;">Lumen establishes a non-linear simulation loop where specialized agents stress-test model behaviors.</p>
+        <div class="diagram-container">
+          <div class="connection-line"></div>
+          
+          <div class="node active">
+            <div class="node-icon">🔴</div>
+            <div class="node-label">Red-Team<br>Adversary AI</div>
+          </div>
+          
+          <div class="node">
+            <div class="node-icon">👤</div>
+            <div class="node-label">Patient<br>Simulator</div>
+          </div>
+          
+          <div class="node">
+            <div class="node-icon">🩺</div>
+            <div class="node-label">Doctor<br>Agent (Tested)</div>
+          </div>
+          
+          <div class="node active">
+            <div class="node-icon">🔍</div>
+            <div class="node-label">Safety<br>Auditor AI</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Coordinated via Band SDK</span>
+          <span class="accent-dot">•</span>
+          <span>Non-Linear Simulations</span>
+        </div>
+        <div>03/07</div>
+      </div>
+    </div>
+
+    <!-- Slide 4: How Band Coordinates -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">04/07</div>
+      </div>
+      <div class="content-body">
+        <h2>The <span>Band SDK</span> Coordination Bus</h2>
+        <div class="grid-2">
+          <ul class="bullet-list">
+            <li><strong>Structured Task Handoffs</strong>: Direct agent-to-agent task routing (Red-Team Adversary → Doctor AI → Patient AI → Safety Auditor).</li>
+            <li><strong>Shared Clinical Context</strong>: Shared session state (`BandSharedContext`) carries dialogue history, intercepted tool runs, and alert flags.</li>
+            <li><strong>Decoupled Model Architecture</strong>: Agents run on heterogeneous setups (cloud Gemini and local OpenVINO/Ollama medical models) communicating seamlessly.</li>
+            <li><strong>Robust Local Fallbacks</strong>: Real-time API logging with local fail-safes so auditing remains functional even in network-constrained EMR environments.</li>
+          </ul>
+          <div class="grid-3" style="grid-template-columns: 1fr; gap: 24px;">
+            <div class="card" style="padding: 24px;">
+              <div class="logo-badge">
+                <div class="logo-badge-icon" style="background: #00f2fe;">B</div>
+                <strong>Band SDK</strong> — Agent Communication Bus
+              </div>
+            </div>
+            <div class="card" style="padding: 24px;">
+              <div class="logo-badge">
+                <div class="logo-badge-icon" style="background: #ef4444; color: white;">A</div>
+                <strong>AI/ML API</strong> — Safety Auditor Inference
+              </div>
+            </div>
+            <div class="card" style="padding: 24px;">
+              <div class="logo-badge">
+                <div class="logo-badge-icon" style="background: #a78bfa; color: white;">F</div>
+                <strong>Featherless AI</strong> — Serverless BioMistral-7B
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Agent Orchestration</span>
+          <span class="accent-dot">•</span>
+          <span>Interoperable Infrastructure</span>
+        </div>
+        <div>04/07</div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Unique Evaluator Features -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">05/07</div>
+      </div>
+      <div class="content-body">
+        <h2>Unique <span>Safety Audit</span> Capabilities</h2>
+        <p class="subtitle" style="margin-bottom: 40px;">Lumen introduces advanced evaluation mechanics designed specifically for clinical validation.</p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>Disclaimer Burial</h3>
+            <p>Detects if the Doctor AI buries critical safety caveats after delivering actionable, high-risk medical recommendations.</p>
+          </div>
+          <div class="card">
+            <h3>Protocol Drift</h3>
+            <p>Runs identical case scenarios multiple times to calculate safety score variance. High standard deviation flags a model as clinically unsafe.</p>
+          </div>
+          <div class="card">
+            <h3>Standards Mapping</h3>
+            <p>Intercepts actions and compiles full HL7 FHIR R4 Transaction Bundles, validating them against public HAPI FHIR servers.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Disclaimer Analysis</span>
+          <span class="accent-dot">•</span>
+          <span>Drift Auditing</span>
+          <span class="accent-dot">•</span>
+          <span>FHIR R4 Validation</span>
+        </div>
+        <div>05/07</div>
+      </div>
+    </div>
+
+    <!-- Slide 6: System Performance & Open Source -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">06/07</div>
+      </div>
+      <div class="content-body">
+        <h2>Privacy-First <span>Local Acceleration</span></h2>
+        <div class="table-container">
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Gateway Type</th>
+                <th>Model Used</th>
+                <th>Avg. Latency</th>
+                <th>Throughput</th>
+                <th>Safety Certification Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Intel OpenVINO</strong></td>
+                <td>Qwen 2.5 (INT4 CPU)</td>
+                <td>180ms</td>
+                <td>22 tok/sec</td>
+                <td>Privacy-focused on-device Doctor Agent</td>
+              </tr>
+              <tr>
+                <td><strong>Featherless AI</strong></td>
+                <td>BioMistral 7B (Serverless)</td>
+                <td>450ms</td>
+                <td>45 tok/sec</td>
+                <td>Open-source clinical reasoning Doctor</td>
+              </tr>
+              <tr>
+                <td><strong>AI/ML API</strong></td>
+                <td>Gemini 2.0 Flash</td>
+                <td>320ms</td>
+                <td>50 tok/sec</td>
+                <td>Safety Auditor & Adversarial Adversary</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Intel OpenVINO CPU Presets</span>
+          <span class="accent-dot">•</span>
+          <span>Optimized Hardware Inference</span>
+        </div>
+        <div>06/07</div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Closing & Open-Source Credits -->
+    <div class="slide">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-icon">L</div>
+          <div class="logo-text">LUMEN CLINICAL</div>
+        </div>
+        <div class="slide-num">07/07</div>
+      </div>
+      <div class="content-body">
+        <div class="badge badge-green">ready for clinical integration</div>
+        <h2>A Pre-Deployment <span>Safety Gate</span> for Healthcare AI</h2>
+        <p class="subtitle" style="margin-bottom: 40px;">Deploying safe, robust, and standards-compliant medical models in clinical workflows.</p>
+        <div class="grid-2">
+          <div class="card card-accent">
+            <h3>Open-Source Foundations</h3>
+            <p>Lumen leverages and credits key medical open-source libraries: the <strong>Band SDK</strong>, <strong>HAPI FHIR</strong>, <strong>medSpacy</strong>, <strong>PyHealth</strong>, and the <strong>OMOP CDM</strong>.</p>
+          </div>
+          <div>
+            <ul class="bullet-list" style="margin-top: 10px;">
+              <li><strong>GitHub</strong>: github.com/safevoice009/lumen-clinical</li>
+              <li><strong>Live App</strong>: lumen-clinical.vercel.app</li>
+              <li><strong>Built with</strong>: Antigravity IDE</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-left">
+          <span>Dr. Sucharith Reddy</span>
+          <span class="accent-dot">•</span>
+          <span>Clinical Architect</span>
+        </div>
+        <div>07/07</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
