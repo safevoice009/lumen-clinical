@@ -34,7 +34,7 @@ playwright install chromium
 
 ## 🧱 Pipeline Architecture & Steps
 
-The pipeline is managed by [scratch/build_demo_video.py](file:///home/sucharithpop/Downloads/new%20hackathon project/scratch/build_demo_video.py). It operates in 5 consecutive phases:
+The pipeline is managed by [scratch/build_demo_video.py](scratch/build_demo_video.py). It operates in 5 consecutive phases:
 
 ```mermaid
 graph TD
@@ -85,7 +85,7 @@ When maintaining or updating the video scripts, adhere to the following rules:
 ### 1. Local Bypasses & Sandbox Mode
 To prevent slow model server inferences or missing API credentials from crashing the walkthrough:
 * **localStorage Flag**: The Playwright script sets `localStorage.setItem('lumen_use_demo_scripts', 'true')` after page navigation.
-* **Handoff Bypasses**: Bypasses exist inside `runSafetyAudit` in [agentCore.ts](file:///home/sucharithpop/Downloads/new%20hackathon%20project/src/utils/agentCore.ts#L1240-L1270) and all client handlers in [bandClient.ts](file:///home/sucharithpop/Downloads/new%20hackathon%20project/src/utils/bandClient.ts#L20-L115) to prevent requests to `api.band.ai` or online Gemini endpoints, executing everything instantly locally.
+* **Handoff Bypasses**: Bypasses exist inside `runSafetyAudit` in [agentCore.ts](src/utils/agentCore.ts#L1240-L1270) and all client handlers in [bandClient.ts](src/utils/bandClient.ts#L20-L115) to prevent requests to `api.band.ai` or online Gemini endpoints, executing everything instantly locally.
 
 ### 2. Multi-Lab Unblocking Loop
 Before executing a safety compilation step, loop to clear all pending tool runs (e.g. CPT imaging, LOINC blood count) so that compile buttons are active:
@@ -114,7 +114,7 @@ To run the pipeline and build a new demo video:
 1. Ensure Vite is running (`npm run dev`) and listening on `http://localhost:3000/`.
 2. Run the pipeline script:
    ```bash
-   /home/sucharithpop/Downloads/re/.venv/bin/python scratch/build_demo_video.py
+    python3 scratch/build_demo_video.py
    ```
 3. Watch the terminal logs to verify each walkthrough segment transition.
 4. Retrieve the output files from:
