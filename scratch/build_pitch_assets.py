@@ -10,12 +10,12 @@ SLIDES_HTML = """<!DOCTYPE html>
   <meta charset="utf-8">
   <title>Lumen Clinical Pitch Deck</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: #070b13;
-      color: #e2e8f0;
+      background-color: #131211;
+      color: #d8d2c9;
       font-family: 'Plus Jakarta Sans', sans-serif;
       overflow-x: hidden;
       -webkit-print-color-adjust: exact;
@@ -35,16 +35,16 @@ SLIDES_HTML = """<!DOCTYPE html>
       justify-content: space-between;
       padding: 90px 120px;
       page-break-after: always;
-      background: radial-gradient(circle at 80% 20%, #0c1527 0%, #070b13 70%);
-      border-bottom: 2px solid #1e293b;
+      background: radial-gradient(circle at 90% 10%, #1e1d1b 0%, #131211 75%);
+      border-bottom: 2px solid #201f1c;
     }
     .slide::before {
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-image: linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
+      background-image: linear-gradient(rgba(216, 210, 201, 0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(216, 210, 201, 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
       pointer-events: none;
       z-index: 1;
     }
@@ -62,26 +62,27 @@ SLIDES_HTML = """<!DOCTYPE html>
     .logo-icon {
       width: 44px;
       height: 44px;
-      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      background: #f26f3a;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      color: #070b13;
+      color: #131211;
       font-family: 'JetBrains Mono', monospace;
       font-size: 24px;
+      box-shadow: 0 0 15px rgba(242, 111, 58, 0.2);
     }
     .logo-text {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
       font-size: 26px;
       letter-spacing: -1px;
-      color: #ffffff;
+      color: #FAF9F5;
     }
     .slide-num {
       font-family: 'JetBrains Mono', monospace;
-      color: #475569;
+      color: #6b665c;
       font-size: 22px;
     }
     .content-body {
@@ -95,47 +96,44 @@ SLIDES_HTML = """<!DOCTYPE html>
     h1 {
       font-size: 76px;
       font-weight: 800;
-      color: #ffffff;
-      line-height: 1.1;
+      color: #FAF9F5;
+      line-height: 1.15;
       margin-bottom: 24px;
       letter-spacing: -2px;
     }
     h1 span {
-      background: linear-gradient(to right, #00f2fe, #4facfe);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #f26f3a;
     }
     h2 {
       font-size: 52px;
       font-weight: 700;
-      color: #ffffff;
+      color: #FAF9F5;
       margin-bottom: 30px;
       letter-spacing: -1px;
       line-height: 1.2;
     }
     h2 span {
-      background: linear-gradient(to right, #00f2fe, #4facfe);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #f26f3a;
     }
     p.subtitle {
       font-size: 30px;
-      color: #94a3b8;
+      color: #938d83;
       line-height: 1.5;
       max-width: 1200px;
     }
     .footer {
       display: flex;
-      justify-content: space-between;
-      color: #475569;
+      justify-space: space-between;
+      color: #6b665c;
       font-family: 'JetBrains Mono', monospace;
       font-size: 18px;
       z-index: 10;
-      border-top: 1px solid rgba(148, 163, 184, 0.05);
+      border-top: 1px solid rgba(250, 249, 245, 0.05);
       padding-top: 24px;
+      justify-content: space-between;
     }
     .footer-left { display: flex; gap: 45px; }
-    .accent-dot { color: #00f2fe; }
+    .accent-dot { color: #f26f3a; }
 
     .grid-2 {
       display: grid;
@@ -149,17 +147,17 @@ SLIDES_HTML = """<!DOCTYPE html>
       gap: 40px;
     }
     .card {
-      background: rgba(30, 41, 59, 0.25);
-      border: 1px solid rgba(148, 163, 184, 0.08);
+      background: #201f1c;
+      border: 1px solid rgba(250, 249, 245, 0.06);
       border-radius: 16px;
       padding: 45px;
       position: relative;
-      box-shadow: 0 10px 30px -15px rgba(0,0,0,0.7);
+      box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
     }
     .card h3 {
       font-size: 28px;
       font-weight: 700;
-      color: #ffffff;
+      color: #FAF9F5;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -169,18 +167,18 @@ SLIDES_HTML = """<!DOCTYPE html>
       content: "";
       width: 6px;
       height: 28px;
-      background: linear-gradient(to bottom, #00f2fe, #4facfe);
+      background: #f26f3a;
       border-radius: 4px;
       display: inline-block;
     }
     .card p {
       font-size: 20px;
-      color: #94a3b8;
+      color: #d8d2c9;
       line-height: 1.6;
     }
     .card-accent {
-      border-color: rgba(0, 242, 254, 0.25);
-      background: rgba(0, 242, 254, 0.015);
+      border-color: rgba(242, 111, 58, 0.25);
+      background: rgba(242, 111, 58, 0.015);
     }
     .bullet-list {
       list-style: none;
@@ -197,15 +195,15 @@ SLIDES_HTML = """<!DOCTYPE html>
       content: "→";
       position: absolute;
       left: 0;
-      color: #00f2fe;
+      color: #f26f3a;
       font-weight: bold;
     }
     .badge {
       display: inline-block;
       padding: 8px 18px;
-      background: rgba(0, 242, 254, 0.08);
-      border: 1px solid rgba(0, 242, 254, 0.25);
-      color: #00f2fe;
+      background: rgba(242, 111, 58, 0.08);
+      border: 1px solid rgba(242, 111, 58, 0.25);
+      color: #fcd3c1;
       border-radius: 9999px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 16px;
@@ -213,6 +211,16 @@ SLIDES_HTML = """<!DOCTYPE html>
       margin-bottom: 24px;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+    .badge-red {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #fbbf24;
+    }
+    .badge-green {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.25);
+      color: #34d399;
     }
     
     .diagram-container {
@@ -223,49 +231,49 @@ SLIDES_HTML = """<!DOCTYPE html>
       height: 450px;
     }
     .node {
-      width: 180px;
-      height: 180px;
+      width: 190px;
+      height: 190px;
       border-radius: 50%;
-      background: #0b1329;
-      border: 2px solid #1e293b;
+      background: #1a1917;
+      border: 2px solid #201f1c;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 16px;
       font-weight: 700;
-      color: #94a3b8;
+      color: #938d83;
       text-align: center;
       padding: 15px;
       z-index: 5;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
       transition: all 0.3s ease;
     }
     .node.active {
-      border-color: #00f2fe;
-      box-shadow: 0 0 35px rgba(0, 242, 254, 0.25);
-      color: #ffffff;
-      background: #0f1e3d;
+      border-color: #f26f3a;
+      box-shadow: 0 0 35px rgba(242, 111, 58, 0.15);
+      color: #FAF9F5;
+      background: #2a2824;
     }
     .node-icon {
-      font-size: 40px;
+      font-size: 44px;
       margin-bottom: 12px;
     }
     .node-label {
-      font-size: 18px;
-      line-height: 1.2;
+      font-size: 19px;
+      line-height: 1.25;
     }
     .connection-line {
       position: absolute;
       height: 2px;
-      background: linear-gradient(90deg, #1e293b, #00f2fe, #1e293b);
+      background: linear-gradient(90deg, #201f1c, #f26f3a, #201f1c);
       z-index: 1;
       width: 80%;
       top: 50%;
     }
     .table-container {
-      background: rgba(30, 41, 59, 0.2);
-      border: 1px solid rgba(148, 163, 184, 0.08);
+      background: #1a1917;
+      border: 1px solid rgba(250, 249, 245, 0.06);
       border-radius: 16px;
       padding: 10px;
     }
@@ -277,15 +285,15 @@ SLIDES_HTML = """<!DOCTYPE html>
     .metrics-table th {
       text-align: left;
       padding: 24px;
-      border-bottom: 2px solid #1e293b;
-      color: #64748b;
+      border-bottom: 2px solid #201f1c;
+      color: #938d83;
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
     }
     .metrics-table td {
       padding: 24px;
-      border-bottom: 1px solid #1e293b;
-      color: #cbd5e1;
+      border-bottom: 1px solid #201f1c;
+      color: #d8d2c9;
     }
     .metrics-table tr:last-child td {
       border-bottom: none;
@@ -293,26 +301,26 @@ SLIDES_HTML = """<!DOCTYPE html>
     .logo-badge {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 16px;
-      color: #94a3b8;
+      font-size: 17px;
+      color: #d8d2c9;
     }
     .logo-badge-icon {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      color: #070b13;
-      font-size: 14px;
+      color: #131211;
+      font-size: 15px;
     }
     
     @media print {
       body {
-        background-color: #070b13 !important;
+        background-color: #131211 !important;
       }
       .slide {
         page-break-after: always;
@@ -339,7 +347,7 @@ SLIDES_HTML = """<!DOCTYPE html>
       <div class="content-body">
         <div class="badge">pre-deployment safety workstation</div>
         <h1>Stress-Testing <span>Clinical AI</span><br>Before it Reaches Patients</h1>
-        <p class="subtitle">An open-source adversarial red-teaming sandbox and safety certification framework designed by a clinician, for robust clinical LLM deployments.</p>
+        <p class="subtitle">An open-source adversarial red-teaming sandbox and safety certification framework designed by a clinician for robust, privacy-first hospital deployments.</p>
       </div>
       <div class="footer">
         <div class="footer-left">
@@ -364,7 +372,7 @@ SLIDES_HTML = """<!DOCTYPE html>
         <h2>The Pre-Deployment <span>Safety Gap</span></h2>
         <div class="grid-2">
           <ul class="bullet-list">
-            <li><strong>Static Benchmarks Fail</strong>: Standard medical QA datasets (MedQA) evaluate recall, not interactive safety behaviors or guideline compliance.</li>
+            <li><strong>Static Benchmarks Fail</strong>: Standard medical QA datasets evaluate memory recall, not dynamic safety behavior or clinical compliance.</li>
             <li><strong>High-Stakes Vulnerabilities</strong>: Medical LLMs are prone to adversarial manipulation—such as drug-seeking behaviors and contraindication bypasses.</li>
             <li><strong>Lack of Regulatory Auditing</strong>: FDA's SaMD guidelines mandate performance documentation, but no automated testing infrastructure exists.</li>
             <li><strong>Privacy Constraints</strong>: Clinicians cannot deploy clinical evaluation tools that leak protected health information (PHI) to third-party clouds.</li>
@@ -401,7 +409,7 @@ SLIDES_HTML = """<!DOCTYPE html>
           <div class="connection-line"></div>
           
           <div class="node active">
-            <div class="node-icon">🔴</div>
+            <div class="node-icon">👿</div>
             <div class="node-label">Red-Team<br>Adversary AI</div>
           </div>
           
@@ -416,7 +424,7 @@ SLIDES_HTML = """<!DOCTYPE html>
           </div>
           
           <div class="node active">
-            <div class="node-icon">🔍</div>
+            <div class="node-icon">🛡️</div>
             <div class="node-label">Safety<br>Auditor AI</div>
           </div>
         </div>
@@ -452,19 +460,19 @@ SLIDES_HTML = """<!DOCTYPE html>
           <div class="grid-3" style="grid-template-columns: 1fr; gap: 24px;">
             <div class="card" style="padding: 24px;">
               <div class="logo-badge">
-                <div class="logo-badge-icon" style="background: #00f2fe;">B</div>
+                <div class="logo-badge-icon" style="background: #f26f3a;">B</div>
                 <strong>Band SDK</strong> — Agent Communication Bus
               </div>
             </div>
             <div class="card" style="padding: 24px;">
               <div class="logo-badge">
-                <div class="logo-badge-icon" style="background: #ef4444; color: white;">A</div>
+                <div class="logo-badge-icon" style="background: #f26f3a;">A</div>
                 <strong>AI/ML API</strong> — Safety Auditor Inference
               </div>
             </div>
             <div class="card" style="padding: 24px;">
               <div class="logo-badge">
-                <div class="logo-badge-icon" style="background: #a78bfa; color: white;">F</div>
+                <div class="logo-badge-icon" style="background: #f26f3a;">F</div>
                 <strong>Featherless AI</strong> — Serverless BioMistral-7B
               </div>
             </div>
@@ -653,22 +661,31 @@ async def main():
         )
         print(f"Successfully generated Pitch Deck PDF at: {pdf_path} (Size: {os.path.getsize(pdf_path)} bytes)")
         
-        # 2. Capture Cover Image from Live App
-        print("\nNavigating to live production site to capture Cover Image...")
+        # 2. Capture Cover Image from Live App (Entering Passcode)
+        print("\nNavigating to live production site to capture unlocked Cover Image...")
         live_page = await browser.new_page()
-        # Set standard 16:9 cover image resolution (1200x675 or 1200x630)
-        await page.set_viewport_size({"width": 1200, "height": 630})
+        await live_page.set_viewport_size({"width": 1200, "height": 630})
         
         try:
-            await page.goto("https://lumen-clinical.vercel.app/")
-            print("Waiting for page animations to settle...")
-            await page.wait_for_timeout(5000) # Let clinical charts and UI fade-ins load
+            await live_page.goto("https://lumen-clinical.vercel.app/")
+            
+            # Locate the passcode input and fill it
+            print("Entering access passcode...")
+            await live_page.wait_for_selector('input[placeholder="Enter Access Passcode..."]', timeout=5000)
+            await live_page.fill('input[placeholder="Enter Access Passcode..."]', "LUMEN2026")
+            
+            # Click the Unlock button
+            print("Unlocking workstation...")
+            await live_page.click('button:has-text("Unlock Workstation")')
+            
+            # Wait for dashboard to load
+            await live_page.wait_for_timeout(4000) # Give it time for fade-in animations and mock charts
             
             cover_path = "demo_assets/cover_image.png"
-            await page.screenshot(path=cover_path)
-            print(f"Successfully captured Cover Image at: {cover_path} (Size: {os.path.getsize(cover_path)} bytes)")
+            await live_page.screenshot(path=cover_path)
+            print(f"Successfully captured unlocked Cover Image at: {cover_path} (Size: {os.path.getsize(cover_path)} bytes)")
         except Exception as e:
-            print(f"Failed to capture live website screenshot: {e}. Falling back to default cover image...")
+            print(f"Failed to capture live website screenshot: {e}. Falling back to locally simulated dashboard...")
             # Fallback cover screenshot of the local HTML slide 1
             await page.goto(f"file://{abs_html_path}")
             await page.wait_for_timeout(2000)
