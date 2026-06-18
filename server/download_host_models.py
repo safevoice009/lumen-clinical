@@ -22,7 +22,7 @@ MODEL_MAPPING = {
     }
 }
 
-OPENVINO_MODELS_DIR = "/home/sucharithpop/intel-ai-playground/models/LLM/openvino"
+OPENVINO_MODELS_DIR = os.environ.get("OPENVINO_MODELS_DIR", os.path.expanduser("~/intel-ai-playground/models/LLM/openvino"))
 
 def download_model(model_key, token=None):
     if model_key not in MODEL_MAPPING:
@@ -65,7 +65,9 @@ def download_model(model_key, token=None):
             os.makedirs(OPENVINO_MODELS_DIR, exist_ok=True)
             
             # Use the virtual environment's optimum-cli tool
-            venv_optimum_cli = "/home/sucharithpop/Downloads/re/.venv/bin/optimum-cli"
+            venv_optimum_cli = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".venv", "bin", "optimum-cli"))
+            if not os.path.exists(venv_optimum_cli):
+                venv_optimum_cli = "optimum-cli"
             
             cmd = [
                 venv_optimum_cli,

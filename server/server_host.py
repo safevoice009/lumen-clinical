@@ -34,8 +34,8 @@ DOWNLOADS = {}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
-OPENVINO_MODELS_DIR = "/home/sucharithpop/intel-ai-playground/models/LLM/openvino"
-EXTERNAL_MODELS_DIR = "/media/sucharithpop/01DCEAE1E7161EC0/dev/tresd/pop_os"
+OPENVINO_MODELS_DIR = os.environ.get("OPENVINO_MODELS_DIR", os.path.expanduser("~/intel-ai-playground/models/LLM/openvino"))
+EXTERNAL_MODELS_DIR = os.environ.get("EXTERNAL_MODELS_DIR", "")
 
 def get_model_configs() -> Dict[str, Dict[str, str]]:
     configs = {}
@@ -43,7 +43,7 @@ def get_model_configs() -> Dict[str, Dict[str, str]]:
     # Core default fallback
     configs["qwen"] = {
         "name": "Qwen 3 4B",
-        "path": "/home/sucharithpop/intel-ai-playground/models/LLM/openvino/OpenVINO---Qwen3-4B-int4-ov"
+        "path": os.path.join(OPENVINO_MODELS_DIR, "OpenVINO---Qwen3-4B-int4-ov")
     }
     
     dirs_to_scan = [OPENVINO_MODELS_DIR, EXTERNAL_MODELS_DIR, MODELS_DIR]

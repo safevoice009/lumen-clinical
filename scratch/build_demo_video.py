@@ -3,6 +3,7 @@ import os
 import subprocess
 import json
 import time
+import sys
 from playwright.async_api import async_playwright
 
 # Define voiceover text segments
@@ -323,7 +324,7 @@ async def main():
     print("Starting OpenVINO local model server...")
     openvino_log = open("openvino_server.log", "w")
     openvino_proc = subprocess.Popen([
-        "/home/sucharithpop/Downloads/re/.venv/bin/python",
+        sys.executable,
         "server/server_host.py"
     ], stdout=openvino_log, stderr=openvino_log)
     
@@ -338,7 +339,7 @@ async def main():
             await generate_speech(text, path)
             audio_paths[key] = path
             
-        user_voice_path = "/home/sucharithpop/Downloads/new hackathon project/name.m4a"
+        user_voice_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "name.m4a"))
         if not os.path.exists(user_voice_path):
             raise FileNotFoundError(f"User voice file not found at: {user_voice_path}")
             

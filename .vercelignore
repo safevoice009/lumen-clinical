@@ -1,0 +1,15 @@
+# Heavy directories to ignore during Vercel deploy uploads
+node_modules
+.venv
+models
+dist
+recordings
+.git
+.vercel
+audio
+demo_assets
+*.mp4
+*.m4a
+*.log
+*.pyc
+__pycache__

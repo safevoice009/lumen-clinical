@@ -9,7 +9,11 @@ pkill -f "server_host.py" 2>/dev/null || true
 
 # Start the OpenVINO FastAPI server in the background using the host's virtual environment
 echo "Starting OpenVINO Host Model Server on http://127.0.0.1:8000..."
-/home/sucharithpop/Downloads/re/.venv/bin/python3 server/server_host.py > openvino_server.log 2>&1 &
+VENV_PYTHON="./.venv/bin/python3"
+if [ ! -f "$VENV_PYTHON" ]; then
+    VENV_PYTHON="python3"
+fi
+$VENV_PYTHON server/server_host.py > openvino_server.log 2>&1 &
 OPENVINO_PID=$!
 
 # Wait for the OpenVINO server to start up
