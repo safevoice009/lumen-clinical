@@ -361,7 +361,6 @@ export default function App() {
 
           <div style={{ marginTop: '24px', borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px', fontSize: '11px', color: 'var(--fg-muted)', lineHeight: '1.4' }}>
             <strong>Clinician Safeguard:</strong> This passcode verifies your credentials for auditing evaluation simulations.
-            <div style={{ marginTop: '6px', opacity: 0.85 }}>(Demo Passcode: <code style={{ color: 'var(--brand)', fontWeight: 'bold' }}>LUMEN2026</code>)</div>
           </div>
         </div>
       </div>
