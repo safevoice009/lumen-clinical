@@ -14,8 +14,8 @@ SLIDES_HTML = """<!DOCTYPE html>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: #131211;
-      color: #d8d2c9;
+      background-color: #f5f4ef;
+      color: #4c4840;
       font-family: 'Plus Jakarta Sans', sans-serif;
       overflow-x: hidden;
       -webkit-print-color-adjust: exact;
@@ -35,15 +35,15 @@ SLIDES_HTML = """<!DOCTYPE html>
       justify-content: space-between;
       padding: 90px 120px;
       page-break-after: always;
-      background: radial-gradient(circle at 90% 10%, #1e1d1b 0%, #131211 75%);
-      border-bottom: 2px solid #201f1c;
+      background: radial-gradient(circle at 90% 10%, #FAF9F5 0%, #f5f4ef 75%);
+      border-bottom: 2px solid #edebe4;
     }
     .slide::before {
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-image: linear-gradient(rgba(216, 210, 201, 0.02) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(216, 210, 201, 0.02) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(38, 36, 33, 0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(38, 36, 33, 0.02) 1px, transparent 1px);
       background-size: 60px 60px;
       pointer-events: none;
       z-index: 1;
@@ -68,7 +68,7 @@ SLIDES_HTML = """<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      color: #131211;
+      color: #FAF9F5;
       font-family: 'JetBrains Mono', monospace;
       font-size: 24px;
       box-shadow: 0 0 15px rgba(242, 111, 58, 0.2);
@@ -78,11 +78,11 @@ SLIDES_HTML = """<!DOCTYPE html>
       font-weight: 700;
       font-size: 26px;
       letter-spacing: -1px;
-      color: #FAF9F5;
+      color: #262421;
     }
     .slide-num {
       font-family: 'JetBrains Mono', monospace;
-      color: #6b665c;
+      color: #8a8579;
       font-size: 22px;
     }
     .content-body {
@@ -96,7 +96,7 @@ SLIDES_HTML = """<!DOCTYPE html>
     h1 {
       font-size: 76px;
       font-weight: 800;
-      color: #FAF9F5;
+      color: #262421;
       line-height: 1.15;
       margin-bottom: 24px;
       letter-spacing: -2px;
@@ -107,7 +107,7 @@ SLIDES_HTML = """<!DOCTYPE html>
     h2 {
       font-size: 52px;
       font-weight: 700;
-      color: #FAF9F5;
+      color: #262421;
       margin-bottom: 30px;
       letter-spacing: -1px;
       line-height: 1.2;
@@ -117,20 +117,19 @@ SLIDES_HTML = """<!DOCTYPE html>
     }
     p.subtitle {
       font-size: 30px;
-      color: #938d83;
+      color: #6b665c;
       line-height: 1.5;
       max-width: 1200px;
     }
     .footer {
       display: flex;
-      justify-space: space-between;
-      color: #6b665c;
+      justify-content: space-between;
+      color: #8a8579;
       font-family: 'JetBrains Mono', monospace;
       font-size: 18px;
       z-index: 10;
-      border-top: 1px solid rgba(250, 249, 245, 0.05);
+      border-top: 1px solid rgba(38, 36, 33, 0.06);
       padding-top: 24px;
-      justify-content: space-between;
     }
     .footer-left { display: flex; gap: 45px; }
     .accent-dot { color: #f26f3a; }
@@ -147,17 +146,17 @@ SLIDES_HTML = """<!DOCTYPE html>
       gap: 40px;
     }
     .card {
-      background: #201f1c;
-      border: 1px solid rgba(250, 249, 245, 0.06);
+      background: #FAF9F5;
+      border: 1px solid rgba(38, 36, 33, 0.08);
       border-radius: 16px;
       padding: 45px;
       position: relative;
-      box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px -15px rgba(38, 36, 33, 0.1);
     }
     .card h3 {
       font-size: 28px;
       font-weight: 700;
-      color: #FAF9F5;
+      color: #262421;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -173,12 +172,12 @@ SLIDES_HTML = """<!DOCTYPE html>
     }
     .card p {
       font-size: 20px;
-      color: #d8d2c9;
+      color: #4c4840;
       line-height: 1.6;
     }
     .card-accent {
       border-color: rgba(242, 111, 58, 0.25);
-      background: rgba(242, 111, 58, 0.015);
+      background: rgba(242, 111, 58, 0.03);
     }
     .bullet-list {
       list-style: none;
@@ -189,7 +188,7 @@ SLIDES_HTML = """<!DOCTYPE html>
       margin-bottom: 24px;
       position: relative;
       padding-left: 45px;
-      color: #cbd5e1;
+      color: #4c4840;
     }
     .bullet-list li::before {
       content: "→";
@@ -201,9 +200,9 @@ SLIDES_HTML = """<!DOCTYPE html>
     .badge {
       display: inline-block;
       padding: 8px 18px;
-      background: rgba(242, 111, 58, 0.08);
-      border: 1px solid rgba(242, 111, 58, 0.25);
-      color: #fcd3c1;
+      background: rgba(242, 111, 58, 0.06);
+      border: 1px solid rgba(242, 111, 58, 0.3);
+      color: #d4531a;
       border-radius: 9999px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 16px;
@@ -213,14 +212,14 @@ SLIDES_HTML = """<!DOCTYPE html>
       letter-spacing: 1px;
     }
     .badge-red {
-      background: rgba(239, 68, 68, 0.08);
+      background: rgba(239, 68, 68, 0.06);
       border-color: rgba(239, 68, 68, 0.25);
-      color: #fbbf24;
+      color: #b91c1c;
     }
     .badge-green {
-      background: rgba(16, 185, 129, 0.08);
+      background: rgba(16, 185, 129, 0.06);
       border-color: rgba(16, 185, 129, 0.25);
-      color: #34d399;
+      color: #047857;
     }
     
     .diagram-container {
@@ -234,26 +233,26 @@ SLIDES_HTML = """<!DOCTYPE html>
       width: 190px;
       height: 190px;
       border-radius: 50%;
-      background: #1a1917;
-      border: 2px solid #201f1c;
+      background: #edebe4;
+      border: 2px solid rgba(38, 36, 33, 0.1);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 16px;
       font-weight: 700;
-      color: #938d83;
+      color: #6b665c;
       text-align: center;
       padding: 15px;
       z-index: 5;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 15px 35px rgba(38, 36, 33, 0.08);
       transition: all 0.3s ease;
     }
     .node.active {
       border-color: #f26f3a;
       box-shadow: 0 0 35px rgba(242, 111, 58, 0.15);
-      color: #FAF9F5;
-      background: #2a2824;
+      color: #262421;
+      background: #FAF9F5;
     }
     .node-icon {
       font-size: 44px;
@@ -266,14 +265,14 @@ SLIDES_HTML = """<!DOCTYPE html>
     .connection-line {
       position: absolute;
       height: 2px;
-      background: linear-gradient(90deg, #201f1c, #f26f3a, #201f1c);
+      background: linear-gradient(90deg, #edebe4, #f26f3a, #edebe4);
       z-index: 1;
       width: 80%;
       top: 50%;
     }
     .table-container {
-      background: #1a1917;
-      border: 1px solid rgba(250, 249, 245, 0.06);
+      background: #FAF9F5;
+      border: 1px solid rgba(38, 36, 33, 0.08);
       border-radius: 16px;
       padding: 10px;
     }
@@ -285,15 +284,15 @@ SLIDES_HTML = """<!DOCTYPE html>
     .metrics-table th {
       text-align: left;
       padding: 24px;
-      border-bottom: 2px solid #201f1c;
-      color: #938d83;
+      border-bottom: 2px solid rgba(38, 36, 33, 0.1);
+      color: #6b665c;
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
     }
     .metrics-table td {
       padding: 24px;
-      border-bottom: 1px solid #201f1c;
-      color: #d8d2c9;
+      border-bottom: 1px solid rgba(38, 36, 33, 0.06);
+      color: #4c4840;
     }
     .metrics-table tr:last-child td {
       border-bottom: none;
@@ -304,7 +303,7 @@ SLIDES_HTML = """<!DOCTYPE html>
       gap: 12px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 17px;
-      color: #d8d2c9;
+      color: #4c4840;
     }
     .logo-badge-icon {
       width: 26px;
@@ -314,13 +313,13 @@ SLIDES_HTML = """<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      color: #131211;
+      color: #FAF9F5;
       font-size: 15px;
     }
     
     @media print {
       body {
-        background-color: #131211 !important;
+        background-color: #f5f4ef !important;
       }
       .slide {
         page-break-after: always;
@@ -669,14 +668,14 @@ async def main():
         try:
             await live_page.goto("https://lumen-clinical.vercel.app/")
             
-            # Locate the passcode input and fill it
-            print("Entering access passcode...")
-            await live_page.wait_for_selector('input[placeholder="Enter Access Passcode..."]', timeout=5000)
-            await live_page.fill('input[placeholder="Enter Access Passcode..."]', "LUMEN2026")
+            # Force light theme and unlock state in localStorage
+            print("Configuring localStorage for light mode and unlocked dashboard...")
+            await live_page.evaluate("localStorage.setItem('lumen-theme', 'light')")
+            await live_page.evaluate("localStorage.setItem('lumen_unlocked', 'true')")
             
-            # Click the Unlock button
-            print("Unlocking workstation...")
-            await live_page.click('button:has-text("Unlock Workstation")')
+            # Reload page with the settings active
+            print("Reloading page with settings active...")
+            await live_page.goto("https://lumen-clinical.vercel.app/")
             
             # Wait for dashboard to load
             await live_page.wait_for_timeout(4000) # Give it time for fade-in animations and mock charts

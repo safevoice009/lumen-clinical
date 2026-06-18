@@ -15,9 +15,9 @@ import {
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('lumen-theme') as 'dark' | 'light') || 'dark';
+      return (localStorage.getItem('lumen-theme') as 'dark' | 'light') || 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   const [palette, setPalette] = useState<'classic' | 'royal' | 'emerald' | 'pastel'>(() => {
