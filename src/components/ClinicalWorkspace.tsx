@@ -88,6 +88,13 @@ export const ClinicalWorkspace: React.FC<ClinicalWorkspaceProps> = ({ mode, onLo
   }, [selectedPatient.id, forceViolation, isLiveMode, selectedLanguage, complianceRegion]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [rightTab, mode]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();

@@ -186,7 +186,7 @@ export async function executeModelRequest(
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
+  const timeoutId = setTimeout(() => controller.abort(), 35000);
   let res;
   try {
     res = await fetch(requestUrl, {

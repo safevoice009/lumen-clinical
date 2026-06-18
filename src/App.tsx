@@ -6,8 +6,8 @@ import { TelemetryLog } from './types/clinical';
 import { getActiveModelConfig, ModelConfig } from './utils/geminiClient';
 import { DischargePortalView, PortalData } from './components/DischargePortalView';
 import { SpectatorDashboard } from './components/SpectatorDashboard';
-import { 
-  Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale, 
+import {
+  Sun, Moon, Github, ExternalLink, Cpu, ClipboardList, Swords, Scale,
   Sparkles, FileEdit, BookOpenCheck, Trophy, BookOpen, ShieldCheck,
   Stethoscope, BarChart3, ChevronDown, Menu, X, Palette, Linkedin, Lock, ShieldAlert
 } from 'lucide-react';
@@ -185,6 +185,10 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [mode]);
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-palette', palette);
     localStorage.setItem('lumen-palette', palette);
   }, [palette]);
@@ -252,43 +256,43 @@ export default function App() {
 
   if (!isUnlocked) {
     return (
-      <div 
-        className="app-root" 
-        style={{ 
-          background: 'var(--bg-main)', 
-          minHeight: '100vh', 
-          display: 'flex', 
-          alignItems: 'center', 
+      <div
+        className="app-root"
+        style={{
+          background: 'var(--bg-main)',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           padding: '20px',
           fontFamily: 'system-ui, sans-serif',
           color: 'var(--fg-primary)'
         }}
       >
-        <div 
+        <div
           className="animate-slide-up"
-          style={{ 
-            background: 'var(--bg-card)', 
-            border: '1px solid var(--border-default)', 
-            borderRadius: '16px', 
-            padding: '30px', 
-            maxWidth: '420px', 
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '16px',
+            padding: '30px',
+            maxWidth: '420px',
             width: '100%',
             boxShadow: 'var(--shadow-lg)',
             textAlign: 'center'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-            <div 
-              style={{ 
-                background: 'var(--brand-subtle)', 
-                color: 'var(--brand)', 
-                width: '60px', 
-                height: '60px', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
+            <div
+              style={{
+                background: 'var(--brand-subtle)',
+                color: 'var(--brand)',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               <Lock size={28} />
@@ -303,18 +307,18 @@ export default function App() {
 
           <form onSubmit={handleUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ position: 'relative' }}>
-              <input 
-                type="password" 
-                placeholder="Enter Access Passcode..." 
+              <input
+                type="password"
+                placeholder="Enter Access Passcode..."
                 value={passcode}
                 onChange={e => { setPasscode(e.target.value); setPasscodeError(false); }}
                 autoFocus
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  border: passcodeError ? '1px solid var(--fg-danger)' : '1px solid var(--border-default)', 
-                  background: 'var(--bg-input)', 
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: passcodeError ? '1px solid var(--fg-danger)' : '1px solid var(--border-default)',
+                  background: 'var(--bg-input)',
                   color: 'var(--fg-primary)',
                   fontSize: '14px',
                   outline: 'none',
@@ -322,22 +326,22 @@ export default function App() {
                 }}
               />
             </div>
-            
+
             {passcodeError && (
               <span style={{ fontSize: '11px', color: 'var(--fg-danger)', display: 'block' }}>
                 ✗ Invalid passcode. Access denied.
               </span>
             )}
 
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                fontSize: '14px', 
-                fontWeight: 600, 
-                borderRadius: '8px', 
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                borderRadius: '8px',
                 marginTop: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -362,12 +366,12 @@ export default function App() {
   if (portalData) {
     return (
       <div className="app-root" style={{ background: 'var(--bg-main)', minHeight: '100vh', padding: '20px 0', overflowY: 'auto' }}>
-        <DischargePortalView 
-          data={portalData} 
+        <DischargePortalView
+          data={portalData}
           onBack={() => {
             window.location.hash = '';
             setPortalData(null);
-          }} 
+          }}
         />
       </div>
     );
@@ -376,12 +380,12 @@ export default function App() {
   if (spectatorSessionId) {
     return (
       <div className="app-root" style={{ background: 'var(--bg-main)', minHeight: '100vh', overflowY: 'auto' }}>
-        <SpectatorDashboard 
-          sessionId={spectatorSessionId} 
+        <SpectatorDashboard
+          sessionId={spectatorSessionId}
           onBack={() => {
             window.location.hash = '';
             setSpectatorSessionId(null);
-          }} 
+          }}
         />
       </div>
     );
@@ -415,7 +419,7 @@ export default function App() {
           {/* Centered Pillar Navigation (Gemini / Claude style with Dropdowns) */}
           <div id="mobile-navigation" className={`nav-center-menu ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             {/* Sandbox Pillar */}
-            <div 
+            <div
               className="nav-item-container nav-item-sandbox"
               onMouseEnter={() => handleMouseEnter('sandbox')}
               onMouseLeave={handleMouseLeave}
@@ -430,11 +434,11 @@ export default function App() {
                 <span>Sandbox</span>
                 <ChevronDown size={13} className="nav-chevron" />
               </button>
-              
+
               <div className={`nav-dropdown sandbox-dropdown ${activeDropdown === 'sandbox' ? 'open' : ''}`}>
                 <ul className="dropdown-list">
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'simulation' && pillar === 'sandbox' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('sandbox', 'simulation')}
                     >
@@ -446,7 +450,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'redteam' && pillar === 'sandbox' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('sandbox', 'redteam')}
                     >
@@ -461,7 +465,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'compare' && pillar === 'sandbox' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('sandbox', 'compare')}
                     >
@@ -476,7 +480,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'benchmark' && pillar === 'sandbox' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('sandbox', 'benchmark')}
                     >
@@ -499,7 +503,7 @@ export default function App() {
             </div>
 
             {/* Clinician Pillar */}
-            <div 
+            <div
               className="nav-item-container nav-item-scribe"
               onMouseEnter={() => handleMouseEnter('scribe')}
               onMouseLeave={handleMouseLeave}
@@ -518,7 +522,7 @@ export default function App() {
               <div className={`nav-dropdown scribe-dropdown ${activeDropdown === 'scribe' ? 'open' : ''}`}>
                 <ul className="dropdown-list">
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'copilot' && pillar === 'scribe' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('scribe', 'copilot')}
                     >
@@ -530,7 +534,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'workbench' && pillar === 'scribe' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('scribe', 'workbench')}
                     >
@@ -545,7 +549,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'research' && pillar === 'scribe' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('scribe', 'research')}
                     >
@@ -567,7 +571,7 @@ export default function App() {
             </div>
 
             {/* Standards Pillar */}
-            <div 
+            <div
               className="nav-item-container nav-item-standards"
               onMouseEnter={() => handleMouseEnter('standards')}
               onMouseLeave={handleMouseLeave}
@@ -586,7 +590,7 @@ export default function App() {
               <div className={`nav-dropdown standards-dropdown ${activeDropdown === 'standards' ? 'open' : ''}`}>
                 <ul className="dropdown-list">
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'leaderboard' && pillar === 'standards' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('standards', 'leaderboard')}
                     >
@@ -598,7 +602,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'cookbook' && pillar === 'standards' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('standards', 'cookbook')}
                     >
@@ -610,7 +614,7 @@ export default function App() {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       className={`dropdown-link-btn ${mode === 'handbook' && pillar === 'standards' ? 'active' : ''}`}
                       onClick={() => handleDropdownItemClick('standards', 'handbook')}
                     >
@@ -677,8 +681,8 @@ export default function App() {
                 <Palette size={15} />
               </button>
               {isPaletteDropdownOpen && (
-                <div 
-                  className="palette-menu-dropdown animate-fade-in" 
+                <div
+                  className="palette-menu-dropdown animate-fade-in"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
@@ -695,7 +699,7 @@ export default function App() {
                     gap: '4px'
                   }}
                 >
-                  <button 
+                  <button
                     onClick={() => { setPalette('classic'); setIsPaletteDropdownOpen(false); }}
                     style={{
                       display: 'flex',
@@ -715,7 +719,7 @@ export default function App() {
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F18B62', display: 'inline-block' }} />
                     <span style={{ fontWeight: palette === 'classic' ? '600' : 'normal' }}>Classic Orange</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => { setPalette('royal'); setIsPaletteDropdownOpen(false); }}
                     style={{
                       display: 'flex',
@@ -735,7 +739,7 @@ export default function App() {
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8B5CF6', display: 'inline-block' }} />
                     <span style={{ fontWeight: palette === 'royal' ? '600' : 'normal' }}>Royal Violet</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => { setPalette('emerald'); setIsPaletteDropdownOpen(false); }}
                     style={{
                       display: 'flex',
@@ -755,7 +759,7 @@ export default function App() {
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
                     <span style={{ fontWeight: palette === 'emerald' ? '600' : 'normal' }}>Emerald Clinical</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => { setPalette('pastel'); setIsPaletteDropdownOpen(false); }}
                     style={{
                       display: 'flex',
@@ -815,9 +819,9 @@ export default function App() {
         }}
       />
 
-      <ModelSettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      <ModelSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
         onLog={handleModalLog}
       />
 

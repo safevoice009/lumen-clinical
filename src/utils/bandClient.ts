@@ -18,6 +18,13 @@ const agentIds: Record<AgentRole, string> = {
 };
 
 export async function initBandSession(sessionId: string): Promise<void> {
+  if (typeof window !== 'undefined' && localStorage.getItem('lumen_use_demo_scripts') === 'true') {
+    const roles: AgentRole[] = ['red_team_adversary', 'doctor_agent', 'patient_agent', 'safety_auditor'];
+    for (const r of roles) {
+      agentIds[r] = `local::${r}::${sessionId.slice(0, 8)}`;
+    }
+    return;
+  }
   const agentDefs: Array<{role: AgentRole; name: string; capabilities: string[]}> = [
     {
       role: 'red_team_adversary',
@@ -65,6 +72,18 @@ export async function dispatchBandTask(
   payload: Record<string, unknown>,
   ctx:     BandSharedContext,
 ): Promise<{ taskId: string; isLocal: boolean }> {
+  if (typeof window !== 'undefined' && localStorage.getItem('lumen_use_demo_scripts') === 'true') {
+    const taskId = `local::${from}→${to}::t${ctx.currentTurn}::${Date.now()}`;
+    if (!ctx.bandHandoffs) {
+      ctx.bandHandoffs = [];
+    }
+    ctx.bandHandoffs.push({
+      from, to, turn: ctx.currentTurn, taskId,
+      timestamp: new Date().toISOString(),
+      isLocal: true,
+    });
+    return { taskId, isLocal: true };
+  }
   const body = {
     fromAgent:     agentIds[from],
     toAgent:       agentIds[to],
@@ -108,6 +127,9 @@ export async function syncBandContext(
   sessionId: string,
   ctx: Partial<BandSharedContext>,
 ): Promise<void> {
+  if (typeof window !== 'undefined' && localStorage.getItem('lumen_use_demo_scripts') === 'true') {
+    return;
+  }
   try {
     await fetch(`${BAND_BASE}/context/${sessionId}`, {
       method: 'PATCH',

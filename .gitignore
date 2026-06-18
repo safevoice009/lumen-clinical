@@ -45,4 +45,16 @@ SUBMISSION_GUIDE_AND_PLAN.md
 *.log
 *.m4a
 
+# Python virtual environments & build artifacts
+.venv/
+__pycache__/
+*.pyc
+
+# Local demo recording assets
+recordings/
+
+# Temporary scratch scripts
+scratch/debug_button.py
+scratch/test_segment3.py
+
 
